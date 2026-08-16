@@ -9,9 +9,11 @@ on:
     branches: [main]
     paths:
       - "dotnet/**"
+      - ".github/workflows/publish-host.yml"
   pull_request:
     paths:
       - "dotnet/**"
+      - ".github/workflows/publish-host.yml"
   workflow_dispatch:
 
 permissions:
