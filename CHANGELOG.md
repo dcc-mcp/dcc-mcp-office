@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.2.0](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.1.1...v0.2.0) (2026-08-16)
+
+
+### Features
+
+* M1 COM sidecar MVP — named-pipe server, per-app COM backends, batch + render capabilities ([#11](https://github.com/dcc-mcp/dcc-mcp-office/issues/11)) ([b4dda5d](https://github.com/dcc-mcp/dcc-mcp-office/commit/b4dda5d5c0ea5ee5a4af9cebd72927885bce5fbb))
+
+
+### Bug Fixes
+
+* align intra-workspace version pins with the 0.2.0 release ([39f8759](https://github.com/dcc-mcp/dcc-mcp-office/commit/39f8759a9fb0071dfe88f2e5116a8703b04f0270))
+* drop version pins on intra-workspace path deps so release-please bumps stay green ([c698098](https://github.com/dcc-mcp/dcc-mcp-office/commit/c69809893a10bcd1c9c020fc627b4eac395f5654))
+
 ## [0.1.1](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.1.0...v0.1.1) (2026-08-16)
 
 
