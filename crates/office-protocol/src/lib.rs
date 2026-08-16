@@ -209,6 +209,11 @@ pub struct CommandResult {
     pub backend: Option<String>,
     #[serde(default)]
     pub indeterminate: bool,
+    /// Audit trail (proposal §20 / §27 criterion 10): policy applied,
+    /// security posture, backend, application info, duration — the host
+    /// fills this on every command result.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audit: Option<serde_json::Value>,
 }
 
 /// office.job.progress notification (proposal §12.4).
@@ -279,6 +284,96 @@ pub struct ArtifactRecord {
     pub created_by_job: Option<String>,
 }
 
+/// batch.convert input (proposal §15.1). File specs may be plain paths or
+/// simple wildcards (* and ?, with **/ for recursion) expanded by the host.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BatchConvertParams {
+    pub inputs: Vec<String>,
+    /// pdf is the only target in M1.
+    pub target_format: String,
+    /// auto | desktop_com | openxml | graph.
+    pub backend: String,
+    pub output_directory: String,
+    /// versioned | fail | overwrite.
+    pub overwrite: String,
+    pub validation: Vec<String>,
+}
+
+impl Default for BatchConvertParams {
+    fn default() -> Self {
+        Self {
+            inputs: Vec::new(),
+            target_format: "pdf".to_string(),
+            backend: "auto".to_string(),
+            output_directory: String::new(),
+            overwrite: "versioned".to_string(),
+            validation: vec![
+                "output_openable".to_string(),
+                "non_empty".to_string(),
+                "page_count_reasonable".to_string(),
+            ],
+        }
+    }
+}
+
+/// One replace rule (proposal §15.2). Match modes: literal | case_insensitive.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ReplaceRule {
+    pub find: String,
+    pub replace: String,
+    #[serde(default = "default_match_mode")]
+    pub r#match: String,
+}
+
+fn default_match_mode() -> String {
+    "literal".to_string()
+}
+
+/// batch.replace_text input (proposal §15.2). dry_run defaults to true: a
+/// replace without an explicit commit only reports matches.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct BatchReplaceTextParams {
+    pub inputs: Vec<String>,
+    pub rules: Vec<ReplaceRule>,
+    /// body | headers | footers | notes | comments | charts.
+    pub scope: Vec<String>,
+    pub dry_run: bool,
+}
+
+impl Default for BatchReplaceTextParams {
+    fn default() -> Self {
+        Self {
+            inputs: Vec::new(),
+            rules: Vec::new(),
+            scope: vec!["body".to_string()],
+            dry_run: true,
+        }
+    }
+}
+
+/// slide.render input (PowerPoint only — proposal §27 criterion 6).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(default)]
+pub struct SlideRenderParams {
+    pub path: String,
+    pub output_directory: String,
+    pub width: u32,
+    pub height: u32,
+}
+
+impl Default for SlideRenderParams {
+    fn default() -> Self {
+        Self {
+            path: String::new(),
+            output_directory: String::new(),
+            width: 1280,
+            height: 720,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -342,8 +437,72 @@ mod tests {
             validation: serde_json::json!({}),
             backend: Some("desktop_com".into()),
             indeterminate: true,
+            audit: None,
         };
         let json = serde_json::to_string(&r).unwrap();
         assert!(json.contains("\"indeterminate\":true"));
+    }
+
+    #[test]
+    fn batch_convert_params_default_to_pdf_with_validation() {
+        let p: BatchConvertParams =
+            serde_json::from_str(r#"{"inputs":["a.pptx"],"output_directory":"out"}"#).unwrap();
+        assert_eq!(p.target_format, "pdf");
+        assert_eq!(p.overwrite, "versioned");
+        assert_eq!(p.validation.len(), 3);
+    }
+
+    #[test]
+    fn batch_replace_text_defaults_to_dry_run() {
+        let p: BatchReplaceTextParams = serde_json::from_str(
+            r#"{"inputs":["a.docx"],"rules":[{"find":"2025年度","replace":"2026年度"}]}"#,
+        )
+        .unwrap();
+        assert!(p.dry_run);
+        assert_eq!(p.rules[0].r#match, "literal");
+        assert_eq!(p.scope, vec!["body".to_string()]);
+    }
+
+    #[test]
+    fn replace_rule_round_trip() {
+        let rule = ReplaceRule {
+            find: "Old Project Name".into(),
+            replace: "DCC-MCP".into(),
+            r#match: "case_insensitive".into(),
+        };
+        let json = serde_json::to_string(&rule).unwrap();
+        assert!(json.contains("case_insensitive"));
+        let back: ReplaceRule = serde_json::from_str(&json).unwrap();
+        assert_eq!(back, rule);
+    }
+
+    #[test]
+    fn slide_render_defaults_to_720p() {
+        let p: SlideRenderParams =
+            serde_json::from_str(r#"{"path":"a.pptx","output_directory":"out"}"#).unwrap();
+        assert_eq!((p.width, p.height), (1280, 720));
+    }
+
+    #[test]
+    fn command_result_carries_audit_trail() {
+        let r = CommandResult {
+            operation_id: "op-2".into(),
+            revision: None,
+            changed: serde_json::json!({}),
+            warnings: vec![],
+            artefacts: vec![],
+            validation: serde_json::json!({}),
+            backend: Some("desktop_com".into()),
+            indeterminate: false,
+            audit: Some(serde_json::json!({
+                "security": { "automation_security": "force_disable" },
+                "duration_ms": 42,
+            })),
+        };
+        let json = serde_json::to_string(&r).unwrap();
+        assert!(json.contains("force_disable"));
+        assert!(json.contains("duration_ms"));
+        let back: CommandResult = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.audit.unwrap()["duration_ms"], 42);
     }
 }

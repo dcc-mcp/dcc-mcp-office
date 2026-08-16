@@ -56,3 +56,8 @@ jobs:
         run: vx run build
       - name: Host self-test (compile + inspect round-trip)
         run: vx run self-test
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Rust client ↔ host contract (skips the COM legs when Office is absent)
+        env:
+          DCC_OFFICE_HOST_EXE: ${{ github.workspace }}\dotnet\Office.Automation.Host\bin\Debug\net8.0-windows\dcc-office-host.exe
+        run: cargo test -p dcc-mcp-office-client --test pipe_contract

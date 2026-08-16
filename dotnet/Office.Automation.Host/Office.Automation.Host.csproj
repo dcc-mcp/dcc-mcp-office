@@ -10,6 +10,14 @@
   <ItemGroup>
     <ProjectReference Include="../Office.Automation.Runtime/Office.Automation.Runtime.csproj" />
     <ProjectReference Include="../Office.Automation.OpenXml/Office.Automation.OpenXml.csproj" />
+    <ProjectReference Include="../Office.Automation.Com/Office.Automation.Com.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Brand template registry (proposal §15.4): source of truth lives in
+         templates/registry.json; the embedded copy keeps single-file
+         publishes self-contained. -->
+    <EmbeddedResource Include="../../templates/registry.json" LogicalName="Templates.registry.json" />
   </ItemGroup>
 
 </Project>

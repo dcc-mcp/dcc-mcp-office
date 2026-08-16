@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "dcc-mcp-office-client"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "dcc-mcp-office-protocol",
  "serde_json",
@@ -12,7 +12,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-graph"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -20,7 +20,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-ir"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -28,7 +28,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-jobs"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -36,7 +36,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-protocol"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
  "serde_json",
@@ -44,14 +44,14 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-security"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "serde",
 ]
 
 [[package]]
 name = "dcc-mcp-office-testkit"
-version = "0.1.0"
+version = "0.1.1"
 dependencies = [
  "dcc-mcp-office-protocol",
  "serde_json",
@@ -59,7 +59,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-tools"
-version = "0.1.0"
+version = "0.1.1"
 
 [[package]]
 name = "itoa"

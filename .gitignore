@@ -26,3 +26,4 @@ dist/
 # IDE
 .idea/
 .vscode/
+dcc-mcp-cli.exe

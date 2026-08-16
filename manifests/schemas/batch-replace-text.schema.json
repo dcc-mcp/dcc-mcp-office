@@ -1,0 +1,46 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/batch-replace-text.schema.json",
+  "title": "office.batch.replace_text input",
+  "description": "Input contract for office.batch.replace_text (proposal §15.2). dry_run defaults to true: matches are reported, files are never mutated without an explicit commit.",
+  "type": "object",
+  "required": ["inputs", "rules"],
+  "additionalProperties": false,
+  "properties": {
+    "inputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" }
+    },
+    "rules": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["find", "replace"],
+        "additionalProperties": false,
+        "properties": {
+          "find": { "type": "string", "minLength": 1 },
+          "replace": { "type": "string" },
+          "match": {
+            "type": "string",
+            "enum": ["literal", "case_insensitive"],
+            "default": "literal"
+          }
+        }
+      }
+    },
+    "scope": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["body", "headers", "footers", "notes", "comments", "charts"]
+      },
+      "default": ["body"]
+    },
+    "dry_run": {
+      "type": "boolean",
+      "default": true
+    }
+  }
+}

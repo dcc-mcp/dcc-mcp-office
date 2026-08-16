@@ -1,0 +1,15 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/slide-render.schema.json",
+  "title": "slide.render input",
+  "description": "Input contract for slide.render (PowerPoint, proposal §27 criterion 6): one PNG per slide plus a per-slide overflow report.",
+  "type": "object",
+  "required": ["path", "output_directory"],
+  "additionalProperties": false,
+  "properties": {
+    "path": { "type": "string" },
+    "output_directory": { "type": "string" },
+    "width": { "type": "integer", "minimum": 64, "default": 1280 },
+    "height": { "type": "integer", "minimum": 64, "default": 720 }
+  }
+}

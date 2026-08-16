@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <!-- Zero NuGet dependencies (dependency policy, 2026-08-16):
+         COM interop here is pure late-bound IDispatch + dynamic, both part
+         of the Microsoft.NETCore.App shared framework. No Office PIAs, no
+         interop assemblies — M365 ships none for automation. -->
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>DccMcp.Office.Com</AssemblyName>
+    <RootNamespace>Office.Automation.Com</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../Office.Automation.Runtime/Office.Automation.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

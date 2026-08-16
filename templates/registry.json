@@ -1,0 +1,25 @@
+{
+  "schema_version": "brand-registry/1.0",
+  "templates": [
+    {
+      "uri": "brand://dcc-mcp/default",
+      "version": "1.0.0",
+      "kind": "presentation",
+      "description": "Built-in DCC-MCP brand deck — master, 11 semantic layouts, brand logo (embedded in the Open XML worker).",
+      "source": "embedded://Office.Automation.OpenXml.Templates",
+      "layouts": [
+        "title_cover",
+        "section_cover",
+        "two_columns",
+        "comparison",
+        "timeline",
+        "kpi_dashboard",
+        "technical_architecture",
+        "image_left_text_right",
+        "image_grid",
+        "closing",
+        "bullets"
+      ]
+    }
+  ]
+}

@@ -4,6 +4,8 @@
     <TargetFramework>net8.0-windows</TargetFramework>
     <AssemblyName>DccMcp.Office.Runtime</AssemblyName>
     <RootNamespace>Office.Automation.Runtime</RootNamespace>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
 </Project>
