@@ -33,6 +33,7 @@ public sealed class CommandRouter : IDisposable
     private readonly string _app;
     private readonly StaDispatcher _sta = new();
     private readonly OfficeComBackend? _com;
+    private readonly TemplateRegistry _templates = new();
     private readonly object _attachLock = new();
     private bool _comAttached;
 
@@ -250,6 +251,26 @@ public sealed class CommandRouter : IDisposable
         string output = input.TryGetProperty("output", out var outElement) && outElement.ValueKind == JsonValueKind.String
             ? outElement.GetString()!
             : throw new OfficeArgumentException("input.output is required");
+
+        // Brand template gate (proposal §15.4): only the built-in package
+        // ships in this host build; unknown URIs are refused up front.
+        var warnings = new List<string>();
+        if (input.TryGetProperty("template", out var templateElement)
+            && templateElement.ValueKind == JsonValueKind.String
+            && templateElement.GetString() is string templateUri
+            && !string.Equals(templateUri, TemplateRegistry.DefaultUri, StringComparison.OrdinalIgnoreCase))
+        {
+            var entry = _templates.Resolve(templateUri);
+            if (entry is null)
+            {
+                throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
+                    $"brand template '{templateUri}' is not in the registry; available: {string.Join(", ", _templates.AllUris)}");
+            }
+            throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"brand template '{templateUri}' resolves to {entry.Source}, which is not packaged in this host build");
+        }
+        warnings.AddRange(CheckLayoutsAgainstRegistry(ir));
+
         Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
         if (ir.TrimStart().StartsWith('{'))
         {
@@ -274,12 +295,48 @@ public sealed class CommandRouter : IDisposable
         {
             operation_id = Guid.NewGuid().ToString("N"),
             changed = new { files = 1, slides = info.SlideCount },
-            warnings = Array.Empty<string>(),
+            warnings,
             artefacts = new[] { Artifact(output, "pptx") },
             validation = new { output_openable = true, non_empty = true, slide_count_reasonable = info.SlideCount >= 1 },
             backend = "openxml",
             indeterminate = false,
         };
+    }
+
+    /// <summary>
+    /// Best-effort semantic-layout check against the built-in brand package:
+    /// unknown layouts still compile (the worker falls back to bullets) but
+    /// the result carries a warning so agents notice the substitution.
+    /// </summary>
+    private List<string> CheckLayoutsAgainstRegistry(string ir)
+    {
+        var warnings = new List<string>();
+        try
+        {
+            string json = ir.TrimStart().StartsWith('{') ? ir : File.ReadAllText(ir);
+            using var document = JsonDocument.Parse(json);
+            if (document.RootElement.TryGetProperty("document", out var doc)
+                && doc.TryGetProperty("slides", out var slides)
+                && slides.ValueKind == JsonValueKind.Array)
+            {
+                var known = _templates.Default.Layouts.ToHashSet(StringComparer.Ordinal);
+                foreach (var slide in slides.EnumerateArray())
+                {
+                    var layout = slide.TryGetProperty("semantic_layout", out var sl)
+                        ? sl.GetString() ?? ""
+                        : "";
+                    if (layout.Length > 0 && !known.Contains(layout))
+                    {
+                        warnings.Add($"semantic_layout '{layout}' is not in {TemplateRegistry.DefaultUri}; compiled as 'bullets'");
+                    }
+                }
+            }
+        }
+        catch
+        {
+            // Layout checking is advisory; malformed IR fails in the worker.
+        }
+        return warnings;
     }
 
     private object InspectDocument(JsonElement input)

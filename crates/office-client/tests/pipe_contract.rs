@@ -186,6 +186,24 @@ fn office_host_full_contract() {
         other => panic!("ExecuteMso relaxation must be denied, got {other:?}"),
     }
 
+    // 1d. brand template gate — unknown brand:// URIs are refused up front
+    let template_error = client
+        .execute(&command(
+            "deck.compile",
+            json!({
+                "ir": SAMPLE_DECK_IR,
+                "output": pptx.to_string_lossy(),
+                "template": "brand://unknown/x",
+            }),
+        ))
+        .expect_err("unknown brand template must fail");
+    match template_error {
+        dcc_mcp_office_client::ClientError::Rpc { code, .. } => {
+            assert_eq!(code, json!("OFFICE_CAPABILITY_UNSUPPORTED"));
+        }
+        other => panic!("expected Rpc error, got {other:?}"),
+    }
+
     // 2. document.inspect — COM backend (auto) once PowerPoint is attached
     let inspect = client
         .execute(&command(
