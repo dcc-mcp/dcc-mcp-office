@@ -230,8 +230,11 @@ mod tests {
         };
         let json = serde_json::to_string(&deck).unwrap();
         let back: Envelope<PresentationIr> = serde_json::from_str(&json).unwrap();
-        assert_eq!(back.document.slides[0].semantic_layout, "technical_architecture");
+        assert_eq!(
+            back.document.slides[0].semantic_layout,
+            "technical_architecture"
+        );
         assert!(json.contains("\"technical_architecture\""));
-        assert_eq!(back.document.export_policy.slide_previews, true);
+        assert!(back.document.export_policy.slide_previews);
     }
 }

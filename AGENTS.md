@@ -62,6 +62,8 @@ Windows 11, zh-CN + en-US — golden-file and visual-snapshot tests live under
 
 ## Conventions
 
+- Engineering agreement (first principles / contract-first / SOLID / Clean
+  Architecture / no code smells): [CONTRIBUTING.md](./CONTRIBUTING.md).
 - Crate names are `dcc-mcp-office-*` (dirs are `office-*`).
 - Protocol changes bump the schema version and get a contract test first.
 - Everything touching COM enforces the security policy from

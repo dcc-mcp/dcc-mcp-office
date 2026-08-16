@@ -27,7 +27,9 @@ impl PolicyAction {
     pub fn requires_confirmation(self) -> bool {
         matches!(
             self,
-            PolicyAction::Confirm | PolicyAction::CheckpointAndConfirm | PolicyAction::DenyOrConfirm
+            PolicyAction::Confirm
+                | PolicyAction::CheckpointAndConfirm
+                | PolicyAction::DenyOrConfirm
         )
     }
 }
@@ -129,7 +131,10 @@ mod tests {
             vec!["Copy".into(), "PrintPreviewAndPrint".into()],
         );
         assert_eq!(p.execute_mso("powerpoint", "Copy"), Some(false));
-        assert_eq!(p.execute_mso("powerpoint", "PrintPreviewAndPrint"), Some(true));
+        assert_eq!(
+            p.execute_mso("powerpoint", "PrintPreviewAndPrint"),
+            Some(true)
+        );
         assert_eq!(p.execute_mso("powerpoint", "PasteAsPicture"), None);
         assert_eq!(p.execute_mso("excel", "Copy"), None);
     }

@@ -83,41 +83,181 @@ pub struct RegistryEntry {
 
 /// Registry of every task-level Office capability (proposal §11.1/§11.2).
 pub const REGISTRY: &[RegistryEntry] = &[
-    RegistryEntry { name: common::CAPABILITIES_SEARCH, app: "office", phase: "P0" },
-    RegistryEntry { name: common::APPLICATION_LIST, app: "office", phase: "P0" },
-    RegistryEntry { name: common::SESSION_ATTACH, app: "office", phase: "P0" },
-    RegistryEntry { name: common::DOCUMENT_INSPECT, app: "office", phase: "P0" },
-    RegistryEntry { name: common::DOCUMENT_GENERATE, app: "office", phase: "P0" },
-    RegistryEntry { name: common::DOCUMENT_PATCH, app: "office", phase: "P0" },
-    RegistryEntry { name: common::DOCUMENT_RENDER, app: "office", phase: "P0" },
-    RegistryEntry { name: common::DOCUMENT_VALIDATE, app: "office", phase: "P0" },
-    RegistryEntry { name: common::DOCUMENT_EXPORT, app: "office", phase: "P0" },
-    RegistryEntry { name: common::BATCH_CONVERT, app: "office", phase: "P0" },
-    RegistryEntry { name: common::BATCH_REPLACE_TEXT, app: "office", phase: "P0" },
-    RegistryEntry { name: common::BATCH_APPLY_TEMPLATE, app: "office", phase: "P0" },
-    RegistryEntry { name: common::JOB_GET, app: "office", phase: "P0" },
-    RegistryEntry { name: common::JOB_CANCEL, app: "office", phase: "P0" },
-    RegistryEntry { name: powerpoint::DECK_GENERATE, app: "powerpoint", phase: "P0" },
-    RegistryEntry { name: powerpoint::SLIDE_COMPOSE, app: "powerpoint", phase: "P0" },
-    RegistryEntry { name: powerpoint::SLIDE_RENDER, app: "powerpoint", phase: "P0" },
-    RegistryEntry { name: powerpoint::ANIMATION_APPLY, app: "powerpoint", phase: "P0" },
-    RegistryEntry { name: powerpoint::SLIDESHOW_CONTROL, app: "powerpoint", phase: "P1" },
-    RegistryEntry { name: word::DOCUMENT_REFLOW, app: "word", phase: "P0" },
-    RegistryEntry { name: word::FIELDS_UPDATE, app: "word", phase: "P0" },
-    RegistryEntry { name: word::TOC_REBUILD, app: "word", phase: "P0" },
-    RegistryEntry { name: word::TRACK_CHANGES_INSPECT, app: "word", phase: "P0" },
-    RegistryEntry { name: excel::WORKBOOK_CALCULATE, app: "excel", phase: "P0" },
-    RegistryEntry { name: excel::TABLE_UPDATE, app: "excel", phase: "P0" },
-    RegistryEntry { name: excel::CHART_GENERATE, app: "excel", phase: "P0" },
-    RegistryEntry { name: excel::PIVOT_REFRESH, app: "excel", phase: "P0" },
-    RegistryEntry { name: outlook::MESSAGE_CREATE_DRAFT, app: "outlook", phase: "P1" },
-    RegistryEntry { name: outlook::CALENDAR_PREPARE_EVENT, app: "outlook", phase: "P1" },
-    RegistryEntry { name: visio::DIAGRAM_LAYOUT, app: "visio", phase: "P1" },
-    RegistryEntry { name: visio::DIAGRAM_CONNECT, app: "visio", phase: "P1" },
-    RegistryEntry { name: project::PLAN_GENERATE, app: "project", phase: "P2" },
-    RegistryEntry { name: project::RESOURCES_ASSIGN, app: "project", phase: "P2" },
-    RegistryEntry { name: access::QUERY_EXECUTE, app: "access", phase: "P2" },
-    RegistryEntry { name: access::REPORT_EXPORT, app: "access", phase: "P2" },
+    RegistryEntry {
+        name: common::CAPABILITIES_SEARCH,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::APPLICATION_LIST,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::SESSION_ATTACH,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::DOCUMENT_INSPECT,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::DOCUMENT_GENERATE,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::DOCUMENT_PATCH,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::DOCUMENT_RENDER,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::DOCUMENT_VALIDATE,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::DOCUMENT_EXPORT,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::BATCH_CONVERT,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::BATCH_REPLACE_TEXT,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::BATCH_APPLY_TEMPLATE,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::JOB_GET,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: common::JOB_CANCEL,
+        app: "office",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: powerpoint::DECK_GENERATE,
+        app: "powerpoint",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: powerpoint::SLIDE_COMPOSE,
+        app: "powerpoint",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: powerpoint::SLIDE_RENDER,
+        app: "powerpoint",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: powerpoint::ANIMATION_APPLY,
+        app: "powerpoint",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: powerpoint::SLIDESHOW_CONTROL,
+        app: "powerpoint",
+        phase: "P1",
+    },
+    RegistryEntry {
+        name: word::DOCUMENT_REFLOW,
+        app: "word",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: word::FIELDS_UPDATE,
+        app: "word",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: word::TOC_REBUILD,
+        app: "word",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: word::TRACK_CHANGES_INSPECT,
+        app: "word",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: excel::WORKBOOK_CALCULATE,
+        app: "excel",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: excel::TABLE_UPDATE,
+        app: "excel",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: excel::CHART_GENERATE,
+        app: "excel",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: excel::PIVOT_REFRESH,
+        app: "excel",
+        phase: "P0",
+    },
+    RegistryEntry {
+        name: outlook::MESSAGE_CREATE_DRAFT,
+        app: "outlook",
+        phase: "P1",
+    },
+    RegistryEntry {
+        name: outlook::CALENDAR_PREPARE_EVENT,
+        app: "outlook",
+        phase: "P1",
+    },
+    RegistryEntry {
+        name: visio::DIAGRAM_LAYOUT,
+        app: "visio",
+        phase: "P1",
+    },
+    RegistryEntry {
+        name: visio::DIAGRAM_CONNECT,
+        app: "visio",
+        phase: "P1",
+    },
+    RegistryEntry {
+        name: project::PLAN_GENERATE,
+        app: "project",
+        phase: "P2",
+    },
+    RegistryEntry {
+        name: project::RESOURCES_ASSIGN,
+        app: "project",
+        phase: "P2",
+    },
+    RegistryEntry {
+        name: access::QUERY_EXECUTE,
+        app: "access",
+        phase: "P2",
+    },
+    RegistryEntry {
+        name: access::REPORT_EXPORT,
+        app: "access",
+        phase: "P2",
+    },
 ];
 
 #[cfg(test)]
@@ -135,7 +275,11 @@ mod tests {
 
     #[test]
     fn p0_tools_cover_mvp_surface() {
-        let p0: Vec<_> = REGISTRY.iter().filter(|e| e.phase == "P0").map(|e| e.name).collect();
+        let p0: Vec<_> = REGISTRY
+            .iter()
+            .filter(|e| e.phase == "P0")
+            .map(|e| e.name)
+            .collect();
         for required in [
             common::BATCH_CONVERT,
             common::BATCH_REPLACE_TEXT,
