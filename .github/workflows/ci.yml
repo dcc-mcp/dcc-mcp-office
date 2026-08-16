@@ -32,6 +32,12 @@ jobs:
           python-version: "3.11"
       - name: Install deps
         run: python -m pip install openpyxl
+      - name: Skill lint (official dcc-mcp-cli validator)
+        run: |
+          # dcc-mcp-cli ships through the dcc-mcp-core release train, not pip.
+          curl -fL -o "$RUNNER_TEMP/dcc-mcp-cli" "https://github.com/dcc-mcp/dcc-mcp-core/releases/download/v0.20.6/dcc-mcp-cli-linux-x86_64"
+          chmod +x "$RUNNER_TEMP/dcc-mcp-cli"
+          "$RUNNER_TEMP/dcc-mcp-cli" lint skills --warnings-as-errors --non-interactive
       - name: Dashboard e2e
         run: |
           python skills/office-generate-production-dashboard/scripts/generate_dashboard.py             --input examples/capability-dashboard.json --out /tmp/dash

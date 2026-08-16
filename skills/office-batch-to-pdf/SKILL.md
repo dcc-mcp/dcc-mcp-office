@@ -1,16 +1,18 @@
 ---
 name: office-batch-to-pdf
 description: "Batch-convert PPTX/DOCX/XLSX to high-fidelity PDF. Local files render through the Office COM sidecar (native export); OneDrive/SharePoint files convert through Microsoft Graph. Open XML performs preflight only — it never claims to render PDF."
-dcc: office
-version: "0.1.0"
 license: "MIT"
 compatibility: "Windows, Office 2019+ / Microsoft 365; Graph scenarios need tenant auth"
-tags: ["office", "convert", "pdf", "batch", "job"]
-capabilities:
-  - office.batch.convert
-  - office.job.get
-  - office.job.cancel
-  - office.document.validate
+metadata:
+  dcc-mcp:
+    dcc: office
+    version: "0.1.0"
+    tags: ["office", "convert", "pdf", "batch", "job"]
+    capabilities:
+      - office.batch.convert
+      - office.job.get
+      - office.job.cancel
+      - office.document.validate
 ---
 
 # office-batch-to-pdf
