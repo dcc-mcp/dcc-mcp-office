@@ -25,13 +25,13 @@ adapters live in thin sibling repos and depend on this one the way
 crates/
   office-protocol   wire schema: office-rpc/1, handshake, capability manifest,
                     error codes, job progress, events (schema-only, no I/O)
-  office-ir         document IRs: common envelope + presentation/word/workbook
+  office-ir         document IRs: common envelope + presentation / word / workbook
   office-client     Rust-side client for office-host.exe (namedpipe://)
   office-tools      task-level MCP tool registry (office.batch.convert, ...)
-  office-jobs       approval/checkpoint job phases layered on dcc-mcp-job
+  office-jobs       approval/checkpoint job phases + per-item aggregation
   office-graph      Microsoft Graph connector (OneDrive/SharePoint/Workbook)
   office-security   default-deny policy: ExecuteMso whitelist, AutomationSecurity
-  office-testkit    contract-test helpers for the office-rpc surface
+  office-testkit    JSON-RPC fixtures + FakeSidecar with fault injection
 dotnet/
   Office.Automation.Runtime   STA dispatcher (message pump, IOleMessageFilter
                               busy retry, modal-dialog detection, soft timeouts),
@@ -44,8 +44,8 @@ dotnet/
   Office.Automation.Host      office-host.exe entry point (--app=powerpoint|...)
                               + office-rpc/1 named-pipe JSON-RPC server
 skills/            office-wide skill packs (SKILL.md)
-manifests/         capability manifest examples (powerpoint-desktop, ...)
-templates/         brand template registry (brand:// URIs)
+manifests/         capability manifest examples + input JSON Schemas
+templates/         brand template registry (brand:// URIs, registry.json)
 tests/             golden-files / visual-snapshots / compatibility / security / stress
 tests/fixtures/    small docx/xlsx fixtures for the Rust ↔ C# contract tests
 docs/adr/          architecture decision records
@@ -100,8 +100,7 @@ dotnet build dotnet/Office.Automation.Host
 |---|---|---|
 | M0 | office-rpc/1 schema + C# host skeleton (handshake/STA queue, no COM) | contract tests green without Office |
 | M1 | Open XML worker + COM sidecar MVP: named-pipe server, STA busy/modal ladder, batch convert / replace_text dry-run+commit / inspect / slide previews+overflow (PowerPoint, Word, Excel) | the 12 MVP criteria in §27 |
-| M2 | deck generate pipeline (template registry → IR → OpenXML → COM finalize → previews → validation loop) | shipped in dcc-mcp-PowerPoint |
-| M2 | deck generate pipeline (template registry → IR → OpenXML → COM finalize → previews → validation loop) | shipped in dcc-mcp-PowerPoint |
+| M2 | deck generate pipeline (template registry → IR → OpenXML → COM finalize → previews → validation loop) — core pieces live here (IRs, brand:// registry, compile + finalize + render); the pipeline ships in dcc-mcp-PowerPoint | shipped in dcc-mcp-PowerPoint |
 | M3 | Graph connector + Office.js add-in | cloud file scenarios |
 | M4 | Visio/Project/Access + ecosystem (marketplace, SUA pack) | §26 Phase 4/5 |
 
