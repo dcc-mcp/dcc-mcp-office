@@ -1,20 +1,26 @@
 using System.Text.Json;
+using Office.Automation.Com;
+using Office.Automation.Host;
 using Office.Automation.OpenXml;
 using Office.Automation.Runtime;
 
-namespace Office.Automation.Host;
-
 /// <summary>
-/// dcc-office-host — per-application Office sidecar entry point.
+/// dcc-office-host — per-application Office sidecar entry point (proposal §8.2).
 ///
-/// M1: self-implemented Open XML surface (zero NuGet dependencies, see the
-/// dependency policy). The host speaks office-rpc JSON-RPC over stdin/stdout
-/// (named pipe per proposal §12 comes later); COM attachment stays on the
-/// roadmap behind the same envelope.
+/// Modes:
+///   --app=<app> --pipe       named-pipe JSON-RPC server (default) — the
+///                            gateway-facing transport from proposal §12
+///   --app=<app> --stdio      stdin/stdout JSON-RPC loop (local debugging)
+///   --app=<app> --self-test        Open XML round-trip, no Office required
+///   --app=<app> --self-test-com    Open XML + real COM probe (PDF convert,
+///                                  replace-text dry-run/commit, slide previews)
 ///
-/// Commands (office.command.execute):
-///   capability=deck.compile     params.input {ir, output}  → Deck IR JSON → PPTX
-///   capability=document.inspect params.input {path}        → deck info + per-slide shapes
+/// Commands (office.command.execute capabilities):
+///   deck.compile          {input:{ir, output}}                → Deck IR → PPTX
+///   document.inspect      {input:{path, backend?}}            → structure summary
+///   batch.convert         {input:{inputs, output_directory}}  → PDF per file (COM)
+///   batch.replace_text    {input:{inputs, rules, scope?, dry_run?}}
+///   slide.render          {input:{path, output_directory, width?, height?}}
 /// </summary>
 public static class Program
 {
@@ -27,41 +33,70 @@ public static class Program
     {
         string? app = null;
         bool selfTest = false;
+        bool selfTestCom = false;
+        bool stdio = false;
+        string? pipeName = null;
         foreach (var arg in args)
         {
-            if (arg.StartsWith("--app=", StringComparison.Ordinal))
+            switch (arg)
             {
-                app = arg["--app=".Length..];
-            }
-            else if (arg == "--self-test")
-            {
-                selfTest = true;
+                case "--self-test":
+                    selfTest = true;
+                    break;
+                case "--self-test-com":
+                    selfTestCom = true;
+                    break;
+                case "--stdio":
+                    stdio = true;
+                    break;
+                default:
+                    if (arg.StartsWith("--app=", StringComparison.Ordinal))
+                    {
+                        app = arg["--app=".Length..];
+                    }
+                    else if (arg.StartsWith("--pipe-name=", StringComparison.Ordinal))
+                    {
+                        pipeName = arg["--pipe-name=".Length..];
+                    }
+                    break;
             }
         }
 
         if (app is null || !SupportedApps.Contains(app))
         {
             Console.Error.WriteLine(
-                "usage: dcc-office-host --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--self-test]");
+                "usage: dcc-office-host --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--self-test|--self-test-com]");
             return 2;
         }
 
         if (selfTest)
         {
-            return SelfTest(app);
+            return SelfTest(app, probeCom: false);
         }
-
-        // M0 STA machinery still proves the runtime queue starts cleanly.
-        using (var sta = new StaDispatcher())
+        if (selfTestCom)
         {
-            var threadId = sta.Post(() => Environment.CurrentManagedThreadId);
-            Console.Error.WriteLine($"sta dispatch ok: submitted on {Environment.CurrentManagedThreadId}, ran on {threadId}");
+            return SelfTest(app, probeCom: true);
         }
 
-        return JsonRpcLoop(app);
+        using var router = new CommandRouter(app);
+        if (stdio)
+        {
+            return JsonRpcLoop(router);
+        }
+
+        var server = new OfficePipeServer(app, requestLine => router.Dispatch(requestLine), pipeName);
+        Console.Error.WriteLine($"office-host[{app}] listening on {server.PipeName}");
+        using var cts = new CancellationTokenSource();
+        Console.CancelKeyPress += (_, eventArgs) =>
+        {
+            eventArgs.Cancel = true;
+            cts.Cancel();
+        };
+        server.Run(cts.Token);
+        return 0;
     }
 
-    private static int JsonRpcLoop(string app)
+    private static int JsonRpcLoop(CommandRouter router)
     {
         using var stdin = Console.OpenStandardInput();
         using var reader = new StreamReader(stdin, Console.InputEncoding);
@@ -72,119 +107,113 @@ public static class Program
             {
                 continue;
             }
-            string response;
-            try
-            {
-                response = Dispatch(line, app);
-            }
-            catch (Exception exc)
-            {
-                response = JsonSerializer.Serialize(new
-                {
-                    jsonrpc = "2.0",
-                    id = (string?)null,
-                    error = new { code = -32603, message = exc.Message },
-                });
-            }
+            string response = router.Dispatch(line);
             Console.Out.WriteLine(response);
             Console.Out.Flush();
         }
         return 0;
     }
 
-    private static string Dispatch(string line, string app)
-    {
-        using var request = JsonDocument.Parse(line);
-        var root = request.RootElement;
-        string? id = null;
-        if (root.TryGetProperty("id", out var idElement) && idElement.ValueKind == JsonValueKind.String)
-        {
-            id = idElement.GetString();
-        }
-        var method = root.GetProperty("method").GetString() ?? "";
-        var result = Execute(method, root.TryGetProperty("params", out var p) ? p : default);
-        return JsonSerializer.Serialize(new { jsonrpc = "2.0", id, result });
-    }
+    // ------------------------------------------------------------- self-test
 
-    private static object Execute(string method, JsonElement parameters)
-    {
-        return method switch
-        {
-            "office.command.execute" => ExecuteCommand(parameters),
-            "office.host.ping" => new { app = "powerpoint", protocol_version = "office-rpc/1" },
-            _ => throw new InvalidOperationException($"unknown method: {method}"),
-        };
-    }
-
-    private static object ExecuteCommand(JsonElement parameters)
-    {
-        var capability = parameters.GetProperty("capability").GetString() ?? "";
-        var input = parameters.GetProperty("input");
-        return capability switch
-        {
-            "deck.compile" => Compile(input),
-            "document.inspect" => Inspect(input),
-            _ => throw new InvalidOperationException($"OFFICE_CAPABILITY_UNSUPPORTED: {capability}"),
-        };
-    }
-
-    private static object Compile(JsonElement input)
-    {
-        string ir = input.GetProperty("ir").GetString() ?? throw new InvalidOperationException("input.ir required");
-        string output = input.GetProperty("output").GetString() ?? throw new InvalidOperationException("input.output required");
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-        PptxWriter.CompileDeck(ir, output);
-        var info = PptxInspector.Inspect(output);
-        return new
-        {
-            operation_id = Guid.NewGuid().ToString("N"),
-            backend = "openxml",
-            output,
-            slides = info.SlideCount,
-        };
-    }
-
-    private static object Inspect(JsonElement input)
-    {
-        string path = input.GetProperty("path").GetString() ?? throw new InvalidOperationException("input.path required");
-        var info = PptxInspector.Inspect(path);
-        return new
-        {
-            backend = "openxml",
-            slide_count = info.SlideCount,
-            title = info.Title,
-            slides = info.Slides.Select(s => new
-            {
-                index = s.Index,
-                shapes = s.ShapeCount,
-                pictures = s.Pictures,
-                pictures_without_alt = s.PicturesWithoutAlt,
-                has_notes = s.HasNotes,
-            }).ToArray(),
-        };
-    }
-
-    private static int SelfTest(string app)
+    private static int SelfTest(string app, bool probeCom)
     {
         string tempDir = Path.Combine(Path.GetTempPath(), "dcc-office-host-self-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         try
         {
+            // Open XML round-trip: Deck IR → PPTX → inspect (no Office needed).
             string irPath = Path.Combine(tempDir, "sample-deck.json");
             File.WriteAllText(irPath, SampleDeckIr);
             string pptxPath = Path.Combine(tempDir, "sample-deck.pptx");
             PptxWriter.CompileDeck(irPath, pptxPath);
             var info = PptxInspector.Inspect(pptxPath);
-            bool ok = info.SlideCount == 3
-                      && info.Slides.All(s => s.ShapeCount > 0)
-                      && info.Slides.All(s => s.HasNotes);
-            Console.Out.WriteLine(JsonSerializer.Serialize(new { app, ok, slides = info.SlideCount }));
+            bool openXmlOk = info.SlideCount == 3
+                             && info.Slides.All(s => s.ShapeCount > 0)
+                             && info.Slides.All(s => s.HasNotes);
+
+            bool comOk = false;
+            bool comSkipped = false;
+            string comDetail = "";
+            if (probeCom)
+            {
+                try
+                {
+                    comOk = ComProbe(pptxPath, tempDir);
+                    comDetail = "ok";
+                }
+                catch (OfficeComException ex) when (ex.Code == OfficeErrorCode.OfficeAppNotInstalled)
+                {
+                    comSkipped = true;
+                    comDetail = $"skipped: {ex.Message}";
+                }
+                catch (OfficeComException ex)
+                {
+                    comDetail = $"failed: {ex.Code.ToWireName()}: {ex.Message}";
+                }
+            }
+
+            Console.Out.WriteLine(JsonSerializer.Serialize(new
+            {
+                app,
+                openxml_ok = openXmlOk,
+                com = probeCom ? comDetail : "not probed",
+                com_ok = comOk,
+                com_skipped = comSkipped,
+                slides = info.SlideCount,
+            }));
+
+            bool ok = openXmlOk && (!probeCom || comOk || comSkipped);
             return ok ? 0 : 1;
         }
         finally
         {
-            Directory.Delete(tempDir, recursive: true);
+            try { Directory.Delete(tempDir, recursive: true); } catch { }
         }
+    }
+
+    /// <summary>
+    /// Real COM probe (needs PowerPoint on this machine, user session only —
+    /// proposal §8.1 never automates from Session 0): PDF export, replace-text
+    /// dry-run + commit, slide preview render.
+    /// </summary>
+    private static bool ComProbe(string pptxPath, string tempDir)
+    {
+        using var sta = new StaDispatcher();
+        var backend = ComBackendFactory.Create("powerpoint", sta);
+        backend.Attach(TimeSpan.FromSeconds(90));
+
+        string pdfPath = Path.Combine(tempDir, "sample-deck.pdf");
+        var convert = backend.ConvertToPdf(pptxPath, pdfPath);
+        if (!convert.Ok || convert.PageCount < 1)
+        {
+            return false;
+        }
+
+        // dry-run first: must find matches without touching the file
+        var dry = backend.ReplaceText(pptxPath,
+            new[] { new ReplaceRuleInput { Find = "Checks", Replace = "Verification" } },
+            new[] { "body" }, dryRun: true);
+        if (dry.TotalMatched < 1)
+        {
+            return false;
+        }
+
+        // commit: the match must be replaced and saved
+        var commit = backend.ReplaceText(pptxPath,
+            new[] { new ReplaceRuleInput { Find = "Checks", Replace = "Verification" } },
+            new[] { "body" }, dryRun: false);
+        if (commit.TotalReplaced < 1)
+        {
+            return false;
+        }
+
+        // slide previews: one PNG per slide, all present on disk
+        string previewDir = Path.Combine(tempDir, "previews");
+        var previews = backend.ExportSlidePreviews(pptxPath, previewDir, 640, 360);
+        return previews is not null
+               && previews.Count == 3
+               && previews.All(p => p.Ok && p.Path is not null && File.Exists(p.Path));
     }
 
     private const string SampleDeckIr = """

@@ -9,3 +9,6 @@ description = "Rust-side client for the office-host.exe sidecar (named pipe, off
 [dependencies]
 dcc-mcp-office-protocol = { path = "../office-protocol", version = "0.1.0" }
 serde_json = { workspace = true }
+
+[dev-dependencies]
+dcc-mcp-office-protocol = { path = "../office-protocol", version = "0.1.0" }

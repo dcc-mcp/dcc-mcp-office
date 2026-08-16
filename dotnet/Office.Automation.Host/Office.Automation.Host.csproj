@@ -10,6 +10,7 @@
   <ItemGroup>
     <ProjectReference Include="../Office.Automation.Runtime/Office.Automation.Runtime.csproj" />
     <ProjectReference Include="../Office.Automation.OpenXml/Office.Automation.OpenXml.csproj" />
+    <ProjectReference Include="../Office.Automation.Com/Office.Automation.Com.csproj" />
   </ItemGroup>
 
 </Project>

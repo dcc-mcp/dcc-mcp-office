@@ -13,8 +13,13 @@ that drives desktop Office over COM; Open XML handles bulk structural work;
 Microsoft Graph handles cloud files (Phase 3); UIA/Computer Use fallback is
 reused from `dcc-mcp-computer-use`, not rebuilt here.
 
-**Current status:** M0 scaffold. Protocol/IR schemas and the C# host skeleton
-compile and are contract-tested; no COM attachment yet (M1).
+**Current status:** M1 COM sidecar MVP. The named-pipe `office-rpc/1`
+server, the per-app COM backends (PowerPoint/Word/Excel: batch PDF export,
+replace-text dry-run/commit, inspect, PowerPoint slide previews + overflow
+detection), the STA busy/modal/timeout ladder and the Rust pipe client are
+implemented and covered by a Rust ↔ C# contract test (skips without Office).
+Open XML handles bulk structural work; Graph is Phase 3. Remaining M1 wiring:
+`dcc-mcp-host-rpc` lifecycle integration in the gateway.
 
 ## Repo Map
 
@@ -22,15 +27,17 @@ compile and are contract-tested; no COM attachment yet (M1).
 |---|---|---|
 | `crates/office-protocol` | Wire schema: handshake, capability manifest, error codes, progress/events, pipe naming | any RPC work |
 | `crates/office-ir` | Common envelope + application IRs (presentation now, word/workbook next) | generation pipelines |
-| `crates/office-client` | Rust client for `office-host.exe`; will implement `HostRpcClient` from `dcc-mcp-host-rpc` | sidecar wiring (M1) |
+| `crates/office-client` | Rust client for `office-host.exe`: named-pipe transport (std-only), handshake, execute | gateway/sidecar wiring |
+| `crates/office-client/tests/pipe_contract.rs` | Rust ↔ C# contract test: compile → COM inspect/convert/replace/render (env `DCC_OFFICE_HOST_EXE`, skips without Office) | transport changes |
 | `crates/office-tools` | Task-level MCP tool registry (names, app, phase) | adding a capability |
 | `crates/office-jobs` | Job phases layered on `dcc-mcp-job` (approval/checkpoint) | batch operations |
 | `crates/office-graph` | Graph connector stub (Phase 3) | cloud scenarios |
 | `crates/office-security` | Default-deny policy: ExecuteMso whitelist, AutomationSecurity, risk levels | any write path |
 | `crates/office-testkit` | Contract-test helpers | test work |
-| `dotnet/Office.Automation.Runtime` | STA dispatcher, COM lifecycle, named-pipe server | sidecar internals |
+| `dotnet/Office.Automation.Runtime` | STA dispatcher (message pump, soft timeouts), IOleMessageFilter busy retry, modal-dialog detection, COM lifecycle | sidecar internals |
+| `dotnet/Office.Automation.Com` | Per-app COM backends (PowerPoint/Word/Excel): attach + security defaults, PDF export, replace-text, inspect, slide previews | COM capabilities |
 | `dotnet/Office.Automation.OpenXml` | Batch structural worker — compiler, never a renderer | bulk edits |
-| `dotnet/Office.Automation.Host` | `office-host.exe` entry (`--app=powerpoint|word|...`) | host startup |
+| `dotnet/Office.Automation.Host` | `office-host.exe` entry (`--app=powerpoint|word|...`, `--pipe`/`--stdio`/`--self-test[--com]`) + office-rpc/1 pipe server | host startup |
 | `skills/` | Office-wide skill packs (SKILL.md, dcc-mcp-skills format) | workflows |
 | `manifests/` | Capability manifest examples | provider registration |
 | `templates/` | Brand template registry (`brand://` URIs) | deck/report generation |
