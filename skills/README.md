@@ -15,7 +15,7 @@ Each skill defines all eight items required by proposal §11.3:
 7. artifact naming
 8. agent-visible summary
 
-## Planned packs
+## Packs
 
 | Skill | Status |
 |---|---|
@@ -25,7 +25,7 @@ Each skill defines all eight items required by proposal §11.3:
 | `office-document-redaction` | planned (M2) |
 | `office-generate-executive-deck` | planned (M2) |
 | `office-generate-technical-report` | planned (Phase 2) |
-| `office-generate-production-dashboard` | planned (Phase 2) |
+| `office-generate-production-dashboard` | **implemented** — Workbook IR → styled XLSX with summary formulas + bar chart (see `examples/capability-dashboard.json`) |
 
 PowerPoint-specific packs (`powerpoint-deck`, `powerpoint-review`,
 `dcc-review-deck-from-renders`) live in `dcc-mcp-PowerPoint`.
