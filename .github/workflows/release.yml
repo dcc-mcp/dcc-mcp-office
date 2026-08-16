@@ -1,0 +1,58 @@
+name: Release
+
+# Automated releases via release-please (conventional commits).
+#
+# Every push to main runs release-please, which keeps a release PR up to date.
+# When that PR is merged, release-please creates the GitHub release and tag;
+# this workflow then publishes the single-file office-host artifact onto the
+# release, so downstream adapters (dcc-mcp-PowerPoint, ...) always have a
+# versioned, CI-verified host binary to consume.
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+    steps:
+      - uses: googleapis/release-please-action@v4
+        id: release
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  publish-release-assets:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup vx (.NET 8 LTS SDK from vx.toml)
+        uses: loonghao/vx@main
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          setup: "true"
+
+      - name: Publish single-file host (zero NuGet dependencies)
+        shell: pwsh
+        run: vx run publish -- -o "$env:RUNNER_TEMP\host"
+
+      - name: Smoke test
+        shell: pwsh
+        run: '& "$env:RUNNER_TEMP\host\dcc-office-host.exe" --app=powerpoint --self-test'
+
+      - name: Upload host artifact to the GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release upload "${{ needs.release-please.outputs.tag_name }}" "$env:RUNNER_TEMP\host\dcc-office-host.exe" --clobber --repo dcc-mcp/dcc-mcp-office

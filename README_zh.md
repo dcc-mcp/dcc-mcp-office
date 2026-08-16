@@ -28,10 +28,23 @@ Office 通用 Skill Pack。应用专属适配层放在薄的兄弟仓库中（�
 
 ## 快速开始
 
+C# 开发使用 [vx](https://github.com/loonghao/vx)（通用版本执行器）：`vx.toml`
+锁定 .NET 8 LTS SDK，`vx.lock` 保证可复现安装。CI 通过官方
+[`loonghao/vx`](https://github.com/loonghao/vx) GitHub Action 使用同一套工具链。
+
 ```bash
 cargo test
-dotnet build dotnet/Office.Automation.Host
+vx setup            # 安装 vx.toml 中锁定的 .NET 8 LTS SDK
+vx run build        # 使用 vx 管理的 SDK 构建 office-host
+vx run self-test    # 宿主自检（编译 + 检查往返，无需安装 Office）
 ```
+
+## CI / CD
+
+- `ci.yml` — Rust 质量门禁 + 技能 lint + C# 宿主构建自检（Windows，走 `loonghao/vx`）。
+- `publish-host.yml` — 每次 dotnet 变更发布单文件 `dcc-office-host.exe` 制品。
+- `release.yml` — release-please 自动发版：合并发版 PR 后自动打 tag，用 vx
+  工具链构建宿主并挂载 `dcc-office-host.exe` 到 GitHub Release。
 
 详见 [README.md](./README.md) 与 [AGENTS.md](./AGENTS.md)。
 
