@@ -251,6 +251,7 @@ public sealed class CommandRouter : IDisposable
         string output = input.TryGetProperty("output", out var outElement) && outElement.ValueKind == JsonValueKind.String
             ? outElement.GetString()!
             : throw new OfficeArgumentException("input.output is required");
+        output = Path.GetFullPath(output);
 
         // Brand template gate (proposal §15.4): only the built-in package
         // ships in this host build; unknown URIs are refused up front.
@@ -356,7 +357,7 @@ public sealed class CommandRouter : IDisposable
         string usedBackend;
         if (useCom)
         {
-            var outcome = Com().Inspect(path);
+            var outcome = Com().Inspect(Path.GetFullPath(path));
             var flat = new JsonObject
             {
                 ["path"] = outcome.Path,
@@ -411,6 +412,7 @@ public sealed class CommandRouter : IDisposable
         string outputDir = input.TryGetProperty("output_directory", out var od) && od.ValueKind == JsonValueKind.String
             ? od.GetString()!
             : throw new OfficeArgumentException("input.output_directory is required");
+        outputDir = Path.GetFullPath(outputDir);
         Directory.CreateDirectory(outputDir);
 
         var paths = ResolveInputs(input);
@@ -564,6 +566,12 @@ public sealed class CommandRouter : IDisposable
             : throw new OfficeArgumentException("input.output_directory is required");
         int width = input.TryGetProperty("width", out var w) ? w.GetInt32() : 1280;
         int height = input.TryGetProperty("height", out var h) ? h.GetInt32() : 720;
+
+        // COM resolves relative paths against the Office process working
+        // directory (usually System32), so relative input is guaranteed to
+        // fail with 0x80070003 — resolve both to absolute paths before COM.
+        path = Path.GetFullPath(path);
+        outputDir = Path.GetFullPath(outputDir);
 
         var previews = com.ExportSlidePreviews(path, outputDir, width, height)
             ?? throw new OfficeComException(OfficeErrorCode.OfficeBackendUnavailable,
@@ -749,11 +757,11 @@ public sealed class CommandRouter : IDisposable
                 }
                 else
                 {
-                    paths.Add(spec);
+                    paths.Add(Path.GetFullPath(spec));
                 }
             }
         }
-        return paths.Where(File.Exists).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        return paths.Where(File.Exists).Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
     }
 
     private static IEnumerable<string> ExpandGlob(string pattern)
