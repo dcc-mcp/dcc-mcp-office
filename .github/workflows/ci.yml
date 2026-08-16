@@ -42,3 +42,15 @@ jobs:
         run: |
           python skills/office-generate-production-dashboard/scripts/generate_dashboard.py             --input examples/capability-dashboard.json --out /tmp/dash
           test -s /tmp/dash/draft-dcc-mcp-capability-dashboard.xlsx
+
+  dotnet:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+      - name: Build (zero NuGet dependencies)
+        run: dotnet build dotnet/Office.Automation.Host/Office.Automation.Host.csproj -v q
+      - name: Host self-test (compile + inspect round-trip)
+        run: dotnet run --project dotnet/Office.Automation.Host/Office.Automation.Host.csproj --no-build -- --app=powerpoint --self-test
