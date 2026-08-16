@@ -14,10 +14,15 @@
 
 use std::fmt;
 
-use dcc_mcp_office_protocol::{
-    CommandParams, CommandResult, HandshakeResponse, SidecarState, PROTOCOL_VERSION,
-};
-use serde_json::{json, Value};
+use dcc_mcp_office_protocol::{CommandParams, CommandResult, HandshakeResponse, SidecarState};
+use serde_json::Value;
+
+// The pipe transport (and everything using these two) is Windows-only:
+// non-Windows builds must stay warning-free for the ubuntu CI clippy gate.
+#[cfg(windows)]
+use dcc_mcp_office_protocol::PROTOCOL_VERSION;
+#[cfg(windows)]
+use serde_json::json;
 
 /// URI scheme under which this client registers with dcc-mcp-host-rpc.
 pub const URI_SCHEME: &str = "namedpipe";
