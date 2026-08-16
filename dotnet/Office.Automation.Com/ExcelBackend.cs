@@ -141,7 +141,7 @@ public sealed class ExcelBackend : OfficeComBackend
                     ["charts"] = charts,
                 });
             }
-            return new JsonObject
+            var summary = new JsonObject
             {
                 ["title"] = title,
                 ["sheet_count"] = sheets.Count,
@@ -150,6 +150,8 @@ public sealed class ExcelBackend : OfficeComBackend
                 ["total_charts"] = totalCharts,
                 ["sheets"] = sheets,
             };
+            CloseQuietly(wb);
+            return summary;
         });
         return new InspectOutcome { Path = path, Kind = DocumentKind, Summary = summary };
     }

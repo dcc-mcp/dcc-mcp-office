@@ -84,7 +84,11 @@ public static class Program
             return JsonRpcLoop(router);
         }
 
-        var server = new OfficePipeServer(app, requestLine => router.Dispatch(requestLine), pipeName);
+        var server = new OfficePipeServer(
+            app,
+            requestLine => router.Dispatch(requestLine),
+            pipeName,
+            () => router.ShutdownRequested);
         Console.Error.WriteLine($"office-host[{app}] listening on {server.PipeName}");
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, eventArgs) =>
@@ -92,7 +96,7 @@ public static class Program
             eventArgs.Cancel = true;
             cts.Cancel();
         };
-        server.Run(cts.Token);
+        server.Run(cts.Token, () => router.ShutdownRequested);
         return 0;
     }
 

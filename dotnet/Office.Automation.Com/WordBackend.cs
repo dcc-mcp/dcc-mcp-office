@@ -120,7 +120,7 @@ public sealed class WordBackend : OfficeComBackend
                     && !string.IsNullOrWhiteSpace((string)d.Sections[1].Footers[1].Range.Text);
             }
             catch { }
-            return new JsonObject
+            var summary = new JsonObject
             {
                 ["title"] = title,
                 ["paragraphs"] = SafeNumber(d.Paragraphs.Count),
@@ -131,6 +131,10 @@ public sealed class WordBackend : OfficeComBackend
                 ["has_header"] = hasHeader,
                 ["has_footer"] = hasFooter,
             };
+            // Close every request: an open document would block Quit on a
+            // save prompt (the app runs hidden).
+            CloseQuietly(d);
+            return summary;
         });
         return new InspectOutcome { Path = path, Kind = DocumentKind, Summary = summary };
     }
@@ -173,31 +177,46 @@ public sealed class WordBackend : OfficeComBackend
             {
                 using var doc = apply ? OpenEditable(path) : OpenReadOnly(path);
                 dynamic d = doc.Target!;
-                foreach (dynamic story in (IEnumerable)d.StoryRanges)
+                // StoryRanges yields the FIRST story of each type; the
+                // NextStoryRange ladder walks the linked stories of every
+                // further section so multi-section headers/footers are fully
+                // covered (proposal §15.2 scope "headers"/"footers").
+                foreach (dynamic firstStory in (IEnumerable)d.StoryRanges)
                 {
-                    int storyType = (int)SafeNumber(story.StoryType);
-                    bool inScope = (storyType == 1 && wantBody)
-                        || (HeaderStories.Contains(storyType) && wantHeaders)
-                        || (FooterStories.Contains(storyType) && wantFooters);
-                    if (!inScope)
+                    dynamic? story = firstStory;
+                    while (story is not null)
                     {
-                        continue;
-                    }
-                    foreach (var rule in rules)
-                    {
-                        int matched = CountInStory(story, rule);
-                        counters[rule.Find].Matched += matched;
-                        if (apply && matched > 0)
+                        int storyType = (int)SafeNumber(story.StoryType);
+                        bool inScope = (storyType == 1 && wantBody)
+                            || (HeaderStories.Contains(storyType) && wantHeaders)
+                            || (FooterStories.Contains(storyType) && wantFooters);
+                        if (inScope)
                         {
-                            bool replaced = ReplaceInStory(story, rule);
-                            if (replaced)
+                            foreach (var rule in rules)
                             {
-                                counters[rule.Find].Replaced += matched;
+                                int matched = CountInStory(story, rule);
+                                counters[rule.Find].Matched += matched;
+                                if (apply && matched > 0)
+                                {
+                                    bool replaced = ReplaceInStory(story, rule);
+                                    if (replaced)
+                                    {
+                                        counters[rule.Find].Replaced += matched;
+                                    }
+                                    else
+                                    {
+                                        outcome.Warnings.Add($"'{rule.Find}' matched {matched} but Find/Replace did not report success");
+                                    }
+                                }
                             }
-                            else
-                            {
-                                outcome.Warnings.Add($"'{rule.Find}' matched {matched} but Find/Replace did not report success");
-                            }
+                        }
+                        try
+                        {
+                            story = story.NextStoryRange;
+                        }
+                        catch
+                        {
+                            story = null;
                         }
                     }
                 }

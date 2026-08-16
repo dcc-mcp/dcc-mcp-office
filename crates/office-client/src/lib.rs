@@ -225,6 +225,17 @@ impl OfficeHostClient {
         Err(ClientError::UnsupportedPlatform)
     }
 
+    /// office.host.shutdown — graceful sidecar stop (quits the Office app).
+    #[cfg(windows)]
+    pub fn shutdown(&mut self) -> Result<Value, ClientError> {
+        self.call("office.host.shutdown", json!({}))
+    }
+
+    #[cfg(not(windows))]
+    pub fn shutdown(&mut self) -> Result<Value, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
     /// office.command.execute — the task-level capability surface (§12.3).
     #[cfg(windows)]
     pub fn execute(&mut self, params: &CommandParams) -> Result<CommandResult, ClientError> {

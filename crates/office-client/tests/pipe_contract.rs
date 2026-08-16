@@ -23,10 +23,29 @@ const PIPE: &str = r"\\.\pipe\dcc-office-contract-test-powerpoint";
 
 struct HostGuard(Child);
 
+impl HostGuard {
+    /// Graceful teardown: office.host.shutdown quits the COM app and exits
+    /// the host — force-killing a host orphans its Office process (which then
+    /// holds document locks). Kill stays as a last-resort fallback in Drop.
+    fn shutdown(&mut self, client: &mut OfficeHostClient) {
+        let _ = client.shutdown();
+        let start = Instant::now();
+        while start.elapsed() < Duration::from_secs(30) {
+            if let Ok(Some(_)) = self.0.try_wait() {
+                return;
+            }
+            std::thread::sleep(Duration::from_millis(200));
+        }
+        eprintln!("host did not exit after shutdown; falling back to kill");
+    }
+}
+
 impl Drop for HostGuard {
     fn drop(&mut self) {
-        let _ = self.0.kill();
-        let _ = self.0.wait();
+        if self.0.try_wait().ok().flatten().is_none() {
+            let _ = self.0.kill();
+            let _ = self.0.wait();
+        }
     }
 }
 
@@ -132,6 +151,41 @@ fn office_host_full_contract() {
     assert_eq!(compiled.changed["slides"], 3);
     assert!(pptx.exists());
 
+    // 1b. every command result carries the §27 criterion-10 audit trail
+    let audit = compiled
+        .audit
+        .as_ref()
+        .expect("deck.compile result must carry an audit trail");
+    assert_eq!(audit["security"]["automation_security"], "force_disable");
+    assert_eq!(audit["backend"], "openxml");
+    assert!(audit["duration_ms"].as_u64().unwrap_or(0) > 0 || audit["duration_ms"].is_null());
+
+    // 1c. §19 second-layer policy gate: relaxing deny-by-default is refused
+    let policy = CommandParams {
+        capability: "batch.replace_text".to_string(),
+        document: None,
+        input: json!({}),
+        policy: json!({ "macros": "confirm" }),
+    };
+    match client.execute(&policy) {
+        Err(dcc_mcp_office_client::ClientError::Rpc { code, .. }) => {
+            assert_eq!(code, json!("OFFICE_MACRO_BLOCKED"));
+        }
+        other => panic!("macros relaxation must be denied, got {other:?}"),
+    }
+    let policy = CommandParams {
+        capability: "batch.replace_text".to_string(),
+        document: None,
+        input: json!({}),
+        policy: json!({ "arbitrary_execute_mso": "confirm" }),
+    };
+    match client.execute(&policy) {
+        Err(dcc_mcp_office_client::ClientError::Rpc { code, .. }) => {
+            assert_eq!(code, json!("OFFICE_CAPABILITY_UNSUPPORTED"));
+        }
+        other => panic!("ExecuteMso relaxation must be denied, got {other:?}"),
+    }
+
     // 2. document.inspect — COM backend (auto) once PowerPoint is attached
     let inspect = client
         .execute(&command(
@@ -224,6 +278,7 @@ fn office_host_full_contract() {
         other => panic!("expected Rpc error, got {other:?}"),
     }
 
+    guard.shutdown(&mut client);
     drop(client);
     let _ = std::fs::remove_dir_all(&temp);
 }
@@ -277,7 +332,7 @@ fn spawn_and_connect(app: &str, pipe: &str) -> Option<(HostGuard, OfficeHostClie
 /// discovery — the manifest only lists desktop_com capabilities when the
 /// app attached).
 fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_kind: &str) {
-    let Some((guard, mut client)) = spawn_and_connect(app, pipe) else {
+    let Some((mut guard, mut client)) = spawn_and_connect(app, pipe) else {
         eprintln!("SKIP: DCC_OFFICE_HOST_EXE not set");
         return;
     };
@@ -357,9 +412,68 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
         .expect("replace commit");
     assert!(commit.changed["total_replaced"].as_u64().unwrap_or(0) >= 1);
 
+    guard.shutdown(&mut client);
     drop(client);
     let _ = std::fs::remove_dir_all(&temp);
-    let _ = guard;
+}
+
+/// Multi-section header/footer coverage: the fixture has two sections whose
+/// headers (and one footer) carry the marker; the NextStoryRange ladder must
+/// reach them (proposal §15.2 scope "headers"/"footers").
+#[test]
+fn office_host_word_headers_contract() {
+    let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+        .join("../../tests/fixtures/fixture-document.docx");
+    if !fixture.exists() {
+        eprintln!("SKIP: fixture missing: {}", fixture.display());
+        return;
+    }
+    let Some((mut guard, mut client)) =
+        spawn_and_connect("word", r"\\.\pipe\dcc-office-contract-test-word-hdr")
+    else {
+        eprintln!("SKIP: DCC_OFFICE_HOST_EXE not set");
+        return;
+    };
+    let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
+    if !handshake
+        .capability_manifest
+        .capabilities
+        .contains_key("batch.convert")
+    {
+        eprintln!("SKIP: word desktop COM not available in this session");
+        return;
+    }
+
+    let temp = std::env::temp_dir().join(format!(
+        "dcc-office-contract-word-hdr-{}",
+        std::process::id()
+    ));
+    let _ = std::fs::remove_dir_all(&temp);
+    std::fs::create_dir_all(&temp).expect("create temp dir");
+    let copy = temp.join("fixture-document.docx");
+    std::fs::copy(&fixture, &copy).expect("copy fixture");
+
+    let dry = client
+        .execute(&command(
+            "batch.replace_text",
+            json!({
+                "inputs": [copy.to_string_lossy()],
+                "rules": [{ "find": "2025年度", "replace": "2026年度", "match": "literal" }],
+                "scope": ["headers"],
+                "dry_run": true,
+            }),
+        ))
+        .expect("headers dry-run");
+    // section 1 header + section 2 header (footer excluded by scope)
+    assert!(
+        dry.changed["total_matched"].as_u64().unwrap_or(0) >= 2,
+        "expected the NextStoryRange ladder to reach both section headers: {}",
+        dry.changed
+    );
+
+    guard.shutdown(&mut client);
+    drop(client);
+    let _ = std::fs::remove_dir_all(&temp);
 }
 
 #[test]

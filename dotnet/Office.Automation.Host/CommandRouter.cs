@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Nodes;
@@ -47,6 +48,78 @@ public sealed class CommandRouter : IDisposable
 
     public bool ComAttached => _comAttached;
 
+    /// <summary>Set by office.host.shutdown: the pipe loop exits after the current connection.</summary>
+    public bool ShutdownRequested { get; private set; }
+
+    /// <summary>
+    /// §19 second-layer policy gate: anything the policy JSON tries to relax
+    /// on the deny-by-default list is refused before dispatch — the Rust
+    /// gateway mirrors these defaults in dcc-mcp-office-security.
+    /// </summary>
+    private static void EnforcePolicy(JsonElement parameters)
+    {
+        if (!parameters.TryGetProperty("policy", out var policy) || policy.ValueKind != JsonValueKind.Object)
+        {
+            return;
+        }
+        RequireDeny(policy, "vba_application_run", OfficeErrorCode.OfficeMacroBlocked);
+        RequireDeny(policy, "macros", OfficeErrorCode.OfficeMacroBlocked);
+        RequireDeny(policy, "ole_activex_activation", OfficeErrorCode.OfficeMacroBlocked);
+        RequireDeny(policy, "access_macros", OfficeErrorCode.OfficeMacroBlocked);
+        RequireDeny(policy, "external_links_auto_update", OfficeErrorCode.OfficeExternalLinkBlocked);
+        RequireDeny(policy, "protected_view_bypass", OfficeErrorCode.OfficeProtectedView);
+        RequireDeny(policy, "arbitrary_execute_mso", OfficeErrorCode.OfficeCapabilityUnsupported);
+        if (policy.TryGetProperty("execute_mso_allowlist", out var allowlist)
+            && allowlist.ValueKind == JsonValueKind.Object
+            && allowlist.EnumerateObject().Any())
+        {
+            throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
+                "policy.execute_mso_allowlist must stay empty (ExecuteMso is deny-by-default in this host)");
+        }
+    }
+
+    private static void RequireDeny(JsonElement policy, string key, OfficeErrorCode code)
+    {
+        if (policy.TryGetProperty(key, out var value)
+            && value.ValueKind == JsonValueKind.String
+            && !string.Equals(value.GetString(), "deny", StringComparison.Ordinal))
+        {
+            throw new OfficeComException(code,
+                $"policy.{key} must stay 'deny' — deny-by-default is not negotiable at the COM boundary");
+        }
+    }
+
+    /// <summary>Attaches the §27 criterion-10 audit trail to a command result.</summary>
+    private object AddAudit(object result, JsonElement parameters, long elapsedMs)
+    {
+        var node = JsonSerializer.SerializeToNode(result)!.AsObject();
+        var policy = parameters.TryGetProperty("policy", out var policyElement)
+            ? JsonSerializer.SerializeToNode(policyElement)
+            : null;
+        var audit = new JsonObject
+        {
+            ["policy"] = policy ?? new JsonObject(),
+            ["security"] = new JsonObject
+            {
+                ["automation_security"] = "force_disable",
+                ["execute_mso"] = "deny_all",
+                ["external_links"] = "never_update",
+                ["macros"] = "deny",
+                ["workspace_only"] = false, // gateway-enforced; the host has no workspace concept
+            },
+            ["backend"] = node.TryGetPropertyValue("backend", out var backendNode)
+                ? backendNode?.DeepClone()
+                : null,
+            ["host_version"] = ProviderVersion,
+            ["application"] = _comAttached
+                ? JsonSerializer.SerializeToNode(_com!.GetApplicationInfo())
+                : null,
+            ["duration_ms"] = elapsedMs,
+        };
+        node["audit"] = audit;
+        return node;
+    }
+
     /// <summary>Processes one JSON-RPC request line and returns the response line.</summary>
     public string Dispatch(string requestJson)
     {
@@ -59,8 +132,23 @@ public sealed class CommandRouter : IDisposable
             id = root.TryGetProperty("id", out var idElement) ? idElement.Clone() : default;
             method = root.GetProperty("method").GetString() ?? "";
             var parameters = root.TryGetProperty("params", out var p) ? p.Clone() : default;
-            var result = Execute(method, parameters);
-            return JsonSerializer.Serialize(new { jsonrpc = "2.0", id, result });
+
+            // §19 two-layer policy: the gateway checks first, this host
+            // re-checks at the COM boundary and refuses any attempt to relax
+            // the deny-by-default items.
+            if (method == "office.command.execute")
+            {
+                EnforcePolicy(parameters);
+            }
+
+            var stopwatch = Stopwatch.StartNew();
+            object result = Execute(method, parameters);
+            stopwatch.Stop();
+
+            object finalResult = method == "office.command.execute"
+                ? AddAudit(result, parameters, stopwatch.ElapsedMilliseconds)
+                : result;
+            return JsonSerializer.Serialize(new { jsonrpc = "2.0", id, result = finalResult });
         }
         catch (OfficeComException ex)
         {
@@ -86,9 +174,21 @@ public sealed class CommandRouter : IDisposable
     {
         "office.host.ping" => Ping(),
         "office.host.handshake" => Handshake(parameters),
+        "office.host.shutdown" => Shutdown(),
         "office.command.execute" => ExecuteCommand(parameters),
         _ => throw new OfficeArgumentException($"unknown method: {method}"),
     };
+
+    /// <summary>
+    /// Graceful sidecar stop: replies, then the pipe loop exits after this
+    /// connection and Dispose quits the COM app — no orphaned Office
+    /// processes when the gateway tears a sidecar down (proposal §8.3).
+    /// </summary>
+    private object Shutdown()
+    {
+        ShutdownRequested = true;
+        return new { ok = true };
+    }
 
     private object Ping()
     {

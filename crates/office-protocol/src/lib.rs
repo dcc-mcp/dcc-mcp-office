@@ -209,6 +209,11 @@ pub struct CommandResult {
     pub backend: Option<String>,
     #[serde(default)]
     pub indeterminate: bool,
+    /// Audit trail (proposal §20 / §27 criterion 10): policy applied,
+    /// security posture, backend, application info, duration — the host
+    /// fills this on every command result.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub audit: Option<serde_json::Value>,
 }
 
 /// office.job.progress notification (proposal §12.4).
@@ -432,6 +437,7 @@ mod tests {
             validation: serde_json::json!({}),
             backend: Some("desktop_com".into()),
             indeterminate: true,
+            audit: None,
         };
         let json = serde_json::to_string(&r).unwrap();
         assert!(json.contains("\"indeterminate\":true"));
@@ -475,5 +481,28 @@ mod tests {
         let p: SlideRenderParams =
             serde_json::from_str(r#"{"path":"a.pptx","output_directory":"out"}"#).unwrap();
         assert_eq!((p.width, p.height), (1280, 720));
+    }
+
+    #[test]
+    fn command_result_carries_audit_trail() {
+        let r = CommandResult {
+            operation_id: "op-2".into(),
+            revision: None,
+            changed: serde_json::json!({}),
+            warnings: vec![],
+            artefacts: vec![],
+            validation: serde_json::json!({}),
+            backend: Some("desktop_com".into()),
+            indeterminate: false,
+            audit: Some(serde_json::json!({
+                "security": { "automation_security": "force_disable" },
+                "duration_ms": 42,
+            })),
+        };
+        let json = serde_json::to_string(&r).unwrap();
+        assert!(json.contains("force_disable"));
+        assert!(json.contains("duration_ms"));
+        let back: CommandResult = serde_json::from_str(&json).unwrap();
+        assert_eq!(back.audit.unwrap()["duration_ms"], 42);
     }
 }

@@ -24,12 +24,18 @@ public sealed class OfficePipeServer
     private readonly string _app;
     private readonly string _pipeName;
     private readonly Func<string, string> _dispatch;
+    private readonly Func<bool>? _shouldStop;
 
-    public OfficePipeServer(string app, Func<string, string> dispatch, string? explicitPipeName = null)
+    public OfficePipeServer(
+        string app,
+        Func<string, string> dispatch,
+        string? explicitPipeName = null,
+        Func<bool>? shouldStop = null)
     {
         _app = app;
         _pipeName = explicitPipeName ?? BuildPipeName(app);
         _dispatch = dispatch;
+        _shouldStop = shouldStop;
     }
 
     public string PipeName => _pipeName;
@@ -45,9 +51,9 @@ public sealed class OfficePipeServer
     /// Accepts clients one at a time and serves them until they disconnect.
     /// One sidecar = one app = one serialized command stream (§8.2).
     /// </summary>
-    public void Run(CancellationToken cancellation)
+    public void Run(CancellationToken cancellation, Func<bool>? shouldStop = null)
     {
-        while (!cancellation.IsCancellationRequested)
+        while (!cancellation.IsCancellationRequested && (shouldStop is null || !shouldStop()))
         {
             try
             {
@@ -64,6 +70,13 @@ public sealed class OfficePipeServer
             }
             catch (OperationCanceledException)
             {
+                return;
+            }
+            catch (Win32Exception ex)
+            {
+                // e.g. ERROR_INVALID_NAME for a malformed --pipe-name: report
+                // and stop instead of crashing the process silently.
+                Console.Error.WriteLine($"[office-host:{_app}] pipe failure ({ex.NativeErrorCode}): {ex.Message}");
                 return;
             }
             catch (IOException)
@@ -134,6 +147,12 @@ public sealed class OfficePipeServer
             string response = _dispatch(line);
             writer.WriteLine(response);
             writer.Flush();
+            // office.host.shutdown sets the stop flag: leave this connection
+            // right after replying instead of blocking on the next line.
+            if (_shouldStop is not null && _shouldStop())
+            {
+                return;
+            }
         }
     }
 

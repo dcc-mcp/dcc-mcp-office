@@ -163,13 +163,17 @@ public sealed class PowerPointBackend : OfficeComBackend
                     ["title"] = title,
                 });
             }
-            return new JsonObject
+            var summary = new JsonObject
             {
                 ["slide_count"] = index,
                 ["slide_width_pt"] = slideWidth,
                 ["slide_height_pt"] = slideHeight,
                 ["slides"] = slides,
             };
+            // Every request closes its documents: an open (hidden)
+            // presentation would block Application.Quit on a save prompt.
+            CloseQuietly(pres);
+            return summary;
         });
         return new InspectOutcome { Path = path, Kind = DocumentKind, Summary = summary };
     }
@@ -299,6 +303,7 @@ public sealed class PowerPointBackend : OfficeComBackend
                     Overflow = overflow,
                 });
             }
+            CloseQuietly(pres);
             return results;
         });
     }
