@@ -160,7 +160,20 @@ def run(params: dict) -> None:
     )
 
 
+def _force_utf8_stdio() -> None:
+    """Deterministic output contract: stdout/stderr are always UTF-8.
+
+    On Windows, a piped subprocess stdout defaults to the ANSI codepage
+    (charmap) and fails on CJK text. The gateway reads JSON from stdout, so
+    the encoding is part of the script contract.
+    """
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 def main() -> None:
+    _force_utf8_stdio()
     params: dict = {}
     if not sys.stdin.isatty():
         raw = sys.stdin.read()
