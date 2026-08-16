@@ -1,0 +1,42 @@
+name: Publish Host
+
+# Builds the distributable dcc-office-host (single-file, self-contained
+# win-x64). Downstream adapters (dcc-mcp-PowerPoint packaging) consume this
+# artifact — the dependency build lives here, not ad hoc downstream.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dotnet/**"
+  pull_request:
+    paths:
+      - "dotnet/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Publish single-file host (zero NuGet dependencies)
+        shell: pwsh
+        run: dotnet publish dotnet/Office.Automation.Host/Office.Automation.Host.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "$env:RUNNER_TEMP\host"
+
+      - name: Smoke test
+        shell: pwsh
+        run: '& "$env:RUNNER_TEMP\host\dcc-office-host.exe" --app=powerpoint --self-test'
+
+      - name: Upload host artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcc-office-host-win-x64
+          path: ${{ runner.temp }}/host/dcc-office-host.exe
+          retention-days: 30
