@@ -26,7 +26,10 @@ jobs:
       - uses: googleapis/release-please-action@v4
         id: release
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          # A PAT (user-owned) is required: PRs opened with the default
+          # GITHUB_TOKEN do not trigger pull_request workflows, so CI would
+          # never run on release PRs.
+          token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
 
@@ -38,7 +41,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup vx (.NET 8 LTS SDK from vx.toml)
-        uses: loonghao/vx@main
+        uses: loonghao/vx@vx-v0.9.28
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           setup: "true"
