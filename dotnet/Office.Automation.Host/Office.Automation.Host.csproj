@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>dcc-office-host</AssemblyName>
+    <RootNamespace>Office.Automation.Host</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Office.Automation.Runtime\Office.Automation.Runtime.csproj" />
+  </ItemGroup>
+
+</Project>

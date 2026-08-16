@@ -1,0 +1,10 @@
+[package]
+name = "dcc-mcp-office-security"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Default-deny Office security policy (ExecuteMso whitelist, AutomationSecurity, risk levels)"
+
+[dependencies]
+serde = { workspace = true }

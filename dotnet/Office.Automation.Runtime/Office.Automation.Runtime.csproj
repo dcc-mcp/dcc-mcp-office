@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0-windows</TargetFramework>
+    <AssemblyName>DccMcp.Office.Runtime</AssemblyName>
+    <RootNamespace>Office.Automation.Runtime</RootNamespace>
+  </PropertyGroup>
+
+</Project>

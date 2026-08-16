@@ -1,0 +1,11 @@
+[package]
+name = "dcc-mcp-office-ir"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Application-specific document IRs (common envelope + presentation/word/workbook)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

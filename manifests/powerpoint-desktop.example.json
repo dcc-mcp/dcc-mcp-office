@@ -1,0 +1,27 @@
+{
+  "provider": "office.powerpoint.desktop",
+  "provider_version": "1.0.0",
+  "protocol_version": "office-rpc/1",
+  "application": {
+    "name": "PowerPoint",
+    "version": "16.0",
+    "bitness": "x64",
+    "language": "zh-CN"
+  },
+  "execution_modes": [
+    "interactive-desktop",
+    "existing-document",
+    "native-render"
+  ],
+  "capabilities": {
+    "presentation.inspect": "1.0",
+    "presentation.patch": "1.0",
+    "slide.render": "1.0",
+    "document.export.pdf": "1.0",
+    "animation.edit": "0.1"
+  },
+  "limits": {
+    "max_parallel_writes": 1,
+    "requires_user_session": true
+  }
+}

@@ -1,0 +1,26 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/office-protocol",
+    "crates/office-ir",
+    "crates/office-client",
+    "crates/office-tools",
+    "crates/office-jobs",
+    "crates/office-graph",
+    "crates/office-security",
+    "crates/office-testkit",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/loonghao/dcc-mcp-office"
+rust-version = "1.81"
+
+[workspace.dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[profile.release]
+lto = "thin"

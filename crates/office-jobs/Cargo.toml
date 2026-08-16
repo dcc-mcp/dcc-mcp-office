@@ -1,0 +1,11 @@
+[package]
+name = "dcc-mcp-office-jobs"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Approval/checkpoint job phases for Office batch operations (layered on dcc-mcp-job)"
+
+[dependencies]
+serde = { workspace = true }
+serde_json = { workspace = true }

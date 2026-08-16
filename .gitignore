@@ -1,0 +1,22 @@
+# Rust
+/target
+Cargo.lock.orig
+
+# .NET
+**/bin/
+**/obj/
+*.user
+.vs/
+
+# Python (skill/test tooling)
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+dist/
+*.egg-info/
+
+# IDE
+.idea/
+.vscode/

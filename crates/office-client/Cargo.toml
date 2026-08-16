@@ -1,0 +1,11 @@
+[package]
+name = "dcc-mcp-office-client"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Rust-side client for the office-host.exe sidecar (named pipe, office-rpc/1)"
+
+[dependencies]
+dcc-mcp-office-protocol = { path = "../office-protocol", version = "0.1.0" }
+serde_json = { workspace = true }
