@@ -25,7 +25,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup vx (.NET 8 LTS SDK from vx.toml)
-        uses: loonghao/vx@main
+        uses: loonghao/vx@vx-v0.9.28
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           setup: "true"
