@@ -8,6 +8,12 @@ Cargo.lock.orig
 *.user
 .vs/
 
+# vx toolchain stores redirected into the workspace (sandboxed dev / CI-in-place)
+.vx-home/
+.dotnet-home/
+.nuget-packages/
+.vx-pr/
+
 # Python (skill/test tooling)
 __pycache__/
 *.py[cod]

@@ -46,10 +46,33 @@ docs/proposals/    the platform proposal this repo implements
 
 ## Quickstart
 
+C# development uses [vx](https://github.com/loonghao/vx) (universal version
+executor): `vx.toml` pins the .NET 8 LTS SDK and `vx.lock` makes installs
+reproducible. CI installs the same toolchain through the official
+[`loonghao/vx`](https://github.com/loonghao/vx) GitHub Action.
+
 ```bash
 cargo test            # protocol/IR round-trips, policy defaults, no Office required
+vx setup              # install the pinned .NET 8 LTS SDK into the vx store
+vx run build          # build office-host with the vx-managed SDK
+vx run self-test      # host self-test (compile + inspect round-trip, no Office needed)
+```
+
+Prefer a system SDK? The same commands work without the `vx` prefix:
+
+```bash
 dotnet build dotnet/Office.Automation.Host
 ```
+
+## CI / CD
+
+- `.github/workflows/ci.yml` — Rust fmt/clippy/test, skill lint + dashboard
+  e2e, and the C# host build/self-test (Windows, via `loonghao/vx`).
+- `.github/workflows/publish-host.yml` — publishes the single-file
+  `dcc-office-host.exe` as a CI artifact on every dotnet change.
+- `.github/workflows/release.yml` — release-please automated versioning and
+  releases: merging the release PR cuts the tag, builds the host with the vx
+  toolchain and attaches `dcc-office-host.exe` to the GitHub release.
 
 ## Roadmap
 

@@ -1,0 +1,25 @@
+# vx.toml — dcc-mcp-office 开发工具链 (managed by vx: https://github.com/loonghao/vx)
+# `vx setup` installs the pinned toolchain; `vx run <script>` runs project scripts.
+
+[project]
+name = "dcc-mcp-office"
+description = "Office 通用底座 for DCC-MCP — office-rpc/1 protocol, C# COM sidecar, Open XML worker"
+
+[tools]
+# .NET 8 LTS SDK for the C# sidecar (office-host). vx downloads the SDK from the
+# Microsoft CDN into the vx store and sets DOTNET_ROOT automatically.
+dotnet = "8"
+
+[settings]
+# Auto-install missing tools when entering the dev environment (vx dev / vx run).
+auto_install = true
+# How long version checks are cached.
+cache_duration = "7d"
+
+[scripts]
+# C# sidecar build (Debug). CI and local both use the vx-managed SDK.
+build = "dotnet build dotnet/Office.Automation.Host/Office.Automation.Host.csproj -v minimal"
+# Host self-test: compile + inspect round-trip, no Office installation required.
+self-test = "dotnet run --project dotnet/Office.Automation.Host/Office.Automation.Host.csproj -- --app=powerpoint --self-test"
+# Release publish: single-file self-contained win-x64 binary (release asset).
+publish = "dotnet publish dotnet/Office.Automation.Host/Office.Automation.Host.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true"

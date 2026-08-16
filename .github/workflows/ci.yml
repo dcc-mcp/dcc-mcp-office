@@ -47,10 +47,12 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - name: Setup vx (.NET 8 LTS SDK from vx.toml)
+        uses: loonghao/vx@main
         with:
-          dotnet-version: "8.0.x"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          setup: "true"
       - name: Build (zero NuGet dependencies)
-        run: dotnet build dotnet/Office.Automation.Host/Office.Automation.Host.csproj -v q
+        run: vx run build
       - name: Host self-test (compile + inspect round-trip)
-        run: dotnet run --project dotnet/Office.Automation.Host/Office.Automation.Host.csproj --no-build -- --app=powerpoint --self-test
+        run: vx run self-test

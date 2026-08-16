@@ -24,13 +24,15 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
+      - name: Setup vx (.NET 8 LTS SDK from vx.toml)
+        uses: loonghao/vx@main
         with:
-          dotnet-version: "8.0.x"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          setup: "true"
 
       - name: Publish single-file host (zero NuGet dependencies)
         shell: pwsh
-        run: dotnet publish dotnet/Office.Automation.Host/Office.Automation.Host.csproj -c Release -r win-x64 --self-contained -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o "$env:RUNNER_TEMP\host"
+        run: vx run publish -- -o "$env:RUNNER_TEMP\host"
 
       - name: Smoke test
         shell: pwsh

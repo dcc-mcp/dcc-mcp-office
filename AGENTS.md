@@ -53,8 +53,15 @@ compile and are contract-tested; no COM attachment yet (M1).
 
 ```bash
 cargo test                          # protocol/IR/security unit + round-trip tests
-dotnet build dotnet/Office.Automation.Host   # C# skeleton
+vx setup                            # install the pinned .NET 8 LTS SDK (vx.toml/vx.lock)
+vx run build                        # C# host build via the vx-managed SDK
+vx run self-test                    # office-host self-test (no Office required)
 ```
+
+The C# toolchain is managed by [vx](https://github.com/loonghao/vx): `vx.toml`
+pins the SDK, `vx.lock` freezes it. CI (`ci.yml`, `publish-host.yml`,
+`release.yml`) installs vx through the `loonghao/vx` action so local and CI
+SDKs stay identical; releases are automated by release-please.
 
 CI matrix (proposal §22.3): M365 current channel, Office LTSC, 32/64-bit,
 Windows 11, zh-CN + en-US — golden-file and visual-snapshot tests live under
