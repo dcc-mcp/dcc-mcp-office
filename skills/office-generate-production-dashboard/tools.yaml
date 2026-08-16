@@ -1,0 +1,21 @@
+tools:
+- name: generate_dashboard
+  execution: sync
+  affinity: main
+  annotations:
+    idempotent_hint: true
+  description: >-
+    Generate a styled production dashboard XLSX from a Workbook IR JSON:
+    header-styled tables, freeze panes, summary formulas (SUM/COUNTIF) and a
+    bar chart. Returns the artifact path and sheet/row summary.
+  input_schema:
+    type: object
+    properties:
+      input:
+        type: string
+        description: Path to the Workbook IR JSON file
+      output_dir:
+        type: string
+        description: Directory for the xlsx artifact
+        default: output
+    required: [input]

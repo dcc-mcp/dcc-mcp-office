@@ -1,0 +1,44 @@
+{
+  "schema_version": "office-ir/1.0",
+  "kind": "workbook",
+  "document_id": "draft:dcc-mcp-capability-dashboard",
+  "metadata": {
+    "title": "DCC-MCP Office 能力台账",
+    "author": "DCC-MCP Agent",
+    "language": "zh-CN"
+  },
+  "document": {
+    "worksheets": [
+      {
+        "name": "能力台账",
+        "tables": [
+          {
+            "name": "ledger",
+            "headers": ["应用", "任务级能力数", "阶段"],
+            "rows": [
+              ["office (通用)", 14, "P0"],
+              ["powerpoint", 5, "P0"],
+              ["word", 4, "P0"],
+              ["excel", 4, "P0"],
+              ["outlook", 2, "P1"],
+              ["visio", 2, "P1"],
+              ["project", 2, "P2"],
+              ["access", 2, "P2"]
+            ]
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "sheet": "能力台账",
+        "type": "bar",
+        "title": "各应用任务级能力数",
+        "categories": "A2:A9",
+        "values": "B2:B9",
+        "anchor": "E2"
+      }
+    ]
+  },
+  "outputs": ["xlsx"]
+}
