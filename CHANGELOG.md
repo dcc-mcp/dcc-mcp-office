@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.0...v0.2.1) (2026-08-16)
+
+
+### Bug Fixes
+
+* resolve COM paths to absolute before render/batch/inspect ([#13](https://github.com/dcc-mcp/dcc-mcp-office/issues/13)) ([01f6345](https://github.com/dcc-mcp/dcc-mcp-office/commit/01f63459f45d46c6f8f33871b8bad9245fc2ae00))
+
 ## [0.2.0](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.1.1...v0.2.0) (2026-08-16)
 
 
