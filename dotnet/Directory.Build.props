@@ -7,6 +7,6 @@
     <Version>0.1.0</Version>
     <Product>DCC-MCP Office Automation</Product>
     <Company>dcc-mcp</Company>
-    <RepositoryUrl>https://github.com/loonghao/dcc-mcp-office</RepositoryUrl>
+    <RepositoryUrl>https://github.com/dcc-mcp/dcc-mcp-office</RepositoryUrl>
   </PropertyGroup>
 </Project>
