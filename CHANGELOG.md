@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.2.2](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.1...v0.2.2) (2026-08-23)
+
+
+### Bug Fixes
+
+* bound Office client pipe operations ([#32](https://github.com/dcc-mcp/dcc-mcp-office/issues/32)) ([d8c8b42](https://github.com/dcc-mcp/dcc-mcp-office/commit/d8c8b42a2061644b99b76cec38430531f7200e8c))
+* classify COM failures by HRESULT ([#31](https://github.com/dcc-mcp/dcc-mcp-office/issues/31)) ([33d35a6](https://github.com/dcc-mcp/dcc-mcp-office/commit/33d35a6649e7ca1c9a562719d706a6bbfd78759e))
+* harden STA timeout recovery ([#29](https://github.com/dcc-mcp/dcc-mcp-office/issues/29)) ([6b8cf42](https://github.com/dcc-mcp/dcc-mcp-office/commit/6b8cf4278c4181c9b394f8d6c4923660cec9bfcd))
+* synchronize Office host versions ([#33](https://github.com/dcc-mcp/dcc-mcp-office/issues/33)) ([6c9db25](https://github.com/dcc-mcp/dcc-mcp-office/commit/6c9db25782b354c09fed501d92b2fedda1848a86))
+
+
+### Code Refactoring
+
+* centralize Office RPC contracts ([#35](https://github.com/dcc-mcp/dcc-mcp-office/issues/35)) ([9f0597f](https://github.com/dcc-mcp/dcc-mcp-office/commit/9f0597fe3e5e2d73a5192e03d729baa2c3683756))
+
 ## [0.2.1](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.0...v0.2.1) (2026-08-16)
 
 
