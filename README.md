@@ -23,7 +23,7 @@ adapters live in thin sibling repos and depend on this one the way
 
 ```text
 crates/
-  office-protocol   wire schema: office-rpc/1, handshake, capability manifest,
+  office-protocol   office-rpc/1 catalog + wire schema, handshake, manifest,
                     error codes, job progress, events (schema-only, no I/O)
   office-ir         document IRs: common envelope + presentation / word / workbook
   office-client     Rust-side client for office-host.exe (namedpipe://)
@@ -44,7 +44,7 @@ dotnet/
   Office.Automation.Host      office-host.exe entry point (--app=powerpoint|...)
                               + office-rpc/1 named-pipe JSON-RPC server
 skills/            office-wide skill packs (SKILL.md)
-manifests/         capability manifest examples + input JSON Schemas
+manifests/         catalog-referenced input JSON Schemas
 templates/         brand template registry (brand:// URIs, registry.json)
 tests/             golden-files / visual-snapshots / compatibility / security / stress
 tests/fixtures/    small docx/xlsx fixtures for the Rust ↔ C# contract tests

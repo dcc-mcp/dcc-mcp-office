@@ -81,6 +81,25 @@ pub struct RegistryEntry {
     pub phase: &'static str,
 }
 
+/// Mapping from an agent-facing task-level MCP tool to the sidecar wire
+/// capability it invokes. The machine-readable catalog owns these mappings.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct WireCapabilityMapping {
+    pub wire_capability: String,
+    pub mcp_tool: String,
+}
+
+pub fn implemented_wire_mappings() -> Vec<WireCapabilityMapping> {
+    dcc_mcp_office_protocol::capability_catalog()
+        .capabilities
+        .iter()
+        .map(|capability| WireCapabilityMapping {
+            wire_capability: capability.name.clone(),
+            mcp_tool: capability.mcp_tool.clone(),
+        })
+        .collect()
+}
+
 /// Registry of every task-level Office capability (proposal §11.1/§11.2).
 pub const REGISTRY: &[RegistryEntry] = &[
     RegistryEntry {
@@ -287,6 +306,20 @@ mod tests {
             powerpoint::DECK_GENERATE,
         ] {
             assert!(p0.contains(&required), "missing {required}");
+        }
+    }
+
+    #[test]
+    fn catalog_mappings_target_registered_mcp_tools() {
+        let registered: std::collections::HashSet<_> =
+            REGISTRY.iter().map(|entry| entry.name).collect();
+        for mapping in implemented_wire_mappings() {
+            assert!(
+                registered.contains(mapping.mcp_tool.as_str()),
+                "catalog maps {} to unregistered MCP tool {}",
+                mapping.wire_capability,
+                mapping.mcp_tool
+            );
         }
     }
 }

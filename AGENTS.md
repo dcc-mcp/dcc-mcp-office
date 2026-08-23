@@ -31,7 +31,7 @@ Office.js remain Phase 3; Visio/Project/Access Phase 4.
 
 | Path | What it is | Read when |
 |---|---|---|
-| `crates/office-protocol` | Wire schema: handshake, capability manifest, error codes, progress/events, pipe naming | any RPC work |
+| `crates/office-protocol` | Canonical office-rpc catalog + wire schema: handshake, manifest, generated error codes, progress/events, pipe naming | any RPC work |
 | `crates/office-ir` | Common envelope + application IRs: presentation, word (sections/paragraphs/tables/fields/review policy), workbook (worksheets/tables/charts/calc policy) | generation pipelines |
 | `crates/office-client` | Rust client for `office-host.exe`: named-pipe transport (std-only), handshake, execute | gateway/sidecar wiring |
 | `crates/office-client/tests/pipe_contract.rs` | Rust ↔ C# contract test: compile → COM inspect/convert/replace/render (env `DCC_OFFICE_HOST_EXE`, skips without Office) | transport changes |
@@ -45,7 +45,7 @@ Office.js remain Phase 3; Visio/Project/Access Phase 4.
 | `dotnet/Office.Automation.OpenXml` | Batch structural worker — compiler, never a renderer | bulk edits |
 | `dotnet/Office.Automation.Host` | `office-host.exe` entry (`--app=powerpoint|word|...`, `--pipe`/`--stdio`, deterministic `--openxml-only`, `--self-test[--com]`) + office-rpc/1 pipe server | host startup |
 | `skills/` | Office-wide skill packs (SKILL.md, dcc-mcp-skills format) | workflows |
-| `manifests/` | Capability manifest examples + input JSON Schemas (batch-convert / batch-replace-text / slide-render) | gateway validation |
+| `manifests/` | Input JSON Schemas referenced by the canonical catalog in `crates/office-protocol` and embedded by the Host | capability input changes |
 | `templates/registry.json` | Brand template registry (`brand-registry/1.0`) consumed by `deck.compile` | template-first generation |
 | `docs/adr/` | Decision records (001-006) | "why is it built this way" |
 | `docs/proposals/office-automation-platform-v1.0.md` | Full platform proposal | architecture questions |

@@ -67,6 +67,9 @@ dependencies = [
 [[package]]
 name = "dcc-mcp-office-tools"
 version = "0.2.1"
+dependencies = [
+ "dcc-mcp-office-protocol",
+]
 
 [[package]]
 name = "itoa"

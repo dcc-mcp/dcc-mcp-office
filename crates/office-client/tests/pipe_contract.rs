@@ -398,10 +398,10 @@ fn spawn_and_connect(app: &str, pipe: &str) -> (HostGuard, OfficeHostClient) {
     let mut client = OfficeHostClient::new(app);
     connect_or_panic(&mut client, &mut guard.0, pipe, Duration::from_secs(30));
     let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
-    assert!(handshake
-        .capability_manifest
-        .capabilities
-        .contains_key("deck.compile"));
+    assert!(
+        !handshake.capability_manifest.capabilities.is_empty(),
+        "{app} host advertised no catalog capabilities"
+    );
     (guard, client)
 }
 

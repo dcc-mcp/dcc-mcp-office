@@ -22,10 +22,13 @@ artifact report (proposal §15.1).
 
 ## Input contract
 
-- `inputs.glob` — file pattern (pptx/docx/xlsx)
+- `inputs` — array of file paths or simple `*`, `?`, `**/` globs
 - `target_format` — "pdf"
-- `backend` — "auto" | "desktop_com" | "graph"
-- `output.directory` + `output.mode` ("mirror_tree") + `output.overwrite` ("versioned")
+- `backend` — "auto" | "desktop_com" locally; "graph" is routed by the
+  gateway when the Phase 3 connector is available; "openxml" is rejected for
+  PDF rendering
+- `output_directory` — destination directory
+- `overwrite` — "versioned" | "fail" | "overwrite"
 - `validation` — e.g. ["output_openable", "non_empty", "page_count_reasonable"]
 
 ## Planning steps

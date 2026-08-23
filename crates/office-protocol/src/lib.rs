@@ -45,46 +45,50 @@ pub enum SidecarState {
     Stopped,
 }
 
-/// Standard error codes (proposal §20). RPC error.code carries one of these
-/// where applicable; error.message stays human-readable.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum OfficeErrorCode {
-    OfficeAppNotInstalled,
-    OfficeAppVersionUnsupported,
-    OfficeAppBusy,
-    OfficeModalDialog,
-    OfficeProtectedView,
-    OfficeAccessDenied,
-    OfficeDocumentNotFound,
-    OfficeDocumentLocked,
-    OfficeDocumentConflict,
-    OfficeFileCorrupt,
-    OfficeMacroBlocked,
-    OfficeExternalLinkBlocked,
-    OfficeCapabilityUnsupported,
-    OfficeBackendUnavailable,
-    OfficeRpcTimeout,
-    OfficeRenderTimeout,
-    OfficeGraphThrottled,
-    OfficeGraphAuthRequired,
-    OfficeUserConfirmationRequired,
-    OfficePartialSuccess,
-    OfficeUnclassified,
+include!(concat!(env!("OUT_DIR"), "/office_error_codes.rs"));
+
+/// Machine-readable capability catalog shared by Rust and the C# host.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct OfficeCapabilityCatalog {
+    pub schema_version: String,
+    pub protocol_version: String,
+    pub provider: String,
+    pub errors: Vec<CatalogError>,
+    pub capabilities: Vec<CatalogCapability>,
 }
 
-impl OfficeErrorCode {
-    /// Codes for which an automatic retry of the same call is safe
-    /// (idempotent or determinable — proposal §20 recovery ladder).
-    pub fn is_retryable(self) -> bool {
-        matches!(
-            self,
-            OfficeErrorCode::OfficeAppBusy
-                | OfficeErrorCode::OfficeRpcTimeout
-                | OfficeErrorCode::OfficeGraphThrottled
-                | OfficeErrorCode::OfficeBackendUnavailable
-        )
-    }
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CatalogError {
+    pub code: String,
+    pub retryable: bool,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CatalogCapability {
+    pub name: String,
+    pub version: String,
+    pub handler: String,
+    pub mcp_tool: String,
+    pub input_schema: String,
+    pub output_schema: String,
+    pub availability: Vec<CatalogAvailability>,
+    pub errors: Vec<String>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CatalogAvailability {
+    pub execution_mode: String,
+    pub apps: Vec<String>,
+}
+
+/// Parsed canonical catalog. Parsing is cached and cannot drift from the
+/// file embedded in this crate at build time.
+pub fn capability_catalog() -> &'static OfficeCapabilityCatalog {
+    static CATALOG: std::sync::OnceLock<OfficeCapabilityCatalog> = std::sync::OnceLock::new();
+    CATALOG.get_or_init(|| {
+        serde_json::from_str(include_str!("../office-rpc.catalog.json"))
+            .expect("embedded office-rpc capability catalog must be valid")
+    })
 }
 
 /// Application identity reported at handshake (proposal §10.3).
@@ -294,7 +298,8 @@ pub struct BatchConvertParams {
     pub inputs: Vec<String>,
     /// pdf is the only target in M1.
     pub target_format: String,
-    /// auto | desktop_com | openxml | graph.
+    /// auto | desktop_com | openxml | graph. The desktop sidecar rejects
+    /// non-desktop renderers; cloud routing is a gateway concern.
     pub backend: String,
     pub output_directory: String,
     /// versioned | fail | overwrite.

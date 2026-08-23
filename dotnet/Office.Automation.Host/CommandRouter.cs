@@ -26,6 +26,7 @@ namespace Office.Automation.Host;
 public sealed class CommandRouter : IDisposable
 {
     private static readonly TimeSpan AttachBudget = TimeSpan.FromSeconds(60);
+    private static readonly CapabilityCatalog Catalog = CapabilityCatalog.Current;
 
     private readonly string _app;
     private readonly StaDispatcher _sta = new();
@@ -125,15 +126,28 @@ public sealed class CommandRouter : IDisposable
     /// <summary>Processes one JSON-RPC request line and returns the response line.</summary>
     public string Dispatch(string requestJson)
     {
-        JsonElement id = default;
+        JsonElement id = JsonSerializer.SerializeToElement<object?>(null);
         string method;
         try
         {
             using var request = JsonDocument.Parse(requestJson);
             var root = request.RootElement;
-            id = root.TryGetProperty("id", out var idElement) ? idElement.Clone() : default;
-            method = root.GetProperty("method").GetString() ?? "";
-            var parameters = root.TryGetProperty("params", out var p) ? p.Clone() : default;
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                throw new OfficeArgumentException("JSON-RPC request must be an object");
+            }
+            id = root.TryGetProperty("id", out var idElement) ? idElement.Clone() : id;
+            method = root.TryGetProperty("method", out var methodElement)
+                && methodElement.ValueKind == JsonValueKind.String
+                ? methodElement.GetString()!
+                : throw new OfficeArgumentException("JSON-RPC method must be a string");
+            var parameters = root.TryGetProperty("params", out var p)
+                ? p.Clone()
+                : JsonSerializer.SerializeToElement(new { });
+            if (parameters.ValueKind != JsonValueKind.Object)
+            {
+                throw new OfficeArgumentException("JSON-RPC params must be an object");
+            }
 
             // §19 two-layer policy: the gateway checks first, this host
             // re-checks at the COM boundary and refuses any attempt to relax
@@ -154,21 +168,30 @@ public sealed class CommandRouter : IDisposable
         }
         catch (OfficeComException ex)
         {
-            return Error(id, ex.Code.ToWireName(), ex.Message);
+            return Error(id, ex.Code, ex.Message);
         }
         catch (OfficeArgumentException ex)
         {
-            return Error(id, "OFFICE_INVALID_REQUEST", ex.Message);
+            return Error(id, OfficeErrorCode.OfficeInvalidRequest, ex.Message);
+        }
+        catch (JsonException ex)
+        {
+            return Error(id, OfficeErrorCode.OfficeInvalidRequest, ex.Message);
         }
         catch (Exception ex)
         {
             Console.Error.WriteLine($"[office-host:{_app}] unhandled: {ex}");
-            return Error(id, "OFFICE_BACKEND_UNAVAILABLE", ex.Message);
+            return Error(id, OfficeErrorCode.OfficeBackendUnavailable, ex.Message);
         }
     }
 
-    private static string Error(JsonElement id, string code, string message) =>
-        JsonSerializer.Serialize(new { jsonrpc = "2.0", id, error = new { code, message } });
+    private static string Error(JsonElement id, OfficeErrorCode code, string message) =>
+        JsonSerializer.Serialize(new
+        {
+            jsonrpc = "2.0",
+            id,
+            error = new { code = code.ToWireName(), message },
+        });
 
     // ------------------------------------------------------------- methods
 
@@ -229,16 +252,23 @@ public sealed class CommandRouter : IDisposable
             ? c.GetString() ?? ""
             : throw new OfficeArgumentException("capability is required");
         var input = parameters.TryGetProperty("input", out var i) ? i.Clone() : default;
-        return capability switch
+        CapabilityDefinition definition = Catalog.FindCapability(capability)
+            ?? throw new OfficeComException(
+                OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"capability '{capability}' is not in the office-rpc catalog");
+        Catalog.ValidateInput(definition, input);
+        object result = definition.HandlerId switch
         {
-            "deck.compile" => Compile(input),
-            "document.inspect" => InspectDocument(input),
-            "batch.convert" => BatchConvert(input),
-            "batch.replace_text" => BatchReplaceText(input),
-            "slide.render" => RenderSlides(input),
-            _ => throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
-                $"OFFICE_CAPABILITY_UNSUPPORTED: {capability}"),
+            CapabilityHandler.DeckCompile => Compile(input),
+            CapabilityHandler.DocumentInspect => InspectDocument(input),
+            CapabilityHandler.BatchConvert => BatchConvert(input),
+            CapabilityHandler.BatchReplaceText => BatchReplaceText(input),
+            CapabilityHandler.SlideRender => RenderSlides(input),
+            _ => throw new InvalidOperationException(
+                $"catalog handler '{definition.Handler}' is not routed"),
         };
+        Catalog.ValidateOutput(definition, JsonSerializer.SerializeToElement(result));
+        return result;
     }
 
     // ---------------------------------------------------------- capabilities
@@ -403,16 +433,31 @@ public sealed class CommandRouter : IDisposable
 
     private object BatchConvert(JsonElement input)
     {
-        var com = Com();
         string targetFormat = input.TryGetProperty("target_format", out var tf) ? tf.GetString() ?? "pdf" : "pdf";
         if (!targetFormat.Equals("pdf", StringComparison.OrdinalIgnoreCase))
         {
             throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
                 $"target_format '{targetFormat}' is not supported (pdf only)");
         }
+        string requestedBackend = input.TryGetProperty("backend", out var backendElement)
+            ? backendElement.GetString() ?? "auto"
+            : "auto";
+        if (requestedBackend is not ("auto" or "desktop_com"))
+        {
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"batch.convert backend '{requestedBackend}' is not implemented by the desktop sidecar");
+        }
+        var com = Com();
         string outputDir = input.TryGetProperty("output_directory", out var od) && od.ValueKind == JsonValueKind.String
             ? od.GetString()!
             : throw new OfficeArgumentException("input.output_directory is required");
+        string overwrite = input.TryGetProperty("overwrite", out var overwriteElement)
+            ? overwriteElement.GetString() ?? "versioned"
+            : "versioned";
+        string[] requestedValidation = input.TryGetProperty("validation", out var validationElement)
+            ? validationElement.EnumerateArray().Select(item => item.GetString() ?? "").ToArray()
+            : ["output_openable", "non_empty", "page_count_reasonable"];
         outputDir = Path.GetFullPath(outputDir);
         Directory.CreateDirectory(outputDir);
 
@@ -426,6 +471,7 @@ public sealed class CommandRouter : IDisposable
         var items = new JsonArray();
         var artefacts = new JsonArray();
         var warnings = new JsonArray();
+        var successful = new List<FileConvertOutcome>();
         int succeeded = 0;
         foreach (var path in paths)
         {
@@ -436,16 +482,24 @@ public sealed class CommandRouter : IDisposable
                 {
                     ["input_path"] = path,
                     ["ok"] = false,
-                    ["error_code"] = "OFFICE_CAPABILITY_UNSUPPORTED",
+                    ["error_code"] = OfficeErrorCode.OfficeCapabilityUnsupported.ToWireName(),
                     ["error"] = $"{_app} sidecar handles {expected} only; route '{path}' to its own sidecar",
                 });
                 continue;
             }
-            string outputPath = VersionedOutputPath(outputDir, Path.GetFileNameWithoutExtension(path) + ".pdf");
+            string outputPath = OutputPathForMode(
+                outputDir,
+                Path.GetFileNameWithoutExtension(path) + ".pdf",
+                overwrite);
+            if (overwrite == "overwrite" && File.Exists(outputPath))
+            {
+                File.Delete(outputPath);
+            }
             var outcome = com.ConvertToPdf(path, outputPath);
             if (outcome.Ok)
             {
                 succeeded++;
+                successful.Add(outcome);
                 artefacts.Add(Artifact(outputPath, "pdf"));
             }
             else if (outcome.ErrorCode is not null)
@@ -453,6 +507,22 @@ public sealed class CommandRouter : IDisposable
                 warnings.Add($"{path}: {outcome.Error}");
             }
             items.Add(JsonSerializer.SerializeToNode(outcome)!);
+        }
+        var validation = new JsonObject();
+        foreach (string check in requestedValidation)
+        {
+            validation[check] = check switch
+            {
+                "output_openable" => successful.Count > 0
+                    && successful.All(outcome =>
+                        outcome.OutputPath is not null && File.Exists(outcome.OutputPath)),
+                "non_empty" => successful.Count > 0
+                    && successful.All(outcome => outcome.Bytes > 0),
+                "page_count_reasonable" => successful.Count > 0
+                    && successful.All(outcome => outcome.PageCount > 0),
+                _ => throw new InvalidOperationException(
+                    $"schema allowed unknown validation check '{check}'"),
+            };
         }
         return new
         {
@@ -467,12 +537,7 @@ public sealed class CommandRouter : IDisposable
             },
             warnings,
             artefacts,
-            validation = new
-            {
-                output_openable = succeeded > 0,
-                non_empty = succeeded > 0,
-                page_count_reasonable = succeeded > 0,
-            },
+            validation,
             backend = "desktop_com",
             indeterminate = false,
         };
@@ -653,22 +718,12 @@ public sealed class CommandRouter : IDisposable
 
     private object Manifest()
     {
-        var capabilities = new SortedDictionary<string, string>
-        {
-            ["deck.compile"] = "0.1.0",
-            ["document.inspect"] = "0.1.0",
-        };
-        var modes = new List<string> { "openxml" };
+        IReadOnlyDictionary<string, string> capabilities =
+            Catalog.ManifestCapabilities(_app, _comAttached);
+        IReadOnlyList<string> modes = Catalog.ManifestExecutionModes(_app, _comAttached);
         object? application = null;
         if (_comAttached)
         {
-            modes.Add("desktop_com");
-            capabilities["batch.convert"] = "0.1.0";
-            capabilities["batch.replace_text"] = "0.1.0";
-            if (_app.Equals("powerpoint", StringComparison.OrdinalIgnoreCase))
-            {
-                capabilities["slide.render"] = "0.1.0";
-            }
             var info = _com!.GetApplicationInfo();
             application = new
             {
@@ -680,9 +735,9 @@ public sealed class CommandRouter : IDisposable
         }
         return new
         {
-            provider = "dcc-mcp-office",
+            provider = Catalog.Provider,
             provider_version = HostBuildInfo.Version,
-            protocol_version = HostBuildInfo.ProtocolVersion,
+            protocol_version = Catalog.ProtocolVersion,
             application,
             execution_modes = modes,
             capabilities,
@@ -702,18 +757,27 @@ public sealed class CommandRouter : IDisposable
             $"no desktop COM backend for app '{app}'"),
     };
 
-    private static string VersionedOutputPath(string directory, string fileName)
+    internal static string OutputPathForMode(string directory, string fileName, string overwrite)
     {
         string candidate = Path.Combine(directory, fileName);
-        if (!File.Exists(candidate))
+        if (!File.Exists(candidate) || overwrite == "overwrite")
         {
             return candidate;
         }
+        if (overwrite == "fail")
+        {
+            throw new OfficeArgumentException(
+                $"output already exists and overwrite is 'fail': {candidate}");
+        }
+        if (overwrite != "versioned")
+        {
+            throw new OfficeArgumentException($"unknown overwrite mode '{overwrite}'");
+        }
         string stem = Path.GetFileNameWithoutExtension(fileName);
         string ext = Path.GetExtension(fileName);
-        for (int n = 1; ; n++)
+        for (int n = 2; ; n++)
         {
-            candidate = Path.Combine(directory, $"{stem}-{n}{ext}");
+            candidate = Path.Combine(directory, $"{stem}.v{n}{ext}");
             if (!File.Exists(candidate))
             {
                 return candidate;

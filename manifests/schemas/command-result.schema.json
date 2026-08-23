@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/command-result.schema.json",
+  "title": "office.command.execute result before audit enrichment",
+  "type": "object",
+  "required": [
+    "operation_id",
+    "changed",
+    "warnings",
+    "artefacts",
+    "validation",
+    "backend",
+    "indeterminate"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "operation_id": {"type": "string", "minLength": 1},
+    "changed": {"type": "object"},
+    "warnings": {"type": "array"},
+    "artefacts": {"type": "array"},
+    "validation": {"type": "object"},
+    "backend": {
+      "type": "string",
+      "enum": ["openxml", "desktop_com", "graph", "office_js", "uia", "cua"]
+    },
+    "indeterminate": {"type": "boolean"}
+  }
+}

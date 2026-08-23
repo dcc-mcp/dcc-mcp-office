@@ -14,6 +14,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="../../crates/office-protocol/office-rpc.catalog.json" LogicalName="Manifests.office-rpc.catalog.json" />
+    <EmbeddedResource Include="../../manifests/schemas/*.json" LogicalName="Manifests.schemas.%(Filename)%(Extension)" />
     <!-- Brand template registry (proposal §15.4): source of truth lives in
          templates/registry.json; the embedded copy keeps single-file
          publishes self-contained. -->

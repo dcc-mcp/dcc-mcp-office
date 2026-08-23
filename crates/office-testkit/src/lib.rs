@@ -176,9 +176,9 @@ impl FakeSidecar {
                 Some(result) => result.clone(),
                 None => {
                     return Some(
-                        rpc::error(
+                        rpc::office_error(
                             id.as_u64().unwrap_or(0),
-                            "OFFICE_INVALID_REQUEST",
+                            protocol::OfficeErrorCode::OfficeInvalidRequest,
                             &format!("unknown method: {method}"),
                         )
                         .to_string(),
@@ -206,6 +206,10 @@ mod tests {
     #[test]
     fn wire_names_match_the_host_strings() {
         assert_eq!(wire_name(OfficeErrorCode::OfficeAppBusy), "OFFICE_APP_BUSY");
+        assert_eq!(
+            wire_name(OfficeErrorCode::OfficeInvalidRequest),
+            "OFFICE_INVALID_REQUEST"
+        );
         assert_eq!(
             wire_name(OfficeErrorCode::OfficeCapabilityUnsupported),
             "OFFICE_CAPABILITY_UNSUPPORTED"
