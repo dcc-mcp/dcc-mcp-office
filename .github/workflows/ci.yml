@@ -54,6 +54,8 @@ jobs:
           setup: "true"
       - name: Build (zero NuGet dependencies)
         run: vx run build
+      - name: .NET unit tests (Office-free)
+        run: vx run test-dotnet
       - name: Host self-test (compile + inspect round-trip)
         run: vx run self-test
       - uses: dtolnay/rust-toolchain@stable

@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
 namespace Office.Automation.Runtime;
@@ -29,6 +28,7 @@ public sealed class StaDispatcher : IDisposable
     private readonly OleMessageFilter _messageFilter = new();
     private volatile bool _disposed;
     private int _threadId = -1;
+    private int _timedOutWorkCount;
 
     public StaDispatcher()
     {
@@ -72,73 +72,73 @@ public sealed class StaDispatcher : IDisposable
     public T Post<T>(Func<T> work, TimeSpan softTimeout)
     {
         ThrowIfDisposed();
-        using var done = new ManualResetEventSlim(false);
-        object? result = null;
-        Exception? error = null;
+        ThrowIfTimedOutWorkIsStillRunning();
+
+        var completion = new TaskCompletionSource<T>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        var timeoutState = 0;
 
         _queue.Add(() =>
         {
             try
             {
-                result = work();
+                completion.TrySetResult(work());
             }
             catch (Exception ex)
             {
-                error = ex;
+                completion.TrySetException(ex);
             }
             finally
             {
-                done.Set();
+                if (Interlocked.CompareExchange(ref timeoutState, 2, 1) == 1)
+                {
+                    Interlocked.Decrement(ref _timedOutWorkCount);
+                }
             }
         });
 
-        if (!done.Wait(softTimeout))
+        if (!completion.Task.IsCompleted
+            && Task.WaitAny(new Task[] { completion.Task }, softTimeout) < 0)
         {
+            MarkTimedOutWork(completion.Task, ref timeoutState);
             throw new StaSoftTimeoutException(
                 $"STA request exceeded soft timeout {softTimeout.TotalSeconds:F0}s; " +
                 "the operation continues in the background and the sidecar stays consistent.");
         }
 
-        if (error is not null)
-        {
-            ExceptionDispatchInfo.Capture(error).Throw();
-        }
-
-        return (T)result!;
+        return completion.Task.GetAwaiter().GetResult();
     }
 
     public void Post(Action work, TimeSpan softTimeout)
     {
-        ThrowIfDisposed();
-        using var done = new ManualResetEventSlim(false);
-        Exception? error = null;
-
-        _queue.Add(() =>
+        Post(() =>
         {
-            try
-            {
-                work();
-            }
-            catch (Exception ex)
-            {
-                error = ex;
-            }
-            finally
-            {
-                done.Set();
-            }
-        });
+            work();
+            return true;
+        }, softTimeout);
+    }
 
-        if (!done.Wait(softTimeout))
+    private void MarkTimedOutWork(Task completion, ref int timeoutState)
+    {
+        if (Interlocked.CompareExchange(ref timeoutState, 1, 0) != 0)
         {
-            throw new StaSoftTimeoutException(
-                $"STA request exceeded soft timeout {softTimeout.TotalSeconds:F0}s; " +
-                "the operation continues in the background and the sidecar stays consistent.");
+            return;
         }
 
-        if (error is not null)
+        Interlocked.Increment(ref _timedOutWorkCount);
+        if (completion.IsCompleted
+            && Interlocked.CompareExchange(ref timeoutState, 2, 1) == 1)
         {
-            ExceptionDispatchInfo.Capture(error).Throw();
+            Interlocked.Decrement(ref _timedOutWorkCount);
+        }
+    }
+
+    private void ThrowIfTimedOutWorkIsStillRunning()
+    {
+        if (Volatile.Read(ref _timedOutWorkCount) > 0)
+        {
+            throw new StaDispatcherBusyException(
+                "A previously timed-out STA request is still running; retry after it reaches a safe boundary.");
         }
     }
 
@@ -247,6 +247,15 @@ public sealed class StaDispatcher : IDisposable
 public sealed class StaSoftTimeoutException : TimeoutException
 {
     public StaSoftTimeoutException(string message)
+        : base(message)
+    {
+    }
+}
+
+/// <summary>Raised while a previously timed-out STA request is still running.</summary>
+public sealed class StaDispatcherBusyException : InvalidOperationException
+{
+    public StaDispatcherBusyException(string message)
         : base(message)
     {
     }
