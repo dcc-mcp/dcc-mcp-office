@@ -49,13 +49,10 @@ public abstract class OfficeComBackend : IDisposable
     }
 
     /// <summary>Default per-request soft timeout.</summary>
-    protected static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(120);
-
-    /// <summary>Two consecutive soft timeouts trip sidecar recovery (§9.2).</summary>
-    private const int TimeoutStreakForRecovery = 2;
-
     private readonly OfficeAppKind _kind;
     private readonly StaDispatcher _sta;
+    private readonly TimeSpan _requestTimeout;
+    private readonly int _timeoutStreakForRecovery;
     private dynamic? _application;
     private bool _attached;
     private int? _processId;
@@ -63,10 +60,21 @@ public abstract class OfficeComBackend : IDisposable
     private int _timeoutStreak;
     private bool _disposed;
 
-    protected OfficeComBackend(OfficeAppKind kind, StaDispatcher sta)
+    protected OfficeComBackend(
+        OfficeAppKind kind,
+        StaDispatcher sta,
+        TimeSpan? requestTimeout = null,
+        int timeoutStreakForRecovery = 2)
     {
+        if ((requestTimeout is not null && requestTimeout <= TimeSpan.Zero)
+            || timeoutStreakForRecovery < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(requestTimeout));
+        }
         _kind = kind;
         _sta = sta;
+        _requestTimeout = requestTimeout ?? TimeSpan.FromSeconds(120);
+        _timeoutStreakForRecovery = timeoutStreakForRecovery;
     }
 
     public string AppName => _kind switch
@@ -253,12 +261,12 @@ public abstract class OfficeComBackend : IDisposable
         ThrowIfDisposed();
         try
         {
-            _sta.Post(work, timeout ?? RequestTimeout);
+            _sta.Post(work, timeout ?? _requestTimeout);
             Interlocked.Exchange(ref _timeoutStreak, 0);
         }
         catch (StaSoftTimeoutException)
         {
-            throw MapTimeout(context, timeout ?? RequestTimeout, mayWrite);
+            throw MapTimeout(context, timeout ?? _requestTimeout, mayWrite);
         }
         catch (StaDispatcherBusyException ex)
         {
@@ -284,13 +292,13 @@ public abstract class OfficeComBackend : IDisposable
         ThrowIfDisposed();
         try
         {
-            T result = _sta.Post(work, timeout ?? RequestTimeout);
+            T result = _sta.Post(work, timeout ?? _requestTimeout);
             Interlocked.Exchange(ref _timeoutStreak, 0);
             return result;
         }
         catch (StaSoftTimeoutException)
         {
-            throw MapTimeout(context, timeout ?? RequestTimeout, mayWrite);
+            throw MapTimeout(context, timeout ?? _requestTimeout, mayWrite);
         }
         catch (StaDispatcherBusyException ex)
         {
@@ -316,7 +324,7 @@ public abstract class OfficeComBackend : IDisposable
         var modalTitle = _processId is int pid
             ? ModalDialogDetector.FindModalDialogTitle(pid)
             : null;
-        if (streak >= TimeoutStreakForRecovery)
+        if (streak >= _timeoutStreakForRecovery)
         {
             RecoverAfterTimeout();
             Interlocked.Exchange(ref _timeoutStreak, 0);
@@ -334,7 +342,7 @@ public abstract class OfficeComBackend : IDisposable
         }
         return new OfficeComException(
             OfficeErrorCode.OfficeRpcTimeout,
-            $"{context}: request exceeded {(timeout ?? RequestTimeout).TotalSeconds:F0}s soft timeout.",
+            $"{context}: request exceeded {(timeout ?? _requestTimeout).TotalSeconds:F0}s soft timeout.",
             indeterminate: mayWrite);
     }
 
@@ -486,7 +494,7 @@ public abstract class OfficeComBackend : IDisposable
     {
         try
         {
-            Attach(RequestTimeout);
+            Attach(_requestTimeout);
             return null;
         }
         catch (OfficeComException ex)

@@ -13,6 +13,7 @@ on:
       - "manifests/**"
       - "templates/**"
       - "docs/distribution.md"
+      - "docs/operations.md"
       - "scripts/package_release.py"
       - ".github/workflows/publish-host.yml"
   pull_request:
@@ -22,6 +23,7 @@ on:
       - "manifests/**"
       - "templates/**"
       - "docs/distribution.md"
+      - "docs/operations.md"
       - "scripts/package_release.py"
       - ".github/workflows/publish-host.yml"
   workflow_dispatch:

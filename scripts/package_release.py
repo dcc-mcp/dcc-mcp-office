@@ -179,6 +179,10 @@ def package_release(
             repository / "docs" / "distribution.md",
             staging / "INSTALL.md",
         )
+        shutil.copyfile(
+            repository / "docs" / "operations.md",
+            staging / "OPERATIONS.md",
+        )
         shutil.copyfile(repository / "LICENSE", staging / "LICENSE")
 
         manifest = {

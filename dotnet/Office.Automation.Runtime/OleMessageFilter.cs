@@ -21,11 +21,19 @@ public sealed class OleMessageFilter : IOleMessageFilter, IDisposable
     private const int PENDINGMSG_WAITDEFPROCESS = 2;
 
     /// <summary>Retry budget: at 50 ms base backoff this is ~13 s of total retry.</summary>
-    private const int MaxRetries = 30;
-
+    private readonly int _maxRetries;
     private IOleMessageFilter? _previous;
     private int _attempts;
     private bool _disposed;
+
+    public OleMessageFilter(int maxRetries = 30)
+    {
+        if (maxRetries < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxRetries));
+        }
+        _maxRetries = maxRetries;
+    }
 
     /// <summary>Registers this filter for the calling STA thread and keeps the previous one for restore.</summary>
     public void Register()
@@ -50,7 +58,7 @@ public sealed class OleMessageFilter : IOleMessageFilter, IDisposable
     public int RetryRejectedCall(IntPtr htaskCallee, uint dwTickCount, uint dwRejectType)
     {
         int attempt = Interlocked.Increment(ref _attempts);
-        if (attempt >= MaxRetries)
+        if (attempt >= _maxRetries)
         {
             // Deterministic cancel: the caller surfaces OFFICE_APP_BUSY
             // instead of hanging on a wedged Office instance.

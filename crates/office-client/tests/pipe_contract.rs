@@ -355,8 +355,11 @@ fn office_host_full_contract() {
         .audit
         .as_ref()
         .expect("deck.compile result must carry an audit trail");
-    assert_eq!(audit["security"]["automation_security"]["observed"], 3);
-    assert_eq!(audit["security"]["automation_security"]["enforced"], true);
+    assert_eq!(
+        audit["security"]["automation_security"]["applicable"],
+        false
+    );
+    assert!(audit["security"]["automation_security"]["observed"].is_null());
     assert_eq!(audit["backend"], "openxml");
     assert_eq!(audit["host_version"], env!("CARGO_PKG_VERSION"));
     assert!(audit["duration_ms"].as_u64().unwrap_or(0) > 0 || audit["duration_ms"].is_null());

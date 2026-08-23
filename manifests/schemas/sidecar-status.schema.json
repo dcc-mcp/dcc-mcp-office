@@ -21,6 +21,6 @@
     "modal": {"type": "boolean"},
     "protected_view": {"type": "boolean"},
     "com_attached": {"type": "boolean"},
-    "com_attach_state": {"type": "string", "enum": ["unknown", "attached", "failed", "unavailable"]}
+    "com_attach_state": {"type": "string", "enum": ["available", "attached", "failed", "unavailable"]}
   }
 }

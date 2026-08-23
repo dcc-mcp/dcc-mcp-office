@@ -82,12 +82,25 @@ public sealed class OfficeFreeRpcContractTests
         AssertJsonEqual(MaterializeExpected("handshake.expected.json"), responses[0]);
         AssertJsonEqual(Fixture("unknown-method.expected.json"), responses[1]);
         AssertJsonEqual(Fixture("policy-denied.expected.json"), responses[2]);
-        JsonNode applicationStarted = Assert.Single(parsed, message =>
+        Assert.DoesNotContain(parsed, message =>
             message["method"]?.GetValue<string>() == "office.application.started");
-        Assert.Equal(
-            "host:handshake",
-            applicationStarted["params"]!["correlation_id"]!.GetValue<string>());
-        Assert.Equal(string.Empty, error.ToString());
+        JsonNode[] logEntries = error.ToString().Split(
+                Environment.NewLine,
+                StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(Parse)
+            .ToArray();
+        Assert.Single(logEntries, entry =>
+            entry["event"]?.GetValue<string>() == "host.settings");
+        JsonNode[] requestLogs = logEntries.Where(entry =>
+            entry["event"]?.GetValue<string>() == "request.completed").ToArray();
+        Assert.Equal(3, requestLogs.Length);
+        Assert.All(requestLogs, entry =>
+        {
+            Assert.Equal("request.completed", entry["event"]!.GetValue<string>());
+            Assert.StartsWith("rpc:", entry["correlation_id"]!.GetValue<string>());
+            Assert.NotNull(entry["outcome_code"]);
+            Assert.Null(entry["input"]);
+        });
     }
 
     [Fact]

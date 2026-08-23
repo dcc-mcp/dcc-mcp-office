@@ -14,12 +14,40 @@ public static class ComBackendFactory
     public static bool IsSupported(string app) =>
         SupportedApps.Contains(app, StringComparer.OrdinalIgnoreCase);
 
-    public static OfficeComBackend Create(string app, StaDispatcher sta) => app.ToLowerInvariant() switch
+    /// <summary>Registry-only availability probe; never launches Office.</summary>
+    public static bool IsInstalled(string app)
     {
-        "powerpoint" => new PowerPointBackend(sta),
-        "word" => new WordBackend(sta),
-        "excel" => new ExcelBackend(sta),
-        _ => throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
-            $"no COM backend for app '{app}'"),
-    };
+        if (!IsSupported(app))
+        {
+            return false;
+        }
+        string progId = app.ToLowerInvariant() switch
+        {
+            "powerpoint" => "PowerPoint.Application",
+            "word" => "Word.Application",
+            "excel" => "Excel.Application",
+            _ => throw new InvalidOperationException("supported app has no ProgID"),
+        };
+        try
+        {
+            return Type.GetTypeFromProgID(progId, throwOnError: false) is not null;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public static OfficeComBackend Create(
+        string app,
+        StaDispatcher sta,
+        TimeSpan? requestTimeout = null,
+        int timeoutStreakForRecovery = 2) => app.ToLowerInvariant() switch
+        {
+            "powerpoint" => new PowerPointBackend(sta, requestTimeout, timeoutStreakForRecovery),
+            "word" => new WordBackend(sta, requestTimeout, timeoutStreakForRecovery),
+            "excel" => new ExcelBackend(sta, requestTimeout, timeoutStreakForRecovery),
+            _ => throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"no COM backend for app '{app}'"),
+        };
 }

@@ -17,6 +17,9 @@ using Office.Automation.Runtime;
 ///   --openxml-only                 disable desktop COM for deterministic runs
 ///   --workspace-root=&lt;path&gt;       bind all file operations to this existing root
 ///   --template-dir=&lt;path&gt;         add an external template package root (repeatable)
+///   --parent-pid=&lt;pid&gt;            stop when the owning gateway exits
+///   --config=&lt;path&gt;                explicit runtime settings file
+///   --help                         print options without starting Office
 ///   --version                      print host + protocol versions and exit
 ///
 /// Commands (office.command.execute capabilities):
@@ -40,10 +43,11 @@ public static class Program
         bool selfTestCom = false;
         bool stdio = false;
         bool showVersion = false;
+        bool showHelp = false;
         bool openXmlOnly = false;
         string? pipeName = null;
         string? workspaceRoot = null;
-        var templateDirectories = new List<string>();
+        int? parentPid = null;
         foreach (var arg in args)
         {
             switch (arg)
@@ -59,6 +63,10 @@ public static class Program
                     break;
                 case "--version":
                     showVersion = true;
+                    break;
+                case "--help":
+                case "-h":
+                    showHelp = true;
                     break;
                 case "--openxml-only":
                     openXmlOnly = true;
@@ -76,9 +84,16 @@ public static class Program
                     {
                         workspaceRoot = arg["--workspace-root=".Length..];
                     }
-                    else if (arg.StartsWith("--template-dir=", StringComparison.Ordinal))
+                    else if (arg.StartsWith("--parent-pid=", StringComparison.Ordinal))
                     {
-                        templateDirectories.Add(arg["--template-dir=".Length..]);
+                        string value = arg["--parent-pid=".Length..];
+                        if (!int.TryParse(value, out int parsed) || parsed <= 0)
+                        {
+                            Console.Error.WriteLine(
+                                "invalid --parent-pid: expected a positive integer");
+                            return 2;
+                        }
+                        parentPid = parsed;
                     }
                     break;
             }
@@ -91,12 +106,44 @@ public static class Program
             return 0;
         }
 
+        if (showHelp)
+        {
+            Console.Out.WriteLine(Usage);
+            return 0;
+        }
+
         if (app is null || !SupportedApps.Contains(app))
         {
-            Console.Error.WriteLine(
-                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--openxml-only] [--workspace-root=<path>] [--template-dir=<path>] [--self-test|--self-test-com]");
+            Console.Error.WriteLine(Usage);
             return 2;
         }
+
+        HostSettings settings;
+        try
+        {
+            settings = HostSettings.Load(args, AppContext.BaseDirectory);
+        }
+        catch (Exception error) when (error is InvalidDataException or JsonException)
+        {
+            Console.Error.WriteLine($"invalid Host settings: {error.Message}");
+            return 2;
+        }
+        using var logger = new HostLogger(
+            app,
+            Console.Error,
+            settings.LogLevel,
+            settings.LogPath);
+        logger.Info(
+            "host.settings",
+            new Dictionary<string, object?>
+            {
+                ["attach_timeout_ms"] = (long)settings.AttachTimeout.TotalMilliseconds,
+                ["request_timeout_ms"] = (long)settings.RequestTimeout.TotalMilliseconds,
+                ["recovery_timeout_streak"] = settings.RecoveryTimeoutStreak,
+                ["busy_retry_count"] = settings.BusyRetryCount,
+                ["pipe_buffer_bytes"] = settings.PipeBufferBytes,
+                ["template_directory_count"] = settings.TemplateDirectories.Count,
+            });
 
         bool desktopAutomationRequested = selfTestCom || (!selfTest && !openXmlOnly);
         int sessionId = System.Diagnostics.Process.GetCurrentProcess().SessionId;
@@ -109,19 +156,21 @@ public static class Program
 
         if (selfTest)
         {
-            return SelfTest(app, probeCom: false);
+            return SelfTest(app, probeCom: false, settings);
         }
         if (selfTestCom)
         {
-            return SelfTest(app, probeCom: true);
+            return SelfTest(app, probeCom: true, settings);
         }
 
         using var router = new CommandRouter(
             app,
             enableDesktopCom: !openXmlOnly,
             workspaceRoot: workspaceRoot ?? Directory.GetCurrentDirectory(),
-            templateDirectories: templateDirectories,
-            includeDefaultTemplateDirectories: true);
+            templateDirectories: settings.TemplateDirectories,
+            includeDefaultTemplateDirectories: true,
+            settings: settings,
+            logger: logger);
         if (stdio)
         {
             return JsonRpcLoop(router);
@@ -132,15 +181,28 @@ public static class Program
             requestLine => router.Dispatch(requestLine),
             pipeName,
             () => router.ShutdownRequested,
-            router.DrainNotifications);
-        Console.Error.WriteLine($"office-host[{app}] listening on {server.PipeName}");
-        using var cts = new CancellationTokenSource();
+            router.DrainNotifications,
+            settings.PipeBufferBytes,
+            logger);
+        logger.Info(
+            "host.listening",
+            new Dictionary<string, object?> { ["pipe_name"] = server.PipeName });
+        using var consoleCancellation = new CancellationTokenSource();
         Console.CancelKeyPress += (_, eventArgs) =>
         {
             eventArgs.Cancel = true;
-            cts.Cancel();
+            consoleCancellation.Cancel();
         };
-        server.Run(cts.Token, () => router.ShutdownRequested);
+        using CancellationTokenSource? parentCancellation = parentPid is int owner
+            ? ParentProcessMonitor.Watch(owner, TimeSpan.FromSeconds(1))
+            : null;
+        using CancellationTokenSource lifetime = parentCancellation is null
+            ? CancellationTokenSource.CreateLinkedTokenSource(consoleCancellation.Token)
+            : CancellationTokenSource.CreateLinkedTokenSource(
+                consoleCancellation.Token,
+                parentCancellation.Token);
+        server.Run(lifetime.Token, () => router.ShutdownRequested);
+        parentCancellation?.Cancel();
         return 0;
     }
 
@@ -168,7 +230,7 @@ public static class Program
 
     // ------------------------------------------------------------- self-test
 
-    private static int SelfTest(string app, bool probeCom)
+    private static int SelfTest(string app, bool probeCom, HostSettings settings)
     {
         string tempDir = Path.Combine(Path.GetTempPath(), "dcc-office-host-self-test-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
@@ -191,7 +253,7 @@ public static class Program
             {
                 try
                 {
-                    comOk = ComProbe(pptxPath, tempDir);
+                    comOk = ComProbe(pptxPath, tempDir, settings);
                     comDetail = "ok";
                 }
                 catch (OfficeComException ex) when (ex.Code == OfficeErrorCode.OfficeAppNotInstalled)
@@ -229,11 +291,18 @@ public static class Program
     /// proposal §8.1 never automates from Session 0): PDF export, replace-text
     /// dry-run + commit, slide preview render.
     /// </summary>
-    private static bool ComProbe(string pptxPath, string tempDir)
+    private static bool ComProbe(
+        string pptxPath,
+        string tempDir,
+        HostSettings settings)
     {
-        using var sta = new StaDispatcher();
-        var backend = ComBackendFactory.Create("powerpoint", sta);
-        backend.Attach(TimeSpan.FromSeconds(90));
+        using var sta = new StaDispatcher(settings.BusyRetryCount);
+        var backend = ComBackendFactory.Create(
+            "powerpoint",
+            sta,
+            settings.RequestTimeout,
+            settings.RecoveryTimeoutStreak);
+        backend.Attach(settings.AttachTimeout);
 
         string pdfPath = Path.Combine(tempDir, "sample-deck.pdf");
         var convert = backend.ConvertToPdf(pptxPath, pdfPath);
@@ -290,4 +359,14 @@ public static class Program
           "outputs": ["pptx"]
         }
         """;
+
+    private const string Usage =
+        "usage: dcc-office-host --version | --help | " +
+        "--app=<powerpoint|word|excel|outlook-classic|visio|project|access> " +
+        "[--pipe|--stdio] [--openxml-only] [--workspace-root=<path>] " +
+        "[--template-dir=<path>] [--config=<path>] [--parent-pid=<pid>] " +
+        "[--attach-timeout-seconds=<n>] [--request-timeout-seconds=<n>] " +
+        "[--recovery-timeout-streak=<n>] [--busy-retry-count=<n>] " +
+        "[--pipe-buffer-bytes=<n>] [--log-level=<level>] [--log-path=<path>] " +
+        "[--self-test|--self-test-com]";
 }

@@ -25,13 +25,14 @@ public sealed class StaDispatcher : IDisposable
 
     private readonly Thread _thread;
     private readonly BlockingCollection<Action> _queue = new();
-    private readonly OleMessageFilter _messageFilter = new();
+    private readonly OleMessageFilter _messageFilter;
     private volatile bool _disposed;
     private int _threadId = -1;
     private int _timedOutWorkCount;
 
-    public StaDispatcher()
+    public StaDispatcher(int busyRetryCount = 30)
     {
+        _messageFilter = new OleMessageFilter(busyRetryCount);
         _thread = new Thread(Pump)
         {
             IsBackground = true,

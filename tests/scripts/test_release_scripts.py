@@ -83,6 +83,7 @@ class ReleasePackageTests(unittest.TestCase):
             (package / "theme.xml").write_text("<theme/>", encoding="utf-8")
             (repository / "docs").mkdir()
             (repository / "docs" / "distribution.md").write_text("install", encoding="utf-8")
+            (repository / "docs" / "operations.md").write_text("operate", encoding="utf-8")
             (repository / "LICENSE").write_text("MIT", encoding="utf-8")
 
             assets = module.package_release(host_dir, output_dir, repository, "0.2.2")
@@ -107,6 +108,7 @@ class ReleasePackageTests(unittest.TestCase):
                 names,
             )
             self.assertIn(f"{prefix}INSTALL.md", names)
+            self.assertIn(f"{prefix}OPERATIONS.md", names)
             self.assertIn(f"{prefix}release-manifest.json", names)
             self.assertIn(f"{prefix}dcc-mcp-office-host-0.2.2.spdx.json", names)
 
