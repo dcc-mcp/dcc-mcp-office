@@ -10,7 +10,7 @@ checksum = "fc652a48c352aef3ea3aed32080501cf3ef6ed5da78602a020c991775b0aff04"
 
 [[package]]
 name = "dcc-mcp-office-client"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "dcc-mcp-office-protocol",
  "serde_json",
@@ -19,7 +19,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-graph"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -27,7 +27,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-ir"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -35,15 +35,16 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-jobs"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
+ "dcc-mcp-office-protocol",
  "serde",
  "serde_json",
 ]
 
 [[package]]
 name = "dcc-mcp-office-protocol"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "serde",
  "serde_json",
@@ -51,7 +52,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-security"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "dcc-mcp-office-protocol",
  "serde",
@@ -59,7 +60,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-testkit"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "dcc-mcp-office-protocol",
  "serde_json",
@@ -67,7 +68,7 @@ dependencies = [
 
 [[package]]
 name = "dcc-mcp-office-tools"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "dcc-mcp-office-protocol",
 ]

@@ -37,7 +37,9 @@ artifact report (proposal §15.1).
 2. Select backend per file: local + high fidelity → COM native export;
    OneDrive/SharePoint → Graph conversion; unsupported → explicit error,
    never a silent low-fidelity substitute.
-3. Submit as one Job (`office.batch.convert`); poll `office.job.get`.
+3. Submit as one Job (`office.batch.convert`); the immediate result has
+   `backend: "job"`, `job_id`, and `phase`. Poll `office.job.get` until a
+   terminal phase and read the command result from its `result` field.
 4. Validate PDFs; publish artifacts.
 
 ## Provider choice
@@ -60,6 +62,9 @@ only. Unsupported formats return `OFFICE_CAPABILITY_UNSUPPORTED` with a reason.
 ## Failure compensation
 
 - Per-file failures do not abort the job → `partially_succeeded`.
+- `office.job.cancel` only requests cancellation; poll until `cancelled`.
+  The Host stops at the next file boundary and never interrupts a COM write
+  halfway through an item.
 - Busy/timeout → auto-retry (policy-defined); modal dialog → report and wait.
 - Determinable failures surface `OFFICE_PARTIAL_SUCCESS` with the item list.
 

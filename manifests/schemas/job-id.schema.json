@@ -1,0 +1,11 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/job-id.schema.json",
+  "title": "Office job reference",
+  "type": "object",
+  "required": ["job_id"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string", "pattern": "^job:[a-f0-9]{32}$"}
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/sidecar-status.schema.json",
+  "title": "office.host.ping result",
+  "type": "object",
+  "required": [
+    "protocol_version", "host_id", "state", "app", "pid", "office_version",
+    "open_documents", "busy", "modal", "protected_view", "com_attached",
+    "com_attach_state"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "protocol_version": {"type": "string", "enum": ["office-rpc/1"]},
+    "host_id": {"type": "string", "minLength": 1},
+    "state": {"type": "string", "enum": ["ready", "busy", "degraded"]},
+    "app": {"type": "string", "minLength": 1},
+    "pid": {"type": "integer", "minimum": 1},
+    "office_version": {"type": ["string", "null"]},
+    "open_documents": {"type": "array", "items": {"type": "string"}},
+    "busy": {"type": "boolean"},
+    "modal": {"type": "boolean"},
+    "protected_view": {"type": "boolean"},
+    "com_attached": {"type": "boolean"},
+    "com_attach_state": {"type": "string", "enum": ["unknown", "attached", "failed", "unavailable"]}
+  }
+}

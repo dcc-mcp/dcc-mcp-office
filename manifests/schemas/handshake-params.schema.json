@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/handshake-params.schema.json",
+  "title": "office.host.handshake params",
+  "type": "object",
+  "required": ["requested_app"],
+  "additionalProperties": false,
+  "properties": {
+    "requested_app": {"type": "string", "minLength": 1},
+    "protocol_versions": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "gateway_version": {"type": "string"}
+  }
+}

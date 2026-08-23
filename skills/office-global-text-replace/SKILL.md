@@ -36,8 +36,9 @@ only after the caller confirms the diff report (proposal §15.2).
 ## Planning steps
 
 1. Resolve inputs; route each file to its app sidecar (per-app COM backend).
-2. Dry-run first: matched files, per-file/per-rule match counts, scopes that
-   cannot be safely modified.
+2. Submit the dry-run and poll its returned `job_id` through `office.job.get`;
+   read matched files, per-file/per-rule counts, and unsafe scopes from the
+   terminal `result`.
 3. Show the diff report; wait for explicit confirmation.
 4. Commit (dry_run: false), then re-inspect to verify the result.
 
@@ -68,6 +69,9 @@ Per-file failures do not abort the batch (partial success). Busy / modal /
 timeout follow the retry ladder; dry-run opens documents read-only so a
 failed scan never mutates anything. A timed-out commit reports
 `indeterminate: true`; re-inspect the source before deciding whether to retry.
+`office.job.cancel` is cooperative: it is accepted immediately, becomes
+`cancelled` at the next file boundary, and never interrupts an in-flight COM
+write.
 
 ## Artifact naming
 

@@ -37,6 +37,22 @@ Host before a handler runs. The catalog is the only capability-to-schema map:
 Every capability also references `schemas/command-result.schema.json`; the
 Host validates the handler result against it before audit enrichment.
 
+The catalog also owns every request/response RPC schema:
+
+| RPC method | Params | Result |
+|---|---|---|
+| `office.host.handshake` | `schemas/handshake-params.schema.json` | `schemas/handshake-result.schema.json` |
+| `office.host.ping` | `schemas/empty-object.schema.json` | `schemas/sidecar-status.schema.json` |
+| `office.host.shutdown` | `schemas/empty-object.schema.json` | `schemas/shutdown-result.schema.json` |
+| `office.job.get` | `schemas/job-id.schema.json` | `schemas/job-status.schema.json` |
+| `office.job.cancel` | `schemas/job-id.schema.json` | `schemas/job-cancel-result.schema.json` |
+| `office.command.execute` | `schemas/command-params.schema.json` | `schemas/command-result.schema.json` |
+
+Batch command submissions validate against the normal command-result schema
+with `backend: "job"`, `job_id`, and `phase`. Their terminal command result is
+returned from `office.job.get.result`; progress and completion are also sent as
+JSON-RPC notifications on the same pipe.
+
 `schemas/command-params.schema.json` owns the outer
 `office.command.execute` envelope, including `document`, `policy`, and the
 structured confirmation proof. The Host validates it before applying the

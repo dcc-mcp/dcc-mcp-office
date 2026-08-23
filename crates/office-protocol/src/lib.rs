@@ -55,8 +55,16 @@ pub struct OfficeCapabilityCatalog {
     pub provider: String,
     pub command_params_schema: String,
     pub security_policy: CatalogSecurityPolicy,
+    pub rpc_methods: Vec<CatalogRpcMethod>,
     pub errors: Vec<CatalogError>,
     pub capabilities: Vec<CatalogCapability>,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CatalogRpcMethod {
+    pub name: String,
+    pub params_schema: String,
+    pub result_schema: String,
 }
 
 /// Canonical default-deny policy shared by the Rust gateway and C# host.
@@ -253,6 +261,12 @@ fn default_policy() -> serde_json::Value {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CommandResult {
     pub operation_id: String,
+    /// Present when a long-running batch command was accepted for asynchronous execution.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub job_id: Option<String>,
+    /// Current job phase on an asynchronous submission result.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub phase: Option<JobPhase>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub revision: Option<u64>,
     /// Change summary (what changed, per scope).
@@ -285,6 +299,61 @@ pub struct JobProgress {
     pub total: u64,
 }
 
+/// Lifecycle state returned by office.job.get and office.job.cancel.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum JobPhase {
+    Queued,
+    Running,
+    Succeeded,
+    PartiallySucceeded,
+    Failed,
+    Cancelled,
+}
+
+impl JobPhase {
+    pub fn is_terminal(self) -> bool {
+        matches!(
+            self,
+            Self::Succeeded | Self::PartiallySucceeded | Self::Failed | Self::Cancelled
+        )
+    }
+}
+
+/// Structured terminal failure captured by the in-host job tracker.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JobError {
+    pub code: String,
+    pub message: String,
+    #[serde(default)]
+    pub indeterminate: bool,
+}
+
+/// Snapshot returned by office.job.get.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct JobStatus {
+    pub job_id: String,
+    pub capability: String,
+    pub phase: JobPhase,
+    pub stage: String,
+    pub completed: u64,
+    pub total: u64,
+    pub cancel_requested: bool,
+    pub created_at: String,
+    pub updated_at: String,
+    pub result: Option<serde_json::Value>,
+    pub error: Option<JobError>,
+}
+
+/// Acknowledgement returned by office.job.cancel. Cancellation becomes final
+/// only at the next per-item safety boundary and is observed via office.job.get.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct JobCancelResult {
+    pub job_id: String,
+    pub accepted: bool,
+    pub phase: JobPhase,
+}
+
 /// Minimised selection DTO carried by selection_changed events
 /// (proposal §12.4 / §21).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -300,10 +369,20 @@ pub struct SelectionInfo {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct EventNotification {
     pub event: String,
+    #[serde(default)]
+    pub provider: String,
+    #[serde(default)]
+    pub application_instance: String,
+    #[serde(default)]
+    pub application: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub document_id: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub revision: Option<u64>,
+    #[serde(default)]
+    pub timestamp: String,
+    #[serde(default)]
+    pub correlation_id: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub selection: Option<SelectionInfo>,
     /// provider / app instance / correlation id (free-form DTO).
@@ -314,6 +393,8 @@ pub struct EventNotification {
 /// Sidecar heartbeat payload (proposal §8.3).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SidecarStatus {
+    pub protocol_version: String,
+    pub host_id: String,
     pub state: SidecarState,
     pub app: String,
     pub pid: u32,
@@ -327,6 +408,9 @@ pub struct SidecarStatus {
     pub modal: bool,
     #[serde(default)]
     pub protected_view: bool,
+    #[serde(default)]
+    pub com_attached: bool,
+    pub com_attach_state: String,
 }
 
 /// Artifact registry record (proposal §17).
@@ -524,6 +608,8 @@ mod tests {
     fn command_result_marks_indeterminate() {
         let r = CommandResult {
             operation_id: "op-1".into(),
+            job_id: None,
+            phase: None,
             revision: None,
             changed: serde_json::json!({}),
             warnings: vec![],
@@ -581,6 +667,8 @@ mod tests {
     fn command_result_carries_audit_trail() {
         let r = CommandResult {
             operation_id: "op-2".into(),
+            job_id: None,
+            phase: None,
             revision: None,
             changed: serde_json::json!({}),
             warnings: vec![],
@@ -605,5 +693,52 @@ mod tests {
         assert!(json.contains("duration_ms"));
         let back: CommandResult = serde_json::from_str(&json).unwrap();
         assert_eq!(back.audit.unwrap()["duration_ms"], 42);
+    }
+
+    #[test]
+    fn job_status_round_trips_and_knows_terminal_phases() {
+        let status: JobStatus = serde_json::from_str(
+            r#"{
+                "job_id":"job:0123456789abcdef0123456789abcdef",
+                "capability":"batch.convert",
+                "phase":"partially_succeeded",
+                "stage":"partially_succeeded",
+                "completed":2,
+                "total":3,
+                "cancel_requested":false,
+                "created_at":"2026-08-24T00:00:00Z",
+                "updated_at":"2026-08-24T00:00:01Z",
+                "result":{"changed":{"succeeded":2,"failed":1}},
+                "error":null
+            }"#,
+        )
+        .unwrap();
+
+        assert!(status.phase.is_terminal());
+        assert_eq!(status.completed, 2);
+        assert_eq!(status.result.unwrap()["changed"]["failed"], 1);
+    }
+
+    #[test]
+    fn event_envelope_deserializes_required_correlation_fields() {
+        let event: EventNotification = serde_json::from_str(
+            r#"{
+                "event":"office.document.saved",
+                "provider":"dcc-mcp-office",
+                "application_instance":"office-host:powerpoint:session-1",
+                "application":"powerpoint",
+                "document_id":null,
+                "revision":null,
+                "timestamp":"2026-08-24T00:00:01Z",
+                "correlation_id":"job:0123456789abcdef0123456789abcdef",
+                "selection":null,
+                "context":{"path":"deck.pptx"}
+            }"#,
+        )
+        .unwrap();
+
+        assert_eq!(event.provider, "dcc-mcp-office");
+        assert_eq!(event.application, "powerpoint");
+        assert!(event.correlation_id.starts_with("job:"));
     }
 }

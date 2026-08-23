@@ -9,6 +9,7 @@ internal sealed class CapabilityCatalog
     private static readonly Lazy<CapabilityCatalog> Instance = new(Load);
 
     private readonly IReadOnlyDictionary<string, CapabilityDefinition> _byName;
+    private readonly IReadOnlyDictionary<string, RpcMethodDefinition> _rpcByName;
     private readonly IReadOnlyDictionary<string, JsonElement> _schemas;
 
     private CapabilityCatalog(CatalogDocument document, Dictionary<string, JsonElement> schemas)
@@ -18,10 +19,12 @@ internal sealed class CapabilityCatalog
         Provider = document.Provider;
         CommandParamsSchema = document.CommandParamsSchema;
         SecurityPolicy = document.SecurityPolicy;
+        RpcMethods = document.RpcMethods;
         Errors = document.Errors;
         Capabilities = document.Capabilities;
         _schemas = schemas;
         _byName = Capabilities.ToDictionary(capability => capability.Name, StringComparer.Ordinal);
+        _rpcByName = RpcMethods.ToDictionary(method => method.Name, StringComparer.Ordinal);
     }
 
     internal static CapabilityCatalog Current => Instance.Value;
@@ -36,12 +39,17 @@ internal sealed class CapabilityCatalog
 
     internal CatalogSecurityPolicy SecurityPolicy { get; }
 
+    internal IReadOnlyList<RpcMethodDefinition> RpcMethods { get; }
+
     internal IReadOnlyList<CatalogErrorDefinition> Errors { get; }
 
     internal IReadOnlyList<CapabilityDefinition> Capabilities { get; }
 
     internal CapabilityDefinition? FindCapability(string name) =>
         _byName.GetValueOrDefault(name);
+
+    internal RpcMethodDefinition? FindRpcMethod(string name) =>
+        _rpcByName.GetValueOrDefault(name);
 
     internal IReadOnlyDictionary<string, string> ManifestCapabilities(
         string app,
@@ -74,6 +82,16 @@ internal sealed class CapabilityCatalog
     internal void ValidateCommandParams(JsonElement parameters)
     {
         ValidateSchema(CommandParamsSchema, parameters, "params");
+    }
+
+    internal void ValidateRpcParams(RpcMethodDefinition method, JsonElement parameters)
+    {
+        ValidateSchema(method.ParamsSchema, parameters, "params");
+    }
+
+    internal void ValidateRpcResult(RpcMethodDefinition method, JsonElement result)
+    {
+        ValidateSchema(method.ResultSchema, result, "result");
     }
 
     internal void ValidateOutput(CapabilityDefinition capability, JsonElement output)
@@ -112,6 +130,11 @@ internal sealed class CapabilityCatalog
                 capability.OutputSchema,
             })
             .Append(document.CommandParamsSchema)
+            .Concat(document.RpcMethods.SelectMany(method => new[]
+            {
+                method.ParamsSchema,
+                method.ResultSchema,
+            }))
             .Distinct(StringComparer.Ordinal))
         {
             string resource = "Manifests." + schemaReference.Replace('/', '.');
@@ -126,7 +149,7 @@ internal sealed class CapabilityCatalog
 
     private static void ValidateDocument(CatalogDocument document)
     {
-        if (document.SchemaVersion != "office-capability-catalog/1.1")
+        if (document.SchemaVersion != "office-capability-catalog/1.2")
         {
             throw new InvalidDataException(
                 $"unsupported capability catalog version '{document.SchemaVersion}'");
@@ -152,6 +175,12 @@ internal sealed class CapabilityCatalog
         {
             throw new InvalidDataException(
                 "canonical overwrite_original policy must require checkpoint and confirmation");
+        }
+
+        if (document.RpcMethods.Select(method => method.Name).Distinct(StringComparer.Ordinal).Count()
+            != document.RpcMethods.Count)
+        {
+            throw new InvalidDataException("catalog RPC method names must be unique");
         }
 
         var errorCodes = document.Errors.Select(error => error.Code)
@@ -197,9 +226,19 @@ internal sealed class CapabilityCatalog
         public string Provider { get; init; } = "";
         public string CommandParamsSchema { get; init; } = "";
         public CatalogSecurityPolicy SecurityPolicy { get; init; } = new();
+        public List<RpcMethodDefinition> RpcMethods { get; init; } = [];
         public List<CatalogErrorDefinition> Errors { get; init; } = [];
         public List<CapabilityDefinition> Capabilities { get; init; } = [];
     }
+}
+
+internal sealed class RpcMethodDefinition
+{
+    public string Name { get; init; } = "";
+
+    public string ParamsSchema { get; init; } = "";
+
+    public string ResultSchema { get; init; } = "";
 }
 
 internal sealed class CatalogSecurityPolicy

@@ -123,7 +123,8 @@ public static class Program
             app,
             requestLine => router.Dispatch(requestLine),
             pipeName,
-            () => router.ShutdownRequested);
+            () => router.ShutdownRequested,
+            router.DrainNotifications);
         Console.Error.WriteLine($"office-host[{app}] listening on {server.PipeName}");
         using var cts = new CancellationTokenSource();
         Console.CancelKeyPress += (_, eventArgs) =>
@@ -148,6 +149,10 @@ public static class Program
             }
             string response = router.Dispatch(line);
             Console.Out.WriteLine(response);
+            foreach (string notification in router.DrainNotifications())
+            {
+                Console.Out.WriteLine(notification);
+            }
             Console.Out.Flush();
         }
         return 0;
