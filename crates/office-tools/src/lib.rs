@@ -1,8 +1,9 @@
 //! dcc-mcp-office-tools — task-level MCP tool registry (proposal §11).
 //!
 //! Agents see task-level capabilities, never raw COM members (proposal §3.2 /
-//! ADR-004). M0 records the registry; JSON schemas + gateway registration
-//! land in M1 via the dcc-mcp-gateway capability index.
+//! ADR-004). Registry `P0`/`P1`/`P2` values are proposal §7 support priorities,
+//! not proposal delivery phases or shared-repository milestones. The crosswalk
+//! is documented in `docs/README.md#delivery-vocabulary`.
 
 #![forbid(unsafe_code)]
 
@@ -77,7 +78,8 @@ pub mod access {
 pub struct RegistryEntry {
     pub name: &'static str,
     pub app: &'static str,
-    /// P0 (PowerPoint/Word/Excel), P1 (Outlook/OneNote/Visio), P2 (Project/Access).
+    /// Proposal §7 support priority: P0 (PowerPoint/Word/Excel),
+    /// P1 (Outlook/OneNote/Visio), or P2 (Project/Access).
     pub phase: &'static str,
 }
 
