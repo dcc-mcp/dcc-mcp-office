@@ -22,13 +22,10 @@ dotnet build dotnet/Office.Automation.Host
 dotnet publish dotnet/Office.Automation.Host -c Release -r win-x64 --self-contained
 ```
 
-Publish aliases (proposal §22.1): copy `dcc-office-host.exe` to
-`dcc-office-powerpoint-host.exe`, `dcc-office-word-host.exe`,
-`dcc-office-excel-host.exe` — the binary switches behaviour on `--app`.
-
-Distribution goes through `dcc-mcp-release-artifacts`; application adapters
-(`dcc-mcp-PowerPoint`, ...) download/verify/launch the host, following the
-Unity sidecar-launcher precedent.
+The release packager creates the proposal §22.1 aliases and ships them with the
+catalog, schemas, templates, checksums, SBOM, and provenance in the repository's
+versioned GitHub Release. The canonical install and discovery contract is
+documented in [`docs/distribution.md`](../docs/distribution.md).
 
 ## Process model (proposal §8)
 

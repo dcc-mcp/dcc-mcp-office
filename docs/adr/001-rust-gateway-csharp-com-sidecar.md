@@ -25,5 +25,6 @@ policy and lifecycle.
 - Office crashes/busy states cannot block the gateway (process isolation).
 - C# interop maturity (RCW handling, events, STA) is leveraged instead of
   re-implemented in Rust.
-- Distribution must ship a self-contained .NET runtime artifact via
-  `dcc-mcp-release-artifacts`.
+- Distribution ships a self-contained, versioned .NET runtime bundle through
+  this repository's GitHub Releases, with hashes, an SPDX SBOM, provenance,
+  protocol contracts, templates, and executable aliases.

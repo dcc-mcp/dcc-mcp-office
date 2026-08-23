@@ -7,5 +7,5 @@ repository.workspace = true
 description = "Default-deny Office security policy (ExecuteMso whitelist, AutomationSecurity, risk levels)"
 
 [dependencies]
-dcc-mcp-office-protocol = { version = "0.2.1", path = "../office-protocol" }
+dcc-mcp-office-protocol = { workspace = true }
 serde = { workspace = true }

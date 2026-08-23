@@ -248,6 +248,35 @@ fn repeated_wrong_response_ids_fail_as_a_protocol_error() {
 }
 
 #[test]
+fn incompatible_provider_version_fails_the_handshake_closed() {
+    let pipe = unique_pipe("provider-version");
+    let server = spawn_scripted_server(
+        &pipe,
+        vec![json!({
+            "jsonrpc": "2.0",
+            "id": 0,
+            "result": {
+                "protocol_version": "office-rpc/1",
+                "host_id": "incompatible-host",
+                "capability_manifest": {"provider_version": "0.3.0"}
+            }
+        })],
+    );
+    let mut client = OfficeHostClient::new("powerpoint");
+    client
+        .connect_with_retry(&pipe, Duration::from_secs(1))
+        .expect("connect");
+
+    let error = client
+        .handshake("test-gateway")
+        .expect_err("incompatible provider must not become ready");
+
+    assert!(matches!(error, ClientError::Protocol(message) if message.contains("incompatible")));
+    assert_eq!(client.state(), SidecarState::Degraded);
+    server.join().expect("server thread");
+}
+
+#[test]
 fn disconnected_client_reconnects_and_repeats_the_handshake() {
     let pipe = unique_pipe("recover");
     let server_pipe = pipe.clone();
@@ -270,7 +299,9 @@ fn disconnected_client_reconnects_and_repeats_the_handshake() {
                     "result": {
                         "protocol_version": "office-rpc/1",
                         "host_id": "first-host",
-                        "capability_manifest": {}
+                        "capability_manifest": {
+                            "provider_version": env!("CARGO_PKG_VERSION")
+                        }
                     }
                 }),
             )
@@ -298,7 +329,9 @@ fn disconnected_client_reconnects_and_repeats_the_handshake() {
                     "result": {
                         "protocol_version": "office-rpc/1",
                         "host_id": "replacement-host",
-                        "capability_manifest": {}
+                        "capability_manifest": {
+                            "provider_version": env!("CARGO_PKG_VERSION")
+                        }
                     }
                 }),
             )
