@@ -84,6 +84,7 @@ impl fmt::Display for ClientError {
 
 impl std::error::Error for ClientError {}
 
+#[cfg(any(windows, test))]
 impl ClientError {
     fn from_rpc_error(error: &Value) -> Self {
         Self::Rpc {
