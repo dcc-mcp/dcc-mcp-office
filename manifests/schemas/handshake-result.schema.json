@@ -8,6 +8,47 @@
   "properties": {
     "protocol_version": {"type": "string", "enum": ["office-rpc/1"]},
     "host_id": {"type": "string", "minLength": 1},
-    "capability_manifest": {"type": "object"}
+    "capability_manifest": {
+      "type": "object",
+      "required": [
+        "provider", "provider_version", "protocol_version", "application",
+        "execution_modes", "capabilities", "template_packages", "limits"
+      ],
+      "properties": {
+        "provider": {"type": "string", "minLength": 1},
+        "provider_version": {"type": "string", "minLength": 1},
+        "protocol_version": {"const": "office-rpc/1"},
+        "application": {"type": ["object", "null"]},
+        "execution_modes": {"type": "array", "items": {"type": "string"}},
+        "capabilities": {
+          "type": "object",
+          "additionalProperties": {"type": "string"}
+        },
+        "template_packages": {
+          "type": "object",
+          "propertyNames": {"pattern": "^brand://[^/]+/.+$"},
+          "additionalProperties": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["version", "kind", "source_kind", "layouts"],
+            "properties": {
+              "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+              "kind": {"const": "presentation"},
+              "source_kind": {"enum": ["embedded", "file"]},
+              "layouts": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {"type": "string", "minLength": 1}
+              }
+            }
+          }
+        },
+        "limits": {
+          "type": "object",
+          "required": ["max_parallel_writes", "requires_user_session"]
+        }
+      }
+    }
   }
 }

@@ -174,11 +174,7 @@ def package_release(
         catalog = repository / "crates" / "office-protocol" / "office-rpc.catalog.json"
         if catalog.is_file():
             shutil.copyfile(catalog, staging / "manifests" / catalog.name)
-        (staging / "templates").mkdir()
-        shutil.copyfile(
-            repository / "templates" / "registry.json",
-            staging / "templates" / "registry.json",
-        )
+        shutil.copytree(repository / "templates", staging / "templates")
         shutil.copyfile(
             repository / "docs" / "distribution.md",
             staging / "INSTALL.md",

@@ -20,6 +20,26 @@
         "closing",
         "bullets"
       ]
+    },
+    {
+      "uri": "brand://dcc-mcp/studio-light",
+      "version": "1.0.0",
+      "kind": "presentation",
+      "description": "External light presentation package inheriting the default Open XML skeleton.",
+      "source": "file://presentations/studio-light",
+      "layouts": [
+        "title_cover",
+        "section_cover",
+        "two_columns",
+        "comparison",
+        "timeline",
+        "kpi_dashboard",
+        "technical_architecture",
+        "image_left_text_right",
+        "image_grid",
+        "closing",
+        "bullets"
+      ]
     }
   ]
 }

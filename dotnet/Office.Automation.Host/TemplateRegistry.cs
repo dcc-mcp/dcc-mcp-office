@@ -1,79 +1,131 @@
-using System.Text.Json;
+using System.Text.Json.Serialization;
+using Office.Automation.OpenXml;
 
 namespace Office.Automation.Host;
 
 /// <summary>
-/// Brand template registry (proposal §15.4 / templates/README.md): resolves
-/// brand:// URIs to template packages. The M1 host ships the built-in
-/// dcc-mcp/default package (embedded Open XML skeletons); the registry file
-/// is the source of truth for what else exists and which semantic layouts a
-/// package materialises.
+/// Resolves only materialized brand templates. A URI is advertised after its
+/// package has passed path, schema, XML-part, layout, and style validation.
 /// </summary>
 public sealed class TemplateRegistry
 {
-    /// <summary>The package every deck.compile falls back to.</summary>
-    public const string DefaultUri = "brand://dcc-mcp/default";
+    public const string DefaultUri = PresentationTemplatePackage.DefaultUri;
 
-    private readonly Dictionary<string, TemplateEntry> _entries;
+    private readonly Dictionary<string, TemplateEntry> _entries =
+        new(StringComparer.OrdinalIgnoreCase);
 
-    public TemplateRegistry()
+    public TemplateRegistry(
+        IEnumerable<string>? templateDirectories = null,
+        bool includeDefaultDirectories = false)
     {
-        _entries = new Dictionary<string, TemplateEntry>(StringComparer.OrdinalIgnoreCase);
-        using var document = JsonDocument.Parse(LoadRegistryJson());
-        foreach (var template in document.RootElement.GetProperty("templates").EnumerateArray())
+        Add(new TemplateEntry(
+            PresentationTemplatePackage.EmbeddedDefault(),
+            SourceKind: "embedded"));
+
+        foreach (string directory in TemplateDirectories(
+            templateDirectories,
+            includeDefaultDirectories))
         {
-            var uri = template.GetProperty("uri").GetString()!;
-            _entries[uri] = new TemplateEntry(
-                uri,
-                template.GetProperty("version").GetString()!,
-                template.TryGetProperty("kind", out var kind) ? kind.GetString() ?? "presentation" : "presentation",
-                template.TryGetProperty("source", out var source) ? source.GetString() ?? "" : "",
-                template.TryGetProperty("layouts", out var layouts)
-                    ? layouts.EnumerateArray().Select(l => l.GetString() ?? "").Where(l => l.Length > 0).ToArray()
-                    : Array.Empty<string>());
+            if (!Directory.Exists(directory))
+            {
+                continue;
+            }
+            foreach (string packagePath in Directory.EnumerateFiles(
+                directory,
+                "package.json",
+                new EnumerationOptions
+                {
+                    AttributesToSkip = FileAttributes.ReparsePoint,
+                    IgnoreInaccessible = true,
+                    RecurseSubdirectories = true,
+                }).Order(StringComparer.OrdinalIgnoreCase))
+            {
+                Add(new TemplateEntry(
+                    PresentationTemplatePackage.LoadDirectory(
+                        Path.GetDirectoryName(packagePath)!),
+                    SourceKind: "file"));
+            }
         }
     }
 
-    /// <summary>Resolves a brand:// URI, or null when unknown.</summary>
     public TemplateEntry? Resolve(string uri) =>
-        _entries.TryGetValue(uri, out var entry) ? entry : null;
+        _entries.TryGetValue(uri, out TemplateEntry? entry) ? entry : null;
 
-    /// <summary>The built-in package (always present).</summary>
-    public TemplateEntry Default =>
-        _entries.TryGetValue(DefaultUri, out var entry)
-            ? entry
-            : throw new InvalidOperationException("brand registry lacks the built-in default package");
+    public IReadOnlyCollection<string> AllUris =>
+        _entries.Keys.Order(StringComparer.OrdinalIgnoreCase).ToArray();
 
-    public IReadOnlyCollection<string> AllUris => _entries.Keys;
+    public IReadOnlyDictionary<string, TemplatePackageCapability> Capabilities => _entries
+        .OrderBy(pair => pair.Key, StringComparer.OrdinalIgnoreCase)
+        .ToDictionary(
+            pair => pair.Key,
+            pair => new TemplatePackageCapability(
+                pair.Value.Package.Version,
+                "presentation",
+                pair.Value.SourceKind,
+                pair.Value.Package.Layouts),
+            StringComparer.OrdinalIgnoreCase);
 
-    private static string LoadRegistryJson()
+    private void Add(TemplateEntry entry)
     {
-        // 1) packaged next to the exe (deployment layout: exe-dir/templates/registry.json)
-        var packaged = Path.Combine(AppContext.BaseDirectory, "templates", "registry.json");
-        if (File.Exists(packaged))
+        if (!_entries.TryAdd(entry.Package.Uri, entry))
         {
-            return File.ReadAllText(packaged);
+            throw new InvalidDataException(
+                $"duplicate materialized template URI '{entry.Package.Uri}'");
         }
-        // 2) repo-relative (dev: cwd is the repository root under dotnet run)
-        var repoRelative = Path.Combine(Directory.GetCurrentDirectory(), "templates", "registry.json");
-        if (File.Exists(repoRelative))
-        {
-            return File.ReadAllText(repoRelative);
-        }
-        // 3) embedded copy (single-file publish keeps working)
-        using var stream = typeof(TemplateRegistry).Assembly
-            .GetManifestResourceStream("Templates.registry.json")
-            ?? throw new InvalidOperationException("embedded brand registry missing");
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
     }
 
+    private static IEnumerable<string> TemplateDirectories(
+        IEnumerable<string>? configured,
+        bool includeDefaults)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string directory in configured ?? Array.Empty<string>())
+        {
+            if (string.IsNullOrWhiteSpace(directory))
+            {
+                throw new InvalidDataException("template directory must not be empty");
+            }
+            string full = Path.GetFullPath(directory);
+            if (seen.Add(full))
+            {
+                yield return full;
+            }
+        }
+
+        if (!includeDefaults)
+        {
+            yield break;
+        }
+
+        string packaged = Path.Combine(AppContext.BaseDirectory, "templates");
+        if (seen.Add(packaged))
+        {
+            yield return packaged;
+        }
+        string bundled = Path.GetFullPath(
+            Path.Combine(AppContext.BaseDirectory, "..", "templates"));
+        if (seen.Add(bundled))
+        {
+            yield return bundled;
+        }
+
+        string local = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "dcc-mcp",
+            "office-templates");
+        if (seen.Add(local))
+        {
+            yield return local;
+        }
+    }
 }
 
-/// <summary>One registry entry.</summary>
 public sealed record TemplateEntry(
-    string Uri,
-    string Version,
-    string Kind,
-    string Source,
-    string[] Layouts);
+    PresentationTemplatePackage Package,
+    string SourceKind);
+
+public sealed record TemplatePackageCapability(
+    [property: JsonPropertyName("version")] string Version,
+    [property: JsonPropertyName("kind")] string Kind,
+    [property: JsonPropertyName("source_kind")] string SourceKind,
+    [property: JsonPropertyName("layouts")] IReadOnlyCollection<string> Layouts);

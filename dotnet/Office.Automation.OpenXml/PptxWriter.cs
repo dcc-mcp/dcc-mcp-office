@@ -40,8 +40,13 @@ public static class PptxWriter
     private const long EmuPerInch = 914400;
 
     /// <summary>Compile a Deck IR JSON file into a PPTX package.</summary>
-    public static void CompileDeck(string irPath, string outPath)
+    public static void CompileDeck(
+        string irPath,
+        string outPath,
+        PresentationTemplatePackage? templatePackage = null)
     {
+        PresentationTemplatePackage activeTemplate =
+            templatePackage ?? PresentationTemplatePackage.EmbeddedDefault();
         using var doc = JsonDocument.Parse(File.ReadAllText(irPath));
         var slides = doc.RootElement.GetProperty("document").GetProperty("slides");
         int slideCount = slides.GetArrayLength();
@@ -52,13 +57,6 @@ public static class PptxWriter
         }
         const bool includeNotes = true;
         string irDirectory = Path.GetDirectoryName(Path.GetFullPath(irPath)) ?? ".";
-        string? templateUri = null;
-        if (doc.RootElement.TryGetProperty("template", out var template) && template.TryGetProperty("uri", out var tUri))
-        {
-            templateUri = tUri.GetString();
-        }
-        bool brandDeck = templateUri is not null && templateUri.StartsWith("brand://dcc-mcp", StringComparison.Ordinal);
-
         using var package = Package.Open(outPath, FileMode.Create);
         // Package-level relationship (managed by Packaging; its id is
         // auto-generated and referenced by nothing in our XML).
@@ -74,13 +72,11 @@ public static class PptxWriter
         var mediaParts = new Dictionary<string, PackagePart>();
         var mediaCounter = 0;
         PackagePart? logoPart = null;
-        if (brandDeck)
+        if (activeTemplate.Logo is not null)
         {
             logoPart = CreatePart(package, "/ppt/media/logo-light.png", CtPng);
             using var logoStream = logoPart.GetStream();
-            using var logoResource = typeof(PptxWriter).Assembly.GetManifestResourceStream("Office.Automation.OpenXml.Templates.logo-light.png")
-                ?? throw new InvalidOperationException("missing embedded brand logo");
-            logoResource.CopyTo(logoStream);
+            logoStream.Write(activeTemplate.Logo);
         }
 
         var slideRelIds = new string[slideCount];
@@ -96,29 +92,32 @@ public static class PptxWriter
             new Uri("../slideLayouts/slideLayout1.xml", UriKind.Relative), TargetMode.Internal, RtSlideLayout).Id;
         string masterThemeRelId = masterPart.CreateRelationship(
             new Uri("../theme/theme1.xml", UriKind.Relative), TargetMode.Internal, RtTheme).Id;
-        WriteContent(masterPart, MasterXml(masterLayoutRelId, masterThemeRelId));
+        WriteContent(masterPart, MasterXml(masterLayoutRelId, masterThemeRelId, activeTemplate));
 
         var layoutPart = CreatePart(package, "/ppt/slideLayouts/slideLayout1.xml", CtSlideLayout);
         string layoutMasterRelId = layoutPart.CreateRelationship(
             new Uri("../slideMasters/slideMaster1.xml", UriKind.Relative), TargetMode.Internal, RtSlideMaster).Id;
-        WriteContent(layoutPart, LayoutXml(layoutMasterRelId));
+        WriteContent(layoutPart, LayoutXml(layoutMasterRelId, activeTemplate));
 
         var themePart = CreatePart(package, "/ppt/theme/theme1.xml", CtTheme);
-        WriteContent(themePart, ThemeXml());
+        WriteContent(themePart, ThemeXml(activeTemplate));
 
         if (includeNotes)
         {
             var notesMasterPart = CreatePart(package, "/ppt/notesMasters/notesMaster1.xml", CtNotesMaster);
             string notesMasterThemeRelId = notesMasterPart.CreateRelationship(
                 new Uri("../theme/theme1.xml", UriKind.Relative), TargetMode.Internal, RtTheme).Id;
-            WriteContent(notesMasterPart, NotesMasterXml(notesMasterThemeRelId));
+            WriteContent(notesMasterPart, NotesMasterXml(notesMasterThemeRelId, activeTemplate));
         }
 
         for (int i = 0; i < slideCount; i++)
         {
             var slide = slides[i];
             string notes = slide.TryGetProperty("speaker_notes", out var n) ? n.GetString() ?? "" : "";
-            string layout = slide.TryGetProperty("semantic_layout", out var sl) ? sl.GetString() ?? "bullets" : "bullets";
+            string semanticLayout = slide.TryGetProperty("semantic_layout", out var sl)
+                ? sl.GetString() ?? "bullets"
+                : "bullets";
+            string layout = activeTemplate.ResolveRenderer(semanticLayout);
             var slidePart = CreatePart(package, $"/ppt/slides/slide{i + 1}.xml", CtSlide);
             string slideLayoutRelId = slidePart.CreateRelationship(
                 new Uri("../slideLayouts/slideLayout1.xml", UriKind.Relative), TargetMode.Internal, RtSlideLayout).Id;
@@ -132,7 +131,13 @@ public static class PptxWriter
                     new Uri("../notesMasters/notesMaster1.xml", UriKind.Relative), TargetMode.Internal, RtNotesMaster).Id;
                 string notesPartSlideRelId = notesPart.CreateRelationship(
                     new Uri($"../slides/slide{i + 1}.xml", UriKind.Relative), TargetMode.Internal, RtSlide).Id;
-                WriteContent(notesPart, NotesSlideXml(notes, notesPartMasterRelId, notesPartSlideRelId));
+                WriteContent(
+                    notesPart,
+                    NotesSlideXml(
+                        notes,
+                        notesPartMasterRelId,
+                        notesPartSlideRelId,
+                        activeTemplate));
             }
             // Slide images → media parts (cached per path) + rels.
             var imageRelIds = new Dictionary<string, string>();
@@ -175,7 +180,19 @@ public static class PptxWriter
                 logoRelId = slidePart.CreateRelationship(logoPart.Uri, TargetMode.Internal, RtImage).Id;
             }
 
-            WriteContent(slidePart, SlideXml(slide, deckTitle, i + 1, slideCount, slideLayoutRelId, slideNotesRelId, imageRelIds, logoRelId, irDirectory));
+            WriteContent(
+                slidePart,
+                SlideXml(
+                    slide,
+                    deckTitle,
+                    i + 1,
+                    slideCount,
+                    slideLayoutRelId,
+                    slideNotesRelId,
+                    imageRelIds,
+                    logoRelId,
+                    irDirectory,
+                    activeTemplate));
         }
     }
 
@@ -211,18 +228,13 @@ public static class PptxWriter
         return presentation;
     }
 
-    private static string LoadTemplate(string name)
-    {
-        var stream = typeof(PptxWriter).Assembly.GetManifestResourceStream("Office.Automation.OpenXml.Templates." + name)
-            ?? throw new InvalidOperationException("missing embedded template: " + name);
-        using var reader = new StreamReader(stream);
-        return reader.ReadToEnd();
-    }
-
-    private static XElement MasterXml(string layoutRelId, string themeRelId)
+    private static XElement MasterXml(
+        string layoutRelId,
+        string themeRelId,
+        PresentationTemplatePackage template)
     {
         _ = themeRelId; // carried in the relationship part, not referenced in XML
-        var master = XDocument.Parse(LoadTemplate("slideMaster.xml")).Root!;
+        var master = XDocument.Parse(template.Part("slide_master")).Root!;
         // Trim the template's 11-layout list to the single blank layout we ship.
         var idLst = master.Element(P + "sldLayoutIdLst")!;
         idLst.RemoveNodes();
@@ -231,33 +243,50 @@ public static class PptxWriter
         return master;
     }
 
-    private static XElement LayoutXml(string masterRelId)
+    private static XElement LayoutXml(
+        string masterRelId,
+        PresentationTemplatePackage template)
     {
         _ = masterRelId; // carried in the relationship part
-        return XDocument.Parse(LoadTemplate("slideLayout.xml")).Root!;
+        return XDocument.Parse(template.Part("slide_layout")).Root!;
     }
 
-    private static XElement NotesMasterXml(string themeRelId)
+    private static XElement NotesMasterXml(
+        string themeRelId,
+        PresentationTemplatePackage template)
     {
         _ = themeRelId; // carried in the relationship part
-        return XDocument.Parse(LoadTemplate("notesMaster.xml")).Root!;
+        return XDocument.Parse(template.Part("notes_master")).Root!;
     }
 
-    private static XElement ThemeXml()
+    private static XElement ThemeXml(PresentationTemplatePackage template)
     {
-        return XDocument.Parse(LoadTemplate("theme.xml")).Root!;
+        return XDocument.Parse(template.Part("theme")).Root!;
     }
 
-    private static XElement SlideXml(JsonElement slide, string deckTitle, int pageNumber, int total, string layoutRelId, string notesRelId, Dictionary<string, string> imageRelIds, string? logoRelId, string irDirectory)
+    private static XElement SlideXml(
+        JsonElement slide,
+        string deckTitle,
+        int pageNumber,
+        int total,
+        string layoutRelId,
+        string notesRelId,
+        Dictionary<string, string> imageRelIds,
+        string? logoRelId,
+        string irDirectory,
+        PresentationTemplatePackage template)
     {
         _ = layoutRelId;
         _ = notesRelId;
         _ = irDirectory;
 
-        var sld = XDocument.Parse(LoadTemplate("slide.xml")).Root!;
+        var sld = XDocument.Parse(template.Part("slide")).Root!;
         var spTree = sld.Element(P + "cSld")!.Element(P + "spTree")!;
         var shapes = new List<XElement>();
-        string layout = slide.TryGetProperty("semantic_layout", out var l) ? l.GetString() ?? "bullets" : "bullets";
+        string semanticLayout = slide.TryGetProperty("semantic_layout", out var l)
+            ? l.GetString() ?? "bullets"
+            : "bullets";
+        string layout = template.ResolveRenderer(semanticLayout);
         string title = slide.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "";
         var blocks = slide.TryGetProperty("content_blocks", out var b) ? b : default;
         var images = slide.TryGetProperty("images", out var imgs) ? imgs : default;
@@ -312,6 +341,7 @@ public static class PptxWriter
         {
             spTree.Add(shape);
         }
+        ApplyTemplateStyle(sld, template);
         return sld;
     }
 
@@ -732,18 +762,63 @@ public static class PptxWriter
     private const string C_MUTED = "9AA7BC";
     private const string C_GHOST = "223047";
 
-    private static XElement NotesSlideXml(string notes, string notesMasterRelId, string slideRelId)
+    private static XElement NotesSlideXml(
+        string notes,
+        string notesMasterRelId,
+        string slideRelId,
+        PresentationTemplatePackage template)
     {
         _ = notesMasterRelId;
         _ = slideRelId;
 
-        var notesSlide = XDocument.Parse(LoadTemplate("notesSlide.xml")).Root!;
+        var notesSlide = XDocument.Parse(template.Part("notes_slide")).Root!;
         var textElements = notesSlide.Descendants(A + "t").ToList();
         if (textElements.Count > 0)
         {
             textElements[0].Value = notes;
         }
         return notesSlide;
+    }
+
+    private static void ApplyTemplateStyle(
+        XElement slide,
+        PresentationTemplatePackage template)
+    {
+        PresentationTemplateStyle style = template.Style;
+        var colors = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+        {
+            [C_BG] = style.Background,
+            [C_BG_SOFT] = style.BackgroundSoft,
+            [C_PANEL] = style.Panel,
+            [C_ACCENT] = style.Accent,
+            [C_ACCENT_2] = style.AccentSecondary,
+            [C_TEXT] = style.Text,
+            [C_MUTED] = style.Muted,
+            [C_GHOST] = style.Ghost,
+        };
+        foreach (XElement color in slide.Descendants(A + "srgbClr"))
+        {
+            XAttribute? value = color.Attribute("val");
+            if (value is not null && colors.TryGetValue(value.Value, out string? replacement))
+            {
+                value.Value = replacement;
+            }
+        }
+        foreach (XElement latin in slide.Descendants(A + "latin").Concat(slide.Descendants(A + "cs")))
+        {
+            latin.SetAttributeValue("typeface", style.LatinFont);
+        }
+        foreach (XElement eastAsian in slide.Descendants(A + "ea"))
+        {
+            eastAsian.SetAttributeValue("typeface", style.EastAsianFont);
+        }
+        foreach (XElement text in slide.Descendants(A + "t"))
+        {
+            text.Value = text.Value.Replace(
+                "dcc-mcp",
+                template.BrandName,
+                StringComparison.OrdinalIgnoreCase);
+        }
     }
 
     // -- shape builders -----------------------------------------------------
