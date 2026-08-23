@@ -3,6 +3,8 @@
 - `adr/` — architecture decision records (001-007)
 - `proposals/` — the DCC-MCP Office Automation Platform proposal v1.0 that
   this repository implements
+- [`architecture-health-review-v0.2.1.md`](./architecture-health-review-v0.2.1.md)
+  — closeout ledger for tracking issue #28 and its thirteen resolved findings
 
 ## Delivery vocabulary
 
