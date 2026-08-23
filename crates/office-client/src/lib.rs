@@ -1,10 +1,10 @@
 //! dcc-mcp-office-client — Rust-side client for office-host.exe.
 //!
 //! M1 wiring: the client speaks office-rpc/1 JSON-RPC over the Windows named
-//! pipe from dcc_mcp_office_protocol::pipe_name. The transport is
-//! std-only ("\\.\pipe\..." opens through "std::fs::OpenOptions", line-framed
-//! JSON), keeping this crate dependency-free except serde. On non-Windows
-//! hosts the client compiles to an explicit ClientError::UnsupportedPlatform.
+//! pipe from dcc_mcp_office_protocol::pipe_name. Windows uses Tokio's
+//! overlapped named-pipe I/O so writes and reads share one enforceable
+//! deadline; non-Windows hosts compile to an explicit
+//! ClientError::UnsupportedPlatform.
 //!
 //! Remaining gateway integration (not this crate): registering the
 //! "namedpipe://" URI scheme with dcc-mcp-host-rpc so the dcc-mcp-server
@@ -12,7 +12,9 @@
 
 #![forbid(unsafe_code)]
 
+use std::collections::VecDeque;
 use std::fmt;
+use std::time::Duration;
 
 use dcc_mcp_office_protocol::{CommandParams, CommandResult, HandshakeResponse, SidecarState};
 use serde_json::Value;
@@ -29,6 +31,9 @@ pub const URI_SCHEME: &str = "namedpipe";
 
 /// Default handshake timeout.
 pub const HANDSHAKE_TIMEOUT_MS: u64 = 30_000;
+
+/// Default command timeout: longer than the host's 120-second COM soft timeout.
+pub const DEFAULT_CALL_TIMEOUT_MS: u64 = 150_000;
 
 /// Default namedpipe:// URI for an application sidecar:
 /// namedpipe://powerpoint → pipe \\.\pipe\dcc-mcp-office-powerpoint-...
@@ -52,6 +57,11 @@ pub enum ClientError {
     Protocol(String),
     /// The host closed the pipe.
     Disconnected,
+    /// A bounded connect or RPC operation exceeded its deadline.
+    Timeout {
+        operation: String,
+        timeout: Duration,
+    },
 }
 
 impl fmt::Display for ClientError {
@@ -63,6 +73,9 @@ impl fmt::Display for ClientError {
             ClientError::Rpc { code, message } => write!(f, "rpc error {code}: {message}"),
             ClientError::Protocol(m) => write!(f, "protocol error: {m}"),
             ClientError::Disconnected => write!(f, "host closed the pipe"),
+            ClientError::Timeout { operation, timeout } => {
+                write!(f, "{operation} timed out after {timeout:?}")
+            }
         }
     }
 }
@@ -83,65 +96,144 @@ impl From<serde_json::Error> for ClientError {
 
 #[cfg(windows)]
 mod transport {
-    use std::fs::{File, OpenOptions};
-    use std::io::{BufRead, BufReader, Write};
+    use std::collections::VecDeque;
+    use std::future::Future;
+    use std::time::Duration;
 
     use serde_json::{json, Value};
+    use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader};
+    use tokio::net::windows::named_pipe::{ClientOptions, NamedPipeClient};
+    use tokio::runtime::{Builder, Runtime};
 
     use super::ClientError;
 
-    /// Line-framed JSON-RPC 2.0 over one duplex named-pipe handle.
-    /// std::fs opens \\.\pipe\... natively on Windows — no extra crates.
+    const MAX_UNMATCHED_MESSAGES: usize = 8;
+
+    fn block_on_compatible<F>(runtime: &Runtime, future: F) -> F::Output
+    where
+        F: Future + Send,
+        F::Output: Send,
+    {
+        if tokio::runtime::Handle::try_current().is_ok() {
+            std::thread::scope(
+                |scope| match scope.spawn(move || runtime.block_on(future)).join() {
+                    Ok(output) => output,
+                    Err(panic) => std::panic::resume_unwind(panic),
+                },
+            )
+        } else {
+            runtime.block_on(future)
+        }
+    }
+
+    /// Line-framed JSON-RPC 2.0 over one duplex overlapped named-pipe handle.
     pub struct PipeRpc {
-        reader: BufReader<File>,
-        writer: File,
+        runtime: Runtime,
+        pipe: BufReader<NamedPipeClient>,
         next_id: u64,
     }
 
     impl PipeRpc {
         pub fn connect(pipe: &str) -> Result<Self, ClientError> {
-            let file = OpenOptions::new().read(true).write(true).open(pipe)?;
-            let reader = BufReader::new(file.try_clone()?);
+            let runtime = Builder::new_current_thread()
+                .enable_io()
+                .enable_time()
+                .build()?;
+            let client = {
+                let _guard = runtime.enter();
+                ClientOptions::new().open(pipe)?
+            };
             Ok(Self {
-                reader,
-                writer: file,
+                runtime,
+                pipe: BufReader::new(client),
                 next_id: 0,
             })
         }
 
-        pub fn call(&mut self, method: &str, params: Value) -> Result<Value, ClientError> {
+        pub fn call(
+            &mut self,
+            method: &str,
+            params: Value,
+            timeout: Duration,
+            notifications: &mut VecDeque<Value>,
+        ) -> Result<Value, ClientError> {
             let id = self.next_id;
             self.next_id += 1;
             let request = json!({ "jsonrpc": "2.0", "id": id, "method": method, "params": params });
-            self.writer.write_all(request.to_string().as_bytes())?;
-            self.writer.write_all(b"\n")?;
-            self.writer.flush()?;
-            loop {
-                let mut line = String::new();
-                let read = self.reader.read_line(&mut line)?;
-                if read == 0 {
-                    return Err(ClientError::Disconnected);
-                }
-                let Ok(message) = serde_json::from_str::<Value>(line.trim_end()) else {
-                    continue; // tolerate non-JSON noise lines
-                };
-                // Notifications (no id) are skipped; responses carry our id.
-                match message.get("id").and_then(Value::as_u64) {
-                    Some(response_id) if response_id == id => {
-                        if let Some(error) = message.get("error") {
-                            return Err(ClientError::Rpc {
-                                code: error.get("code").cloned().unwrap_or(Value::Null),
-                                message: error
-                                    .get("message")
-                                    .and_then(Value::as_str)
-                                    .unwrap_or("rpc error")
-                                    .to_string(),
-                            });
+            let operation = method.to_string();
+            let runtime = &self.runtime;
+            let pipe = &mut self.pipe;
+            let result = block_on_compatible(runtime, async {
+                tokio::time::timeout(timeout, async {
+                    pipe
+                        .get_mut()
+                        .write_all(request.to_string().as_bytes())
+                        .await?;
+                    pipe.get_mut().write_all(b"\n").await?;
+                    pipe.get_mut().flush().await?;
+
+                    let mut unmatched = 0;
+                    loop {
+                        let mut line = Vec::new();
+                        let read = pipe.read_until(b'\n', &mut line).await?;
+                        if read == 0 {
+                            return Err(ClientError::Disconnected);
                         }
-                        return Ok(message.get("result").cloned().unwrap_or(Value::Null));
+                        while matches!(line.last(), Some(b'\n' | b'\r')) {
+                            line.pop();
+                        }
+                        let message = match serde_json::from_slice::<Value>(&line) {
+                            Ok(message) => message,
+                            Err(_) => {
+                                unmatched += 1;
+                                if unmatched >= MAX_UNMATCHED_MESSAGES {
+                                    return Err(ClientError::Protocol(
+                                        "too many non-JSON messages while awaiting a response"
+                                            .into(),
+                                    ));
+                                }
+                                continue;
+                            }
+                        };
+
+                        if message.get("id").is_none() && message.get("method").is_some() {
+                            notifications.push_back(message);
+                            continue;
+                        }
+
+                        match message.get("id").and_then(Value::as_u64) {
+                            Some(response_id) if response_id == id => {
+                                if let Some(error) = message.get("error") {
+                                    return Err(ClientError::Rpc {
+                                        code: error.get("code").cloned().unwrap_or(Value::Null),
+                                        message: error
+                                            .get("message")
+                                            .and_then(Value::as_str)
+                                            .unwrap_or("rpc error")
+                                            .to_string(),
+                                    });
+                                }
+                                return Ok(
+                                    message.get("result").cloned().unwrap_or(Value::Null)
+                                );
+                            }
+                            _ => {
+                                unmatched += 1;
+                                if unmatched >= MAX_UNMATCHED_MESSAGES {
+                                    return Err(ClientError::Protocol(format!(
+                                        "too many unmatched response ids while awaiting request {id}"
+                                    )));
+                                }
+                            }
+                        }
                     }
-                    _ => continue,
-                }
+                })
+                .await
+            });
+
+            match result {
+                Ok(result) => result,
+                Err(_) => Err(ClientError::Timeout { operation, timeout }),
             }
         }
     }
@@ -152,6 +244,11 @@ pub struct OfficeHostClient {
     app: String,
     state: SidecarState,
     #[cfg(windows)]
+    pipe_name: Option<String>,
+    #[cfg(windows)]
+    gateway_version: Option<String>,
+    notifications: VecDeque<Value>,
+    #[cfg(windows)]
     pipe: Option<transport::PipeRpc>,
 }
 
@@ -160,6 +257,11 @@ impl OfficeHostClient {
         Self {
             app: app.into(),
             state: SidecarState::Requested,
+            #[cfg(windows)]
+            pipe_name: None,
+            #[cfg(windows)]
+            gateway_version: None,
+            notifications: VecDeque::new(),
             #[cfg(windows)]
             pipe: None,
         }
@@ -182,9 +284,19 @@ impl OfficeHostClient {
     /// ClientError::UnsupportedPlatform instead of pretending to connect.
     #[cfg(windows)]
     pub fn connect(&mut self, pipe: &str) -> Result<&mut Self, ClientError> {
-        self.pipe = Some(transport::PipeRpc::connect(pipe)?);
-        self.state = SidecarState::Handshaking;
-        Ok(self)
+        self.state = SidecarState::Launching;
+        match transport::PipeRpc::connect(pipe) {
+            Ok(connection) => {
+                self.pipe = Some(connection);
+                self.pipe_name = Some(pipe.to_string());
+                self.state = SidecarState::Handshaking;
+                Ok(self)
+            }
+            Err(error) => {
+                self.state = SidecarState::Degraded;
+                Err(error)
+            }
+        }
     }
 
     #[cfg(not(windows))]
@@ -192,24 +304,73 @@ impl OfficeHostClient {
         Err(ClientError::UnsupportedPlatform)
     }
 
+    /// Opens a named pipe, retrying transient not-found/busy errors until timeout.
+    #[cfg(windows)]
+    pub fn connect_with_retry(
+        &mut self,
+        pipe: &str,
+        timeout: Duration,
+    ) -> Result<&mut Self, ClientError> {
+        self.state = SidecarState::Launching;
+        match connect_pipe_with_retry(pipe, timeout) {
+            Ok(connection) => {
+                self.pipe = Some(connection);
+                self.pipe_name = Some(pipe.to_string());
+                self.state = SidecarState::Handshaking;
+                Ok(self)
+            }
+            Err(error) => {
+                self.state = SidecarState::Degraded;
+                Err(error)
+            }
+        }
+    }
+
+    #[cfg(not(windows))]
+    pub fn connect_with_retry(
+        &mut self,
+        _pipe: &str,
+        _timeout: Duration,
+    ) -> Result<&mut Self, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
     /// office.host.handshake → protocol-version check + capability manifest.
     #[cfg(windows)]
     pub fn handshake(&mut self, gateway_version: &str) -> Result<HandshakeResponse, ClientError> {
-        let response = self.call(
+        self.handshake_with_timeout(gateway_version, Duration::from_millis(HANDSHAKE_TIMEOUT_MS))
+    }
+
+    #[cfg(windows)]
+    pub fn handshake_with_timeout(
+        &mut self,
+        gateway_version: &str,
+        timeout: Duration,
+    ) -> Result<HandshakeResponse, ClientError> {
+        let response = self.call_with_timeout(
             "office.host.handshake",
             json!({
                 "protocol_versions": [PROTOCOL_VERSION],
                 "gateway_version": gateway_version,
                 "requested_app": self.app,
             }),
+            timeout,
         )?;
-        let handshake: HandshakeResponse = serde_json::from_value(response)?;
+        let handshake: HandshakeResponse = match serde_json::from_value(response) {
+            Ok(handshake) => handshake,
+            Err(error) => {
+                self.degrade();
+                return Err(ClientError::Serde(error));
+            }
+        };
         if handshake.protocol_version != PROTOCOL_VERSION {
+            self.degrade();
             return Err(ClientError::Protocol(format!(
                 "host speaks '{}', client requires '{PROTOCOL_VERSION}'",
                 handshake.protocol_version
             )));
         }
+        self.gateway_version = Some(gateway_version.to_string());
         self.state = SidecarState::Ready;
         Ok(handshake)
     }
@@ -219,14 +380,33 @@ impl OfficeHostClient {
         Err(ClientError::UnsupportedPlatform)
     }
 
+    #[cfg(not(windows))]
+    pub fn handshake_with_timeout(
+        &mut self,
+        _gateway_version: &str,
+        _timeout: Duration,
+    ) -> Result<HandshakeResponse, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
     /// office.host.ping — liveness plus attach state.
     #[cfg(windows)]
     pub fn ping(&mut self) -> Result<Value, ClientError> {
         self.call("office.host.ping", json!({}))
     }
 
+    #[cfg(windows)]
+    pub fn ping_with_timeout(&mut self, timeout: Duration) -> Result<Value, ClientError> {
+        self.call_with_timeout("office.host.ping", json!({}), timeout)
+    }
+
     #[cfg(not(windows))]
     pub fn ping(&mut self) -> Result<Value, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
+    #[cfg(not(windows))]
+    pub fn ping_with_timeout(&mut self, _timeout: Duration) -> Result<Value, ClientError> {
         Err(ClientError::UnsupportedPlatform)
     }
 
@@ -236,8 +416,18 @@ impl OfficeHostClient {
         self.call("office.host.shutdown", json!({}))
     }
 
+    #[cfg(windows)]
+    pub fn shutdown_with_timeout(&mut self, timeout: Duration) -> Result<Value, ClientError> {
+        self.call_with_timeout("office.host.shutdown", json!({}), timeout)
+    }
+
     #[cfg(not(windows))]
     pub fn shutdown(&mut self) -> Result<Value, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
+    #[cfg(not(windows))]
+    pub fn shutdown_with_timeout(&mut self, _timeout: Duration) -> Result<Value, ClientError> {
         Err(ClientError::UnsupportedPlatform)
     }
 
@@ -248,18 +438,141 @@ impl OfficeHostClient {
         Ok(serde_json::from_value(response)?)
     }
 
+    #[cfg(windows)]
+    pub fn execute_with_timeout(
+        &mut self,
+        params: &CommandParams,
+        timeout: Duration,
+    ) -> Result<CommandResult, ClientError> {
+        let response = self.call_with_timeout(
+            "office.command.execute",
+            serde_json::to_value(params)?,
+            timeout,
+        )?;
+        Ok(serde_json::from_value(response)?)
+    }
+
     #[cfg(not(windows))]
     pub fn execute(&mut self, _params: &CommandParams) -> Result<CommandResult, ClientError> {
         Err(ClientError::UnsupportedPlatform)
     }
 
+    #[cfg(not(windows))]
+    pub fn execute_with_timeout(
+        &mut self,
+        _params: &CommandParams,
+        _timeout: Duration,
+    ) -> Result<CommandResult, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
+    /// Drains JSON-RPC notifications observed while calls awaited responses.
+    pub fn drain_notifications(&mut self) -> Vec<Value> {
+        self.notifications.drain(..).collect()
+    }
+
+    /// Reconnects to the last pipe and repeats the last successful handshake.
+    #[cfg(windows)]
+    pub fn recover(&mut self, timeout: Duration) -> Result<HandshakeResponse, ClientError> {
+        let pipe_name = self
+            .pipe_name
+            .clone()
+            .ok_or_else(|| ClientError::Protocol("no previous pipe to recover".into()))?;
+        let gateway_version = self
+            .gateway_version
+            .clone()
+            .ok_or_else(|| ClientError::Protocol("no successful handshake to recover".into()))?;
+        self.state = SidecarState::Recovering;
+        let started = std::time::Instant::now();
+        let connection = match connect_pipe_with_retry(&pipe_name, timeout) {
+            Ok(connection) => connection,
+            Err(error) => {
+                self.degrade();
+                return Err(error);
+            }
+        };
+        self.pipe = Some(connection);
+        self.state = SidecarState::Handshaking;
+        let remaining = timeout.saturating_sub(started.elapsed());
+        if remaining.is_zero() {
+            self.degrade();
+            return Err(ClientError::Timeout {
+                operation: "recovery handshake".into(),
+                timeout,
+            });
+        }
+        self.handshake_with_timeout(
+            &gateway_version,
+            remaining.min(Duration::from_millis(HANDSHAKE_TIMEOUT_MS)),
+        )
+    }
+
+    #[cfg(not(windows))]
+    pub fn recover(&mut self, _timeout: Duration) -> Result<HandshakeResponse, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
     #[cfg(windows)]
     fn call(&mut self, method: &str, params: Value) -> Result<Value, ClientError> {
-        let pipe = self
-            .pipe
-            .as_mut()
-            .ok_or_else(|| ClientError::Protocol("connect() must precede calls".into()))?;
-        pipe.call(method, params)
+        self.call_with_timeout(
+            method,
+            params,
+            Duration::from_millis(DEFAULT_CALL_TIMEOUT_MS),
+        )
+    }
+
+    #[cfg(windows)]
+    fn call_with_timeout(
+        &mut self,
+        method: &str,
+        params: Value,
+        timeout: Duration,
+    ) -> Result<Value, ClientError> {
+        let result = match self.pipe.as_mut() {
+            Some(pipe) => pipe.call(method, params, timeout, &mut self.notifications),
+            None => Err(ClientError::Protocol("connect() must precede calls".into())),
+        };
+        if matches!(
+            result,
+            Err(ClientError::Io(_))
+                | Err(ClientError::Serde(_))
+                | Err(ClientError::Protocol(_))
+                | Err(ClientError::Disconnected)
+                | Err(ClientError::Timeout { .. })
+        ) {
+            self.degrade();
+        }
+        result
+    }
+
+    #[cfg(windows)]
+    fn degrade(&mut self) {
+        self.pipe = None;
+        self.state = SidecarState::Degraded;
+    }
+}
+
+#[cfg(windows)]
+fn connect_pipe_with_retry(
+    pipe: &str,
+    timeout: Duration,
+) -> Result<transport::PipeRpc, ClientError> {
+    let started = std::time::Instant::now();
+    loop {
+        match transport::PipeRpc::connect(pipe) {
+            Ok(connection) => return Ok(connection),
+            Err(ClientError::Io(error)) if matches!(error.raw_os_error(), Some(2) | Some(231)) => {
+                let remaining = timeout.saturating_sub(started.elapsed());
+                if remaining.is_zero() {
+                    return Err(ClientError::Timeout {
+                        operation: format!("connect {pipe}"),
+                        timeout,
+                    });
+                }
+                std::thread::sleep(remaining.min(Duration::from_millis(200)));
+            }
+            Err(error) => return Err(error),
+        }
     }
 }
 
