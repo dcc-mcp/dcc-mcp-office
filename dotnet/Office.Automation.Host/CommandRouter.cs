@@ -25,9 +25,6 @@ namespace Office.Automation.Host;
 /// </summary>
 public sealed class CommandRouter : IDisposable
 {
-    private const string ProtocolVersion = "office-rpc/1";
-    private const string ProviderVersion = "0.1.1";
-
     private static readonly TimeSpan AttachBudget = TimeSpan.FromSeconds(60);
 
     private readonly string _app;
@@ -111,7 +108,7 @@ public sealed class CommandRouter : IDisposable
             ["backend"] = node.TryGetPropertyValue("backend", out var backendNode)
                 ? backendNode?.DeepClone()
                 : null,
-            ["host_version"] = ProviderVersion,
+            ["host_version"] = HostBuildInfo.Version,
             ["application"] = _comAttached
                 ? JsonSerializer.SerializeToNode(_com!.GetApplicationInfo())
                 : null,
@@ -197,7 +194,7 @@ public sealed class CommandRouter : IDisposable
         return new
         {
             app = _app,
-            protocol_version = ProtocolVersion,
+            protocol_version = HostBuildInfo.ProtocolVersion,
             host_id = HostId(),
             com_attached = _comAttached,
         };
@@ -216,7 +213,7 @@ public sealed class CommandRouter : IDisposable
         EnsureComAttached();
         return new
         {
-            protocol_version = ProtocolVersion,
+            protocol_version = HostBuildInfo.ProtocolVersion,
             host_id = HostId(),
             capability_manifest = Manifest(),
         };
@@ -680,8 +677,8 @@ public sealed class CommandRouter : IDisposable
         return new
         {
             provider = "dcc-mcp-office",
-            provider_version = ProviderVersion,
-            protocol_version = ProtocolVersion,
+            provider_version = HostBuildInfo.Version,
+            protocol_version = HostBuildInfo.ProtocolVersion,
             application,
             execution_modes = modes,
             capabilities,
