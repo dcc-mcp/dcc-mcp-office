@@ -91,52 +91,67 @@ public abstract class OfficeComBackend : IDisposable
             return;
         }
 
-        AttachState state = _sta.Post(() =>
+        AttachState state;
+        try
         {
-            Type? type;
-            try
-            {
-                type = Type.GetTypeFromProgID(ProgId);
-            }
-            catch (Exception ex)
-            {
-                throw new OfficeComException(OfficeErrorCode.OfficeAppNotInstalled,
-                    $"{AppName} is not installed (ProgID {ProgId} unresolvable): {ex.Message}");
-            }
-            if (type is null)
-            {
-                throw new OfficeComException(OfficeErrorCode.OfficeAppNotInstalled,
-                    $"{AppName} is not installed (ProgID {ProgId} missing from the registry)");
-            }
-
-            dynamic instance;
-            try
-            {
-                instance = Activator.CreateInstance(type)!;
-            }
-            catch (COMException ex)
-            {
-                throw MapComException(ex, $"attach {AppName}");
-            }
-            ApplySecurityDefaults(instance);
-            try
-            {
-                instance.Visible = false;
-            }
-            catch
-            {
-                // PowerPoint has no Visible in headless automation; ignore.
-            }
-            return new AttachState
-            {
-                Instance = instance,
-                ProcessId = TryGetProcessId(instance),
-            };
-        }, timeout);
+            state = _sta.Post(CreateApplication, timeout);
+        }
+        catch (StaSoftTimeoutException)
+        {
+            throw MapTimeout($"attach {AppName}", timeout);
+        }
+        catch (StaDispatcherBusyException ex)
+        {
+            throw MapBusy($"attach {AppName}", ex);
+        }
 
         _application = state.Instance;
         _processId = state.ProcessId;
         _attached = true;
+        Interlocked.Exchange(ref _timeoutStreak, 0);
+    }
+
+    private AttachState CreateApplication()
+    {
+        Type? type;
+        try
+        {
+            type = Type.GetTypeFromProgID(ProgId);
+        }
+        catch (Exception ex)
+        {
+            throw new OfficeComException(OfficeErrorCode.OfficeAppNotInstalled,
+                $"{AppName} is not installed (ProgID {ProgId} unresolvable): {ex.Message}");
+        }
+        if (type is null)
+        {
+            throw new OfficeComException(OfficeErrorCode.OfficeAppNotInstalled,
+                $"{AppName} is not installed (ProgID {ProgId} missing from the registry)");
+        }
+
+        dynamic instance;
+        try
+        {
+            instance = Activator.CreateInstance(type)!;
+        }
+        catch (COMException ex)
+        {
+            throw MapComException(ex, $"attach {AppName}");
+        }
+        ApplySecurityDefaults(instance);
+        try
+        {
+            instance.Visible = false;
+        }
+        catch
+        {
+            // PowerPoint has no Visible in headless automation; ignore.
+        }
+        return new AttachState
+        {
+            Instance = instance,
+            ProcessId = TryGetProcessId(instance),
+        };
     }
 
     /// <summary>Attach only if the app is installed; false when absent.</summary>
@@ -197,7 +212,11 @@ public abstract class OfficeComBackend : IDisposable
         }
         catch (StaSoftTimeoutException)
         {
-            throw MapTimeout(context);
+            throw MapTimeout(context, timeout ?? RequestTimeout);
+        }
+        catch (StaDispatcherBusyException ex)
+        {
+            throw MapBusy(context, ex);
         }
         catch (OfficeComException)
         {
@@ -221,7 +240,11 @@ public abstract class OfficeComBackend : IDisposable
         }
         catch (StaSoftTimeoutException)
         {
-            throw MapTimeout(context);
+            throw MapTimeout(context, timeout ?? RequestTimeout);
+        }
+        catch (StaDispatcherBusyException ex)
+        {
+            throw MapBusy(context, ex);
         }
         catch (OfficeComException)
         {
@@ -234,7 +257,7 @@ public abstract class OfficeComBackend : IDisposable
     }
 
     /// <summary>Timeout ladder: modal dialog detection, then sidecar recovery.</summary>
-    private OfficeComException MapTimeout(string context)
+    private OfficeComException MapTimeout(string context, TimeSpan? timeout = null)
     {
         int streak = Interlocked.Increment(ref _timeoutStreak);
         var modalTitle = _processId is int pid
@@ -243,6 +266,7 @@ public abstract class OfficeComBackend : IDisposable
         if (streak >= TimeoutStreakForRecovery)
         {
             RecoverAfterTimeout();
+            Interlocked.Exchange(ref _timeoutStreak, 0);
             return new OfficeComException(OfficeErrorCode.OfficeBackendUnavailable,
                 $"{context}: {AppName} sidecar recovered after repeated request timeouts.");
         }
@@ -252,8 +276,11 @@ public abstract class OfficeComBackend : IDisposable
                 $"{context}: a modal dialog blocks {AppName}: {modalTitle}");
         }
         return new OfficeComException(OfficeErrorCode.OfficeRpcTimeout,
-            $"{context}: request exceeded {RequestTimeout.TotalSeconds:F0}s soft timeout.");
+            $"{context}: request exceeded {(timeout ?? RequestTimeout).TotalSeconds:F0}s soft timeout.");
     }
+
+    private static OfficeComException MapBusy(string context, StaDispatcherBusyException ex) =>
+        new(OfficeErrorCode.OfficeAppBusy, $"{context}: {ex.Message}", ex);
 
     /// <summary>Quit and reset the Application instance (sidecar recovery, §9.2).</summary>
     private void RecoverAfterTimeout()
