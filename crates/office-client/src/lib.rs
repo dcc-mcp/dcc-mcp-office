@@ -14,6 +14,7 @@
 
 use std::collections::VecDeque;
 use std::fmt;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use dcc_mcp_office_protocol::{
@@ -32,11 +33,165 @@ use serde_json::json;
 /// URI scheme under which this client registers with dcc-mcp-host-rpc.
 pub const URI_SCHEME: &str = "namedpipe";
 
+/// Canonical sidecar executable name used by releases and gateway discovery.
+pub const OFFICE_HOST_EXE: &str = "dcc-office-host.exe";
+
+/// Explicit sidecar path override. A configured but missing path fails closed.
+pub const OFFICE_HOST_ENV: &str = "DCC_OFFICE_HOST_EXE";
+
 /// Default handshake timeout.
 pub const HANDSHAKE_TIMEOUT_MS: u64 = 30_000;
 
 /// Default command timeout: longer than the host's 120-second COM soft timeout.
 pub const DEFAULT_CALL_TIMEOUT_MS: u64 = 150_000;
+
+/// Where a discovered Office Host came from.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum HostLocationSource {
+    Environment,
+    GatewaySibling,
+    VersionedInstall,
+}
+
+/// A concrete sidecar executable selected by the documented search order.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LocatedHost {
+    pub path: PathBuf,
+    pub source: HostLocationSource,
+}
+
+/// Injectable locator inputs, separated from process environment for testing.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct HostLocatorContext {
+    pub env_override: Option<PathBuf>,
+    pub gateway_executable: Option<PathBuf>,
+    pub local_app_data: Option<PathBuf>,
+    pub expected_version: String,
+}
+
+/// Host discovery failures include every candidate checked for actionable setup guidance.
+#[derive(Debug, Eq, PartialEq)]
+pub enum HostLocatorError {
+    ConfiguredPathMissing(PathBuf),
+    NotFound {
+        checked: Vec<PathBuf>,
+        expected_version: String,
+    },
+    Resolve {
+        path: PathBuf,
+        source: std::io::ErrorKind,
+    },
+}
+
+impl fmt::Display for HostLocatorError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Self::ConfiguredPathMissing(path) => write!(
+                f,
+                "{OFFICE_HOST_ENV} points to a missing host: {}",
+                path.display()
+            ),
+            Self::NotFound {
+                checked,
+                expected_version,
+            } => write!(
+                f,
+                "Office Host {expected_version} was not found; checked {}",
+                checked
+                    .iter()
+                    .map(|path| path.display().to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+            Self::Resolve { path, source } => {
+                write!(f, "cannot resolve Office Host {}: {source}", path.display())
+            }
+        }
+    }
+}
+
+impl std::error::Error for HostLocatorError {}
+
+fn resolved_host(path: &Path, source: HostLocationSource) -> Result<LocatedHost, HostLocatorError> {
+    let path = path
+        .canonicalize()
+        .map_err(|error| HostLocatorError::Resolve {
+            path: path.to_path_buf(),
+            source: error.kind(),
+        })?;
+    Ok(LocatedHost { path, source })
+}
+
+/// Locate the sidecar in contract order: explicit override, gateway sibling,
+/// then the current version under the per-user install root.
+pub fn locate_host(context: &HostLocatorContext) -> Result<LocatedHost, HostLocatorError> {
+    if let Some(path) = context.env_override.as_deref() {
+        if !path.is_file() {
+            return Err(HostLocatorError::ConfiguredPathMissing(path.to_path_buf()));
+        }
+        return resolved_host(path, HostLocationSource::Environment);
+    }
+
+    let mut checked = Vec::with_capacity(2);
+    if let Some(gateway) = context.gateway_executable.as_deref() {
+        if let Some(parent) = gateway.parent() {
+            let candidate = parent.join(OFFICE_HOST_EXE);
+            if candidate.is_file() {
+                return resolved_host(&candidate, HostLocationSource::GatewaySibling);
+            }
+            checked.push(candidate);
+        }
+    }
+
+    if let Some(local_app_data) = context.local_app_data.as_deref() {
+        let candidate = local_app_data
+            .join("dcc-mcp")
+            .join("office-host")
+            .join(&context.expected_version)
+            .join(OFFICE_HOST_EXE);
+        if candidate.is_file() {
+            return resolved_host(&candidate, HostLocationSource::VersionedInstall);
+        }
+        checked.push(candidate);
+    }
+
+    Err(HostLocatorError::NotFound {
+        checked,
+        expected_version: context.expected_version.clone(),
+    })
+}
+
+/// Locate the Office Host using the current gateway process environment.
+pub fn locate_office_host() -> Result<LocatedHost, HostLocatorError> {
+    locate_host(&HostLocatorContext {
+        env_override: std::env::var_os(OFFICE_HOST_ENV).map(PathBuf::from),
+        gateway_executable: std::env::current_exe().ok(),
+        local_app_data: std::env::var_os("LOCALAPPDATA").map(PathBuf::from),
+        expected_version: env!("CARGO_PKG_VERSION").to_string(),
+    })
+}
+
+fn numeric_version(version: &str) -> Option<(u64, u64, u64)> {
+    let core = version.split(['-', '+']).next()?;
+    let mut parts = core.split('.');
+    let parsed = (
+        parts.next()?.parse().ok()?,
+        parts.next()?.parse().ok()?,
+        parts.next()?.parse().ok()?,
+    );
+    parts.next().is_none().then_some(parsed)
+}
+
+/// Compatibility policy for the sidecar/client pair. Before 1.0, the minor
+/// version is the compatibility boundary; from 1.0 onward it is the major.
+pub fn provider_versions_compatible(client: &str, host: &str) -> bool {
+    let (Some((client_major, client_minor, _)), Some((host_major, host_minor, _))) =
+        (numeric_version(client), numeric_version(host))
+    else {
+        return false;
+    };
+    client_major == host_major && (client_major != 0 || client_minor == host_minor)
+}
 
 /// Default namedpipe:// URI for an application sidecar:
 /// namedpipe://powerpoint → pipe \\.\pipe\dcc-mcp-office-powerpoint-...
@@ -381,6 +536,14 @@ impl OfficeHostClient {
             return Err(ClientError::Protocol(format!(
                 "host speaks '{}', client requires '{PROTOCOL_VERSION}'",
                 handshake.protocol_version
+            )));
+        }
+        let client_version = env!("CARGO_PKG_VERSION");
+        let host_version = &handshake.capability_manifest.provider_version;
+        if !provider_versions_compatible(client_version, host_version) {
+            self.degrade();
+            return Err(ClientError::Protocol(format!(
+                "host provider version '{host_version}' is incompatible with client '{client_version}'"
             )));
         }
         self.gateway_version = Some(gateway_version.to_string());

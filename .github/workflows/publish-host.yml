@@ -1,18 +1,28 @@
 name: Publish Host
 
-# Builds the distributable dcc-office-host (single-file, self-contained
-# win-x64). Downstream adapters (dcc-mcp-PowerPoint packaging) consume this
-# artifact — the dependency build lives here, not ad hoc downstream.
+# Builds a verification preview of the self-contained win-x64 release bundle.
+# The durable downstream channel is the versioned GitHub Release, not this
+# short-lived CI artifact.
 
 on:
   push:
     branches: [main]
     paths:
       - "dotnet/**"
+      - "crates/office-protocol/office-rpc.catalog.json"
+      - "manifests/**"
+      - "templates/registry.json"
+      - "docs/distribution.md"
+      - "scripts/package_release.py"
       - ".github/workflows/publish-host.yml"
   pull_request:
     paths:
       - "dotnet/**"
+      - "crates/office-protocol/office-rpc.catalog.json"
+      - "manifests/**"
+      - "templates/registry.json"
+      - "docs/distribution.md"
+      - "scripts/package_release.py"
       - ".github/workflows/publish-host.yml"
   workflow_dispatch:
 
@@ -38,9 +48,14 @@ jobs:
         shell: pwsh
         run: '& "$env:RUNNER_TEMP\host\dcc-office-host.exe" --app=powerpoint --self-test-com'
 
-      - name: Upload host artifact
+      - name: Build verification release bundle
+        shell: pwsh
+        run: |
+          python scripts/package_release.py --host-dir "$env:RUNNER_TEMP\host" --output-dir "$env:RUNNER_TEMP\release"
+
+      - name: Upload verification artifact
         uses: actions/upload-artifact@v4
         with:
-          name: dcc-office-host-win-x64
-          path: ${{ runner.temp }}/host/dcc-office-host.exe
-          retention-days: 30
+          name: dcc-office-host-win-x64-verification-${{ github.sha }}
+          path: ${{ runner.temp }}/release/*
+          retention-days: 14

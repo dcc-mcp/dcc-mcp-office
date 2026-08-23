@@ -17,6 +17,11 @@
           "jsonpath": "$.workspace.package.version"
         },
         {
+          "type": "toml",
+          "path": "Cargo.toml",
+          "jsonpath": "$.workspace.dependencies['dcc-mcp-office-protocol'].version"
+        },
+        {
           "type": "generic",
           "path": "dotnet/Directory.Build.props"
         }

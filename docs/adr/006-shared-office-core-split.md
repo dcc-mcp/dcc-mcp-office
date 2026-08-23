@@ -18,7 +18,8 @@ release cadence and the "thin adapter" pattern.
   runtime, Open XML, Graph, generic skills, manifests, templates, ADRs.
 - Per-application thin adapters: `dcc-mcp-PowerPoint` (now),
   `dcc-mcp-word` / `dcc-mcp-excel` (Phase 2), `dcc-mcp-outlook`
-  (Phase 3) — they consume published crates + the `office-host` binaries.
+  (Phase 3) — they consume Rust crates from the matching immutable release
+  tag plus the version-compatible `office-host` binaries.
 - Skill packs live in the owning repo; a separate
   `dcc-mcp-office-skills` repo is created only if pack volume demands it.
 - SUA sharing (proposal §5): extract a neutral core later, keeping exactly

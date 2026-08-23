@@ -7,4 +7,4 @@ repository.workspace = true
 description = "Task-level MCP tool registry for Office capabilities (names, app, phase)"
 
 [dependencies]
-dcc-mcp-office-protocol = { path = "../office-protocol" }
+dcc-mcp-office-protocol = { workspace = true }

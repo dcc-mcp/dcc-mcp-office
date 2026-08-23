@@ -106,11 +106,13 @@ dotnet build dotnet/Office.Automation.Host
 
 - `.github/workflows/ci.yml` — Rust fmt/clippy/test, skill lint + dashboard
   e2e, and the C# host build/self-test (Windows, via `loonghao/vx`).
-- `.github/workflows/publish-host.yml` — publishes the single-file
-  `dcc-office-host.exe` as a CI artifact on every dotnet change.
+- `.github/workflows/publish-host.yml` — builds the complete Host bundle as a
+  short-lived verification artifact on every distribution-related change.
 - `.github/workflows/release.yml` — release-please automated versioning and
-  releases: merging the release PR cuts the tag, builds the host with the vx
-  toolchain and attaches `dcc-office-host.exe` to the GitHub release.
+  releases: merging the release PR creates the immutable Rust source tag and
+  attaches the Host binaries, install bundle, manifest, checksums, SPDX SBOM,
+  and GitHub attestations. See
+  [`docs/distribution.md`](./docs/distribution.md).
 
 ## Roadmap
 
