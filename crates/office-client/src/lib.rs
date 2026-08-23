@@ -16,7 +16,10 @@ use std::collections::VecDeque;
 use std::fmt;
 use std::time::Duration;
 
-use dcc_mcp_office_protocol::{CommandParams, CommandResult, HandshakeResponse, SidecarState};
+use dcc_mcp_office_protocol::{
+    CommandParams, CommandResult, HandshakeResponse, JobCancelResult, JobStatus, SidecarState,
+    SidecarStatus,
+};
 use serde_json::Value;
 
 // The pipe transport (and everything using these two) is Windows-only:
@@ -420,6 +423,18 @@ impl OfficeHostClient {
         Err(ClientError::UnsupportedPlatform)
     }
 
+    /// Typed sidecar heartbeat. Unlike handshake, this never asks the Host to
+    /// attach to or launch an Office application.
+    #[cfg(windows)]
+    pub fn status(&mut self) -> Result<SidecarStatus, ClientError> {
+        Ok(serde_json::from_value(self.ping()?)?)
+    }
+
+    #[cfg(not(windows))]
+    pub fn status(&mut self) -> Result<SidecarStatus, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
     /// office.host.shutdown — graceful sidecar stop (quits the Office app).
     #[cfg(windows)]
     pub fn shutdown(&mut self) -> Result<Value, ClientError> {
@@ -473,6 +488,49 @@ impl OfficeHostClient {
         _params: &CommandParams,
         _timeout: Duration,
     ) -> Result<CommandResult, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
+    /// office.job.get — polls an asynchronous batch command.
+    #[cfg(windows)]
+    pub fn job_get(&mut self, job_id: &str) -> Result<JobStatus, ClientError> {
+        self.job_get_with_timeout(job_id, Duration::from_millis(DEFAULT_CALL_TIMEOUT_MS))
+    }
+
+    #[cfg(windows)]
+    pub fn job_get_with_timeout(
+        &mut self,
+        job_id: &str,
+        timeout: Duration,
+    ) -> Result<JobStatus, ClientError> {
+        let response =
+            self.call_with_timeout("office.job.get", json!({ "job_id": job_id }), timeout)?;
+        Ok(serde_json::from_value(response)?)
+    }
+
+    #[cfg(not(windows))]
+    pub fn job_get(&mut self, _job_id: &str) -> Result<JobStatus, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
+    #[cfg(not(windows))]
+    pub fn job_get_with_timeout(
+        &mut self,
+        _job_id: &str,
+        _timeout: Duration,
+    ) -> Result<JobStatus, ClientError> {
+        Err(ClientError::UnsupportedPlatform)
+    }
+
+    /// office.job.cancel — requests cancellation at the next item boundary.
+    #[cfg(windows)]
+    pub fn job_cancel(&mut self, job_id: &str) -> Result<JobCancelResult, ClientError> {
+        let response = self.call("office.job.cancel", json!({ "job_id": job_id }))?;
+        Ok(serde_json::from_value(response)?)
+    }
+
+    #[cfg(not(windows))]
+    pub fn job_cancel(&mut self, _job_id: &str) -> Result<JobCancelResult, ClientError> {
         Err(ClientError::UnsupportedPlatform)
     }
 

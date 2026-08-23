@@ -34,7 +34,11 @@ public sealed class CommandRouter : IDisposable
     private readonly OfficeComBackend? _com;
     private readonly TemplateRegistry _templates = new();
     private readonly object _attachLock = new();
+    private readonly HostNotificationQueue _notifications;
+    private readonly InMemoryJobTracker _jobs;
     private bool _comAttached;
+    private bool _comAttachAttempted;
+    private bool _applicationStartedEventPublished;
 
     public CommandRouter(string app)
         : this(app, enableDesktopCom: true, workspaceRoot: Directory.GetCurrentDirectory())
@@ -46,6 +50,8 @@ public sealed class CommandRouter : IDisposable
         _app = app;
         _workspaceRoot = WorkspaceGuard.CanonicalizeRoot(
             workspaceRoot ?? Directory.GetCurrentDirectory());
+        _notifications = new HostNotificationQueue(app, HostId);
+        _jobs = new InMemoryJobTracker(_notifications);
         _com = enableDesktopCom && ComBackendFactory.IsSupported(app)
             ? ComBackendFactory.Create(app, _sta)
             : null;
@@ -54,6 +60,8 @@ public sealed class CommandRouter : IDisposable
     public string App => _app;
 
     public bool ComAttached => _comAttached;
+
+    internal IReadOnlyList<string> DrainNotifications() => _notifications.Drain();
 
     /// <summary>Set by office.host.shutdown: the pipe loop exits after the current connection.</summary>
     public bool ShutdownRequested { get; private set; }
@@ -102,6 +110,7 @@ public sealed class CommandRouter : IDisposable
         JsonElement id = JsonSerializer.SerializeToElement<object?>(null);
         string method;
         CommandPolicy? commandPolicy = null;
+        RpcMethodDefinition? rpcMethod = null;
         try
         {
             using var request = JsonDocument.Parse(requestJson);
@@ -123,6 +132,12 @@ public sealed class CommandRouter : IDisposable
                 throw new OfficeArgumentException("JSON-RPC params must be an object");
             }
 
+            rpcMethod = Catalog.FindRpcMethod(method);
+            if (rpcMethod is not null)
+            {
+                Catalog.ValidateRpcParams(rpcMethod, parameters);
+            }
+
             if (method == "office.command.execute")
             {
                 Catalog.ValidateCommandParams(parameters);
@@ -136,6 +151,13 @@ public sealed class CommandRouter : IDisposable
             object result = Execute(method, parameters, commandPolicy);
             stopwatch.Stop();
 
+            if (rpcMethod is not null)
+            {
+                Catalog.ValidateRpcResult(
+                    rpcMethod,
+                    JsonSerializer.SerializeToElement(result));
+            }
+
             object finalResult = method == "office.command.execute"
                 ? AddAudit(
                     result,
@@ -146,6 +168,20 @@ public sealed class CommandRouter : IDisposable
         }
         catch (OfficeComException ex)
         {
+            if (ex.Code == OfficeErrorCode.OfficeModalDialog)
+            {
+                _notifications.PublishEvent(
+                    "office.modal.detected",
+                    $"rpc:{id.GetRawText()}",
+                    new { error = ex.Message });
+            }
+            if (ex.Code == OfficeErrorCode.OfficeUserConfirmationRequired)
+            {
+                _notifications.PublishEvent(
+                    "office.security.prompt",
+                    $"rpc:{id.GetRawText()}",
+                    new { error = ex.Message });
+            }
             return Error(id, ex.Code, ex.Message, ex.Indeterminate);
         }
         catch (OfficeArgumentException ex)
@@ -191,6 +227,8 @@ public sealed class CommandRouter : IDisposable
             "office.host.ping" => Ping(),
             "office.host.handshake" => Handshake(parameters),
             "office.host.shutdown" => Shutdown(),
+            "office.job.get" => JobGet(parameters),
+            "office.job.cancel" => JobCancel(parameters),
             "office.command.execute" => ExecuteCommand(
                 parameters,
                 commandPolicy ?? throw new InvalidOperationException("command policy is required")),
@@ -205,18 +243,39 @@ public sealed class CommandRouter : IDisposable
     private object Shutdown()
     {
         ShutdownRequested = true;
+        _notifications.PublishEvent(
+            "office.application.stopped",
+            "host:shutdown",
+            new { reason = "office.host.shutdown" });
         return new { ok = true };
     }
 
     private object Ping()
     {
-        EnsureComAttached();
+        bool busy = _jobs.IsBusy;
+        bool modal = _com?.OfficeProcessId is int pid
+            && ModalDialogDetector.FindModalDialogTitle(pid) is not null;
+        string attachState = _com is null
+            ? "unavailable"
+            : _comAttached
+                ? "attached"
+                : _comAttachAttempted
+                    ? "failed"
+                    : "unknown";
         return new
         {
-            app = _app,
             protocol_version = HostBuildInfo.ProtocolVersion,
             host_id = HostId(),
+            state = busy ? "busy" : attachState == "failed" ? "degraded" : "ready",
+            app = _app,
+            pid = Environment.ProcessId,
+            office_version = (string?)null,
+            open_documents = Array.Empty<string>(),
+            busy,
+            modal,
+            protected_view = false,
             com_attached = _comAttached,
+            com_attach_state = attachState,
         };
     }
 
@@ -231,12 +290,34 @@ public sealed class CommandRouter : IDisposable
                 $"requested_app '{requestedApp}' does not match this sidecar's app '{_app}'");
         }
         EnsureComAttached();
+        if (!_applicationStartedEventPublished)
+        {
+            _applicationStartedEventPublished = true;
+            _notifications.PublishEvent(
+                "office.application.started",
+                "host:handshake",
+                new { com_attach_state = _comAttached ? "attached" : "failed" });
+        }
         return new
         {
             protocol_version = HostBuildInfo.ProtocolVersion,
             host_id = HostId(),
             capability_manifest = Manifest(),
         };
+    }
+
+    private object JobGet(JsonElement parameters)
+    {
+        string jobId = parameters.GetProperty("job_id").GetString()
+            ?? throw new OfficeArgumentException("params.job_id is required");
+        return _jobs.Get(jobId);
+    }
+
+    private object JobCancel(JsonElement parameters)
+    {
+        string jobId = parameters.GetProperty("job_id").GetString()
+            ?? throw new OfficeArgumentException("params.job_id is required");
+        return _jobs.Cancel(jobId);
     }
 
     private object ExecuteCommand(JsonElement parameters, CommandPolicy policy)
@@ -275,18 +356,127 @@ public sealed class CommandRouter : IDisposable
         {
             policy.RequireConfirmation(parameters, "overwrite_original");
         }
-        object result = definition.HandlerId switch
+        if (definition.HandlerId is CapabilityHandler.BatchConvert
+            or CapabilityHandler.BatchReplaceText)
+        {
+            ValidateBatchSubmission(definition.HandlerId, input);
+            object submission = SubmitBatch(definition, input, policy);
+            Catalog.ValidateOutput(
+                definition,
+                JsonSerializer.SerializeToElement(submission));
+            return submission;
+        }
+
+        object result = ExecuteCapability(definition, input, job: null);
+        Catalog.ValidateOutput(definition, JsonSerializer.SerializeToElement(result));
+        PublishCapabilityEvents(definition.HandlerId, input, result);
+        return result;
+    }
+
+    private static void ValidateBatchSubmission(
+        CapabilityHandler handler,
+        JsonElement input)
+    {
+        if (handler != CapabilityHandler.BatchConvert)
+        {
+            return;
+        }
+        string targetFormat = input.TryGetProperty("target_format", out JsonElement target)
+            ? target.GetString() ?? "pdf"
+            : "pdf";
+        if (!targetFormat.Equals("pdf", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"target_format '{targetFormat}' is not supported (pdf only)");
+        }
+        string backend = input.TryGetProperty("backend", out JsonElement requestedBackend)
+            ? requestedBackend.GetString() ?? "auto"
+            : "auto";
+        if (backend is not ("auto" or "desktop_com"))
+        {
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"batch.convert backend '{backend}' is not implemented by the desktop sidecar");
+        }
+    }
+
+    private object SubmitBatch(
+        CapabilityDefinition definition,
+        JsonElement input,
+        CommandPolicy policy)
+    {
+        int total = input.TryGetProperty("inputs", out JsonElement inputs)
+            && inputs.ValueKind == JsonValueKind.Array
+            ? inputs.GetArrayLength()
+            : 0;
+        JobSnapshot job = _jobs.Submit(definition.Name, total, context =>
+        {
+            var stopwatch = Stopwatch.StartNew();
+            object result = ExecuteCapability(definition, input, context);
+            stopwatch.Stop();
+            Catalog.ValidateOutput(definition, JsonSerializer.SerializeToElement(result));
+            return AddAudit(result, policy, stopwatch.ElapsedMilliseconds);
+        });
+        return new
+        {
+            operation_id = job.JobId,
+            job_id = job.JobId,
+            phase = job.Phase,
+            changed = new
+            {
+                job_id = job.JobId,
+                capability = definition.Name,
+                phase = job.Phase,
+            },
+            warnings = Array.Empty<string>(),
+            artefacts = Array.Empty<object>(),
+            validation = new { accepted = true },
+            backend = "job",
+            indeterminate = false,
+        };
+    }
+
+    private object ExecuteCapability(
+        CapabilityDefinition definition,
+        JsonElement input,
+        InMemoryJobTracker.JobExecutionContext? job) => definition.HandlerId switch
         {
             CapabilityHandler.DeckCompile => Compile(input),
             CapabilityHandler.DocumentInspect => InspectDocument(input),
-            CapabilityHandler.BatchConvert => BatchConvert(input),
-            CapabilityHandler.BatchReplaceText => BatchReplaceText(input),
+            CapabilityHandler.BatchConvert => BatchConvert(input, job),
+            CapabilityHandler.BatchReplaceText => BatchReplaceText(input, job),
             CapabilityHandler.SlideRender => RenderSlides(input),
             _ => throw new InvalidOperationException(
                 $"catalog handler '{definition.Handler}' is not routed"),
         };
-        Catalog.ValidateOutput(definition, JsonSerializer.SerializeToElement(result));
-        return result;
+
+    private void PublishCapabilityEvents(
+        CapabilityHandler handler,
+        JsonElement input,
+        object result)
+    {
+        string correlationId = JsonSerializer.SerializeToNode(result)?["operation_id"]?
+            .GetValue<string>() ?? $"operation:{Guid.NewGuid():N}";
+        if (handler == CapabilityHandler.DeckCompile)
+        {
+            _notifications.PublishEvent(
+                "office.document.saved",
+                correlationId,
+                new { path = input.GetProperty("output").GetString() });
+        }
+        if (handler == CapabilityHandler.DocumentInspect)
+        {
+            string? path = input.GetProperty("path").GetString();
+            _notifications.PublishEvent(
+                "office.document.opened",
+                correlationId,
+                new { path });
+            _notifications.PublishEvent(
+                "office.document.before_close",
+                correlationId,
+                new { path });
+        }
     }
 
     // ---------------------------------------------------------- capabilities
@@ -470,7 +660,9 @@ public sealed class CommandRouter : IDisposable
         };
     }
 
-    private object BatchConvert(JsonElement input)
+    private object BatchConvert(
+        JsonElement input,
+        InMemoryJobTracker.JobExecutionContext? job)
     {
         string targetFormat = input.TryGetProperty("target_format", out var tf) ? tf.GetString() ?? "pdf" : "pdf";
         if (!targetFormat.Equals("pdf", StringComparison.OrdinalIgnoreCase))
@@ -487,7 +679,6 @@ public sealed class CommandRouter : IDisposable
                 OfficeErrorCode.OfficeCapabilityUnsupported,
                 $"batch.convert backend '{requestedBackend}' is not implemented by the desktop sidecar");
         }
-        var com = Com();
         string outputDir = input.TryGetProperty("output_directory", out var od) && od.ValueKind == JsonValueKind.String
             ? od.GetString()!
             : throw new OfficeArgumentException("input.output_directory is required");
@@ -505,6 +696,7 @@ public sealed class CommandRouter : IDisposable
         {
             throw new OfficeArgumentException("input.inputs resolved to no files");
         }
+        job?.SetTotal(paths.Length);
 
         string expected = ExpectedExtension(_app);
         string operationId = Guid.NewGuid().ToString("N");
@@ -533,10 +725,16 @@ public sealed class CommandRouter : IDisposable
         }
         var warnings = new JsonArray();
         var successful = new List<FileConvertOutcome>();
+        int processed = 0;
         int succeeded = 0;
         bool indeterminate = false;
+        OfficeComBackend? com = null;
         foreach (var path in paths)
         {
+            if (job?.StopBeforeNextItem() == true)
+            {
+                break;
+            }
             var ext = Path.GetExtension(path);
             if (!ext.Equals(expected, StringComparison.OrdinalIgnoreCase))
             {
@@ -547,6 +745,8 @@ public sealed class CommandRouter : IDisposable
                     ["error_code"] = OfficeErrorCode.OfficeCapabilityUnsupported.ToWireName(),
                     ["error"] = $"{_app} sidecar handles {expected} only; route '{path}' to its own sidecar",
                 });
+                processed++;
+                job?.Report("converting", processed);
                 continue;
             }
             string outputPath = outputPlan[path];
@@ -554,6 +754,7 @@ public sealed class CommandRouter : IDisposable
             {
                 File.Delete(outputPath);
             }
+            com ??= Com();
             var outcome = com.ConvertToPdf(path, outputPath);
             indeterminate |= outcome.Indeterminate;
             if (outcome.Ok)
@@ -561,12 +762,18 @@ public sealed class CommandRouter : IDisposable
                 succeeded++;
                 successful.Add(outcome);
                 artefacts.Add(Artifact(outputPath, "pdf"));
+                _notifications.PublishEvent(
+                    "office.document.saved",
+                    job?.JobId ?? operationId,
+                    new { input_path = path, output_path = outputPath });
             }
             else if (outcome.ErrorCode is not null)
             {
                 warnings.Add($"{path}: {outcome.Error}");
             }
             items.Add(JsonSerializer.SerializeToNode(outcome)!);
+            processed++;
+            job?.Report("converting", processed);
         }
         var validation = new JsonObject();
         foreach (string check in requestedValidation)
@@ -590,8 +797,10 @@ public sealed class CommandRouter : IDisposable
             changed = new
             {
                 files = paths.Length,
+                processed,
                 succeeded,
-                failed = paths.Length - succeeded,
+                failed = processed - succeeded,
+                cancelled = job?.CancellationObserved == true,
                 target_format = targetFormat,
                 items,
             },
@@ -603,9 +812,10 @@ public sealed class CommandRouter : IDisposable
         };
     }
 
-    private object BatchReplaceText(JsonElement input)
+    private object BatchReplaceText(
+        JsonElement input,
+        InMemoryJobTracker.JobExecutionContext? job)
     {
-        var com = Com();
         string operationId = Guid.NewGuid().ToString("N");
         var rules = new List<ReplaceRuleInput>();
         if (input.TryGetProperty("rules", out var rulesElement) && rulesElement.ValueKind == JsonValueKind.Array)
@@ -636,6 +846,7 @@ public sealed class CommandRouter : IDisposable
         {
             throw new OfficeArgumentException("input.inputs resolved to no files");
         }
+        job?.SetTotal(paths.Length);
 
         string expected = ExpectedExtension(_app);
         var items = new JsonArray();
@@ -650,9 +861,16 @@ public sealed class CommandRouter : IDisposable
         }
         int totalMatched = 0;
         int totalReplaced = 0;
+        int processed = 0;
+        int succeeded = 0;
         bool indeterminate = false;
+        OfficeComBackend? com = null;
         foreach (var path in paths)
         {
+            if (job?.StopBeforeNextItem() == true)
+            {
+                break;
+            }
             var ext = Path.GetExtension(path);
             if (!ext.Equals(expected, StringComparison.OrdinalIgnoreCase))
             {
@@ -661,13 +879,35 @@ public sealed class CommandRouter : IDisposable
                     ["path"] = path,
                     ["error"] = $"{_app} sidecar handles {expected} only",
                 });
+                processed++;
+                job?.Report("replacing", processed);
                 continue;
             }
+            com ??= Com();
             var outcome = com.ReplaceText(path, rules, scope, dryRun);
             indeterminate |= outcome.Indeterminate;
             totalMatched += outcome.TotalMatched;
             totalReplaced += outcome.TotalReplaced;
             items.Add(JsonSerializer.SerializeToNode(outcome)!);
+            bool itemSucceeded = !outcome.Warnings.Any(warning =>
+                warning.StartsWith("replace failed:", StringComparison.Ordinal));
+            if (itemSucceeded)
+            {
+                succeeded++;
+                if (!dryRun)
+                {
+                    _notifications.PublishEvent(
+                        "office.document.changed",
+                        job?.JobId ?? operationId,
+                        new { path, total_replaced = outcome.TotalReplaced });
+                    _notifications.PublishEvent(
+                        "office.document.saved",
+                        job?.JobId ?? operationId,
+                        new { path });
+                }
+            }
+            processed++;
+            job?.Report("replacing", processed);
         }
         return new
         {
@@ -675,6 +915,10 @@ public sealed class CommandRouter : IDisposable
             changed = new
             {
                 files = paths.Length,
+                processed,
+                succeeded,
+                failed = processed - succeeded,
+                cancelled = job?.CancellationObserved == true,
                 dry_run = dryRun,
                 total_matched = totalMatched,
                 total_replaced = totalReplaced,
@@ -784,6 +1028,7 @@ public sealed class CommandRouter : IDisposable
             {
                 return;
             }
+            _comAttachAttempted = true;
             _comAttached = _com.TryAttach(AttachBudget);
         }
     }
@@ -1021,6 +1266,7 @@ public sealed class CommandRouter : IDisposable
 
     public void Dispose()
     {
+        _jobs.Dispose();
         _com?.Dispose();
         _sta.Dispose();
     }

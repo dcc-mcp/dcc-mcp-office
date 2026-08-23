@@ -11,9 +11,19 @@ public sealed class ContractCatalogTests
     public void CatalogOwnsManifestDispatchSchemasAndErrorCodes()
     {
         CapabilityCatalog catalog = CapabilityCatalog.Current;
-        Assert.Equal("office-capability-catalog/1.1", catalog.SchemaVersion);
+        Assert.Equal("office-capability-catalog/1.2", catalog.SchemaVersion);
         Assert.Equal("office-rpc/1", catalog.ProtocolVersion);
         Assert.Equal(5, catalog.Capabilities.Count);
+        Assert.Equal(
+            [
+                "office.command.execute",
+                "office.host.handshake",
+                "office.host.ping",
+                "office.host.shutdown",
+                "office.job.cancel",
+                "office.job.get",
+            ],
+            catalog.RpcMethods.Select(method => method.Name).Order());
         Assert.Equal(
             catalog.Errors.Select(error => error.Code).Order(),
             Enum.GetValues<OfficeErrorCode>().Select(error => error.ToWireName()).Order());
@@ -144,5 +154,32 @@ public sealed class ContractCatalogTests
         {
             Directory.Delete(temp, recursive: true);
         }
+    }
+
+    [Fact]
+    public void JobStatusSchemaAcceptsNullsButRejectsWrongNullableTypes()
+    {
+        RpcMethodDefinition method = CapabilityCatalog.Current.FindRpcMethod("office.job.get")!;
+        using JsonDocument invalid = JsonDocument.Parse(
+            """
+            {
+              "job_id":"job:0123456789abcdef0123456789abcdef",
+              "capability":"batch.convert",
+              "phase":"failed",
+              "stage":"failed",
+              "completed":0,
+              "total":1,
+              "cancel_requested":false,
+              "created_at":"2026-08-24T00:00:00Z",
+              "updated_at":"2026-08-24T00:00:01Z",
+              "result":null,
+              "error":"not-an-error-object"
+            }
+            """);
+
+        OfficeArgumentException error = Assert.Throws<OfficeArgumentException>(() =>
+            CapabilityCatalog.Current.ValidateRpcResult(method, invalid.RootElement));
+
+        Assert.Contains("result.error must be object or null", error.Message);
     }
 }

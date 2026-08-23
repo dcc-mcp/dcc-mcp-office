@@ -1,5 +1,5 @@
 {
-  "schema_version": "office-capability-catalog/1.1",
+  "schema_version": "office-capability-catalog/1.2",
   "protocol_version": "office-rpc/1",
   "provider": "dcc-mcp-office",
   "command_params_schema": "schemas/command-params.schema.json",
@@ -22,6 +22,38 @@
     "execute_mso_allowlist": {},
     "execute_mso_confirm": ["PrintPreviewAndPrint"]
   },
+  "rpc_methods": [
+    {
+      "name": "office.host.handshake",
+      "params_schema": "schemas/handshake-params.schema.json",
+      "result_schema": "schemas/handshake-result.schema.json"
+    },
+    {
+      "name": "office.host.ping",
+      "params_schema": "schemas/empty-object.schema.json",
+      "result_schema": "schemas/sidecar-status.schema.json"
+    },
+    {
+      "name": "office.job.get",
+      "params_schema": "schemas/job-id.schema.json",
+      "result_schema": "schemas/job-status.schema.json"
+    },
+    {
+      "name": "office.job.cancel",
+      "params_schema": "schemas/job-id.schema.json",
+      "result_schema": "schemas/job-cancel-result.schema.json"
+    },
+    {
+      "name": "office.command.execute",
+      "params_schema": "schemas/command-params.schema.json",
+      "result_schema": "schemas/command-result.schema.json"
+    },
+    {
+      "name": "office.host.shutdown",
+      "params_schema": "schemas/empty-object.schema.json",
+      "result_schema": "schemas/shutdown-result.schema.json"
+    }
+  ],
   "errors": [
     {"code": "OFFICE_INVALID_REQUEST", "retryable": false},
     {"code": "OFFICE_APP_NOT_INSTALLED", "retryable": false},

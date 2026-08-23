@@ -70,13 +70,23 @@ public sealed class OfficeFreeRpcContractTests
             Console.SetError(originalError);
         }
 
-        string[] responses = output.ToString().Split(
+        string[] messages = output.ToString().Split(
             Environment.NewLine,
             StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        JsonNode[] parsed = messages.Select(Parse).ToArray();
+        string[] responses = parsed
+            .Where(message => message["id"] is not null)
+            .Select(message => message.ToJsonString())
+            .ToArray();
         Assert.Equal(3, responses.Length);
         AssertJsonEqual(MaterializeExpected("handshake.expected.json"), responses[0]);
         AssertJsonEqual(Fixture("unknown-method.expected.json"), responses[1]);
         AssertJsonEqual(Fixture("policy-denied.expected.json"), responses[2]);
+        JsonNode applicationStarted = Assert.Single(parsed, message =>
+            message["method"]?.GetValue<string>() == "office.application.started");
+        Assert.Equal(
+            "host:handshake",
+            applicationStarted["params"]!["correlation_id"]!.GetValue<string>());
         Assert.Equal(string.Empty, error.ToString());
     }
 

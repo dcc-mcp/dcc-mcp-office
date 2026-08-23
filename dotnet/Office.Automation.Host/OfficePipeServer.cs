@@ -24,18 +24,21 @@ public sealed class OfficePipeServer
     private readonly string _app;
     private readonly string _pipeName;
     private readonly Func<string, string> _dispatch;
+    private readonly Func<IReadOnlyList<string>>? _drainNotifications;
     private readonly Func<bool>? _shouldStop;
 
     public OfficePipeServer(
         string app,
         Func<string, string> dispatch,
         string? explicitPipeName = null,
-        Func<bool>? shouldStop = null)
+        Func<bool>? shouldStop = null,
+        Func<IReadOnlyList<string>>? drainNotifications = null)
     {
         _app = app;
         _pipeName = explicitPipeName ?? BuildPipeName(app);
         _dispatch = dispatch;
         _shouldStop = shouldStop;
+        _drainNotifications = drainNotifications;
     }
 
     public string PipeName => _pipeName;
@@ -137,19 +140,80 @@ public sealed class OfficePipeServer
         {
             NewLine = "\n",
         };
-        string? line;
-        while ((line = reader.ReadLine()) is not null)
+        var writerGate = new object();
+        using var notificationCancellation = new CancellationTokenSource();
+        Task? notificationPump = _drainNotifications is null
+            ? null
+            : Task.Run(() => PumpNotifications(
+                writer,
+                writerGate,
+                notificationCancellation.Token));
+        try
         {
-            if (string.IsNullOrWhiteSpace(line))
+            string? line;
+            while ((line = reader.ReadLine()) is not null)
             {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+                string response = _dispatch(line);
+                lock (writerGate)
+                {
+                    writer.WriteLine(response);
+                    if (_drainNotifications is not null)
+                    {
+                        foreach (string notification in _drainNotifications())
+                        {
+                            writer.WriteLine(notification);
+                        }
+                    }
+                    writer.Flush();
+                }
+                // office.host.shutdown sets the stop flag: leave this connection
+                // right after replying instead of blocking on the next line.
+                if (_shouldStop is not null && _shouldStop())
+                {
+                    return;
+                }
+            }
+        }
+        finally
+        {
+            notificationCancellation.Cancel();
+            if (notificationPump is not null)
+            {
+                try { notificationPump.Wait(TimeSpan.FromSeconds(1)); }
+                catch (AggregateException) { }
+            }
+        }
+    }
+
+    private void PumpNotifications(
+        StreamWriter writer,
+        object writerGate,
+        CancellationToken cancellation)
+    {
+        while (!cancellation.IsCancellationRequested)
+        {
+            IReadOnlyList<string> messages = _drainNotifications!();
+            if (messages.Count == 0)
+            {
+                cancellation.WaitHandle.WaitOne(TimeSpan.FromMilliseconds(20));
                 continue;
             }
-            string response = _dispatch(line);
-            writer.WriteLine(response);
-            writer.Flush();
-            // office.host.shutdown sets the stop flag: leave this connection
-            // right after replying instead of blocking on the next line.
-            if (_shouldStop is not null && _shouldStop())
+            try
+            {
+                lock (writerGate)
+                {
+                    foreach (string message in messages)
+                    {
+                        writer.WriteLine(message);
+                    }
+                    writer.Flush();
+                }
+            }
+            catch (IOException)
             {
                 return;
             }

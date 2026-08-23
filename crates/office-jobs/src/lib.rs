@@ -5,13 +5,15 @@
 //! adds the Office-specific phases (approval gate, validation, publishing)
 //! and the per-item result bookkeeping the proposal §16 requires.
 //!
-//! The aggregation helpers here are pure (dependency-free): layering onto
-//! dcc-mcp-job only needs a phase transition + persistence around them, and
-//! that crate has not been published yet (see AGENTS.md dependency map).
+//! The bounded M1 tracker lives in office-host and returns the shared protocol
+//! `JobPhase`. This crate maps those wire phases into the richer durable job
+//! model that dcc-mcp-job will own once published (see AGENTS.md dependency map).
 
 #![forbid(unsafe_code)]
 
 use serde::{Deserialize, Serialize};
+
+use dcc_mcp_office_protocol::JobPhase;
 
 /// Job phase (proposal §16).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -59,6 +61,19 @@ impl OfficeJobPhase {
             OfficeJobPhase::Succeeded
         } else {
             OfficeJobPhase::PartiallySucceeded
+        }
+    }
+}
+
+impl From<JobPhase> for OfficeJobPhase {
+    fn from(phase: JobPhase) -> Self {
+        match phase {
+            JobPhase::Queued => Self::Queued,
+            JobPhase::Running => Self::Running,
+            JobPhase::Succeeded => Self::Succeeded,
+            JobPhase::PartiallySucceeded => Self::PartiallySucceeded,
+            JobPhase::Failed => Self::Failed,
+            JobPhase::Cancelled => Self::Cancelled,
         }
     }
 }
@@ -155,6 +170,15 @@ mod tests {
             OfficeJobPhase::PartiallySucceeded
         );
         assert_eq!(OfficeJobPhase::from_outcomes(0, 3), OfficeJobPhase::Failed);
+    }
+
+    #[test]
+    fn wire_phases_map_into_the_durable_office_model() {
+        assert_eq!(
+            OfficeJobPhase::from(JobPhase::PartiallySucceeded),
+            OfficeJobPhase::PartiallySucceeded
+        );
+        assert!(OfficeJobPhase::from(JobPhase::Cancelled).is_terminal());
     }
 
     #[test]

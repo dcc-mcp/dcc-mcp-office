@@ -23,8 +23,8 @@ adapters live in thin sibling repos and depend on this one the way
 
 ```text
 crates/
-  office-protocol   office-rpc/1 catalog + wire schema, handshake, manifest,
-                    error codes, job progress, events (schema-only, no I/O)
+  office-protocol   office-rpc/1 catalog + typed wire DTOs for handshake,
+                    commands, jobs, progress, events, and error codes
   office-ir         document IRs: common envelope + presentation / word / workbook
   office-client     Rust-side client for office-host.exe (namedpipe://)
   office-tools      task-level MCP tool registry (office.batch.convert, ...)
@@ -42,7 +42,8 @@ dotnet/
                               previews with overflow detection)
   Office.Automation.OpenXml   batch structural worker (compiler, not renderer)
   Office.Automation.Host      office-host.exe entry point (--app=powerpoint|...)
-                              + office-rpc/1 named-pipe JSON-RPC server
+                              + office-rpc/1 named-pipe JSON-RPC server,
+                              bounded in-memory job tracker and event producer
 skills/            office-wide skill packs (SKILL.md)
 manifests/         catalog-referenced input JSON Schemas
 templates/         brand template registry (brand:// URIs, registry.json)
@@ -60,6 +61,14 @@ require a byte-exact checkpoint plus structured `confirmation` proof. Desktop
 COM is refused in Session 0, and audit records contain values read back from
 the live Office application rather than unverified intent. Capabilities with
 no explicit overwrite mode refuse existing destination artifacts.
+
+`batch.convert` and `batch.replace_text` are asynchronous at the sidecar
+boundary: `office.command.execute` returns a `job_id` immediately, callers poll
+`office.job.get`, and `office.job.cancel` is observed between files. The pipe
+delivers `office.job.progress` notifications plus job/application/document,
+security, and modal events. `office.host.ping` reports Host state without
+attaching to or starting an Office application. Job state is intentionally
+process-local for M1; durable recovery remains the later `dcc-mcp-job` adapter.
 
 ## Quickstart
 

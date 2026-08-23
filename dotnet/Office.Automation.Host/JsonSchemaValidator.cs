@@ -14,7 +14,7 @@ internal static class JsonSchemaValidator
     {
         if (schema.TryGetProperty("type", out JsonElement type))
         {
-            ValidateType(value, type.GetString() ?? "", path);
+            ValidateType(value, type, path);
         }
         if (schema.TryGetProperty("enum", out JsonElement allowed)
             && !allowed.EnumerateArray().Any(candidate => candidate.GetRawText() == value.GetRawText()))
@@ -39,23 +39,33 @@ internal static class JsonSchemaValidator
         }
     }
 
-    private static void ValidateType(JsonElement value, string type, string path)
+    private static void ValidateType(JsonElement value, JsonElement type, string path)
     {
-        bool matches = type switch
+        string[] accepted = type.ValueKind switch
         {
-            "object" => value.ValueKind == JsonValueKind.Object,
-            "array" => value.ValueKind == JsonValueKind.Array,
-            "string" => value.ValueKind == JsonValueKind.String,
-            "integer" => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out _),
-            "number" => value.ValueKind == JsonValueKind.Number,
-            "boolean" => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
-            _ => throw new InvalidDataException($"unsupported JSON Schema type '{type}'"),
+            JsonValueKind.String => [type.GetString() ?? ""],
+            JsonValueKind.Array => type.EnumerateArray()
+                .Select(item => item.GetString() ?? "")
+                .ToArray(),
+            _ => throw new InvalidDataException("JSON Schema type must be a string or array"),
         };
-        if (!matches)
+        if (accepted.Length == 0 || !accepted.Any(name => TypeMatches(value, name)))
         {
-            throw Invalid(path, $"must be {type}");
+            throw Invalid(path, $"must be {string.Join(" or ", accepted)}");
         }
     }
+
+    private static bool TypeMatches(JsonElement value, string type) => type switch
+    {
+        "object" => value.ValueKind == JsonValueKind.Object,
+        "array" => value.ValueKind == JsonValueKind.Array,
+        "string" => value.ValueKind == JsonValueKind.String,
+        "integer" => value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out _),
+        "number" => value.ValueKind == JsonValueKind.Number,
+        "boolean" => value.ValueKind is JsonValueKind.True or JsonValueKind.False,
+        "null" => value.ValueKind == JsonValueKind.Null,
+        _ => throw new InvalidDataException($"unsupported JSON Schema type '{type}'"),
+    };
 
     private static void ValidateObject(JsonElement value, JsonElement schema, string path)
     {

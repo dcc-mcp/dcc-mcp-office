@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/job-cancel-result.schema.json",
+  "title": "office.job.cancel result",
+  "type": "object",
+  "required": ["job_id", "accepted", "phase"],
+  "additionalProperties": false,
+  "properties": {
+    "job_id": {"type": "string", "pattern": "^job:[a-f0-9]{32}$"},
+    "accepted": {"type": "boolean"},
+    "phase": {
+      "type": "string",
+      "enum": ["queued", "running", "succeeded", "partially_succeeded", "failed", "cancelled"]
+    }
+  }
+}

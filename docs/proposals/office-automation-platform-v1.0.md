@@ -813,6 +813,13 @@ Windows Named Pipe
 
 ### 12.4 进度与事件
 
+> M1 implementation note: `batch.convert` and `batch.replace_text` return a
+> process-local `job_id` immediately. `office.job.get` returns the current
+> snapshot and terminal command result; `office.job.cancel` is cooperative at
+> per-file safety boundaries. The named-pipe client buffers notifications that
+> arrive before a matching response. `office.host.ping` is side-effect-free and
+> never attaches to or starts Office.
+
 ```json
 {
   "jsonrpc": "2.0",
@@ -1261,6 +1268,12 @@ dcc.review-deck-from-renders
 
 批量操作必须是 Job，不应让一个 MCP 请求长时间占用连接。
 
+> M1 implementation note: `office-host` contains a bounded in-memory tracker
+> with one serialized Office worker, per-item progress, polling, and
+> cancellation. Its active wire phases are `queued → running → terminal`;
+> planning/approval/validation/publishing and durable restart recovery remain
+> the `dcc-mcp-job` integration layer once that crate is published.
+
 Job 状态：
 
 ```text
@@ -1539,6 +1552,12 @@ office.job.completed
 office.security.prompt
 office.modal.detected
 ```
+
+> M1 implementation note: the Host currently produces application lifecycle,
+> document open/save/change, job progress/completion, security prompt, and
+> modal events from real execution points. Selection and slideshow events are
+> deliberately deferred until COM/Office.js event sinks exist; they are not
+> synthesized from command acknowledgements.
 
 事件必须包含：
 

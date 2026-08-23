@@ -7,7 +7,7 @@ use dcc_mcp_office_protocol::{capability_catalog, OfficeErrorCode, PROTOCOL_VERS
 #[test]
 fn catalog_is_the_complete_wire_contract() {
     let catalog = capability_catalog();
-    assert_eq!(catalog.schema_version, "office-capability-catalog/1.1");
+    assert_eq!(catalog.schema_version, "office-capability-catalog/1.2");
     assert_eq!(catalog.protocol_version, PROTOCOL_VERSION);
     assert_eq!(catalog.security_policy.actions.len(), 12);
     assert_eq!(
@@ -15,6 +15,23 @@ fn catalog_is_the_complete_wire_contract() {
         "checkpoint_and_confirm"
     );
     assert!(catalog.security_policy.workspace_only);
+
+    let rpc_methods: BTreeSet<_> = catalog
+        .rpc_methods
+        .iter()
+        .map(|method| method.name.as_str())
+        .collect();
+    assert_eq!(
+        rpc_methods,
+        BTreeSet::from([
+            "office.command.execute",
+            "office.host.handshake",
+            "office.host.ping",
+            "office.host.shutdown",
+            "office.job.cancel",
+            "office.job.get",
+        ])
+    );
 
     let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let command_schema = repository
@@ -85,6 +102,23 @@ fn catalog_is_the_complete_wire_contract() {
             capability.name
         );
         for schema_ref in [&capability.input_schema, &capability.output_schema] {
+            let schema_path = repository.join("manifests").join(schema_ref);
+            let schema: serde_json::Value = serde_json::from_str(
+                &fs::read_to_string(&schema_path)
+                    .unwrap_or_else(|error| panic!("read {}: {error}", schema_path.display())),
+            )
+            .unwrap_or_else(|error| panic!("parse {}: {error}", schema_path.display()));
+            assert_eq!(schema["type"], "object", "{}", schema_path.display());
+            assert_eq!(
+                schema["additionalProperties"],
+                false,
+                "{}",
+                schema_path.display()
+            );
+        }
+    }
+    for method in &catalog.rpc_methods {
+        for schema_ref in [&method.params_schema, &method.result_schema] {
             let schema_path = repository.join("manifests").join(schema_ref);
             let schema: serde_json::Value = serde_json::from_str(
                 &fs::read_to_string(&schema_path)

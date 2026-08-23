@@ -19,9 +19,14 @@
     "warnings": {"type": "array"},
     "artefacts": {"type": "array"},
     "validation": {"type": "object"},
+    "job_id": {"type": "string", "pattern": "^job:[a-f0-9]{32}$"},
+    "phase": {
+      "type": "string",
+      "enum": ["queued", "running", "succeeded", "partially_succeeded", "failed", "cancelled"]
+    },
     "backend": {
       "type": "string",
-      "enum": ["openxml", "desktop_com", "graph", "office_js", "uia", "cua"]
+      "enum": ["job", "openxml", "desktop_com", "graph", "office_js", "uia", "cua"]
     },
     "indeterminate": {"type": "boolean"}
   }

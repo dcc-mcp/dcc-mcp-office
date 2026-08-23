@@ -18,7 +18,7 @@ use std::sync::{Mutex, MutexGuard};
 use std::time::{Duration, Instant};
 
 use dcc_mcp_office_client::OfficeHostClient;
-use dcc_mcp_office_protocol::{CommandParams, ConfirmationProof};
+use dcc_mcp_office_protocol::{CommandParams, CommandResult, ConfirmationProof, JobPhase};
 use serde_json::json;
 
 const PIPE: &str = r"\\.\pipe\dcc-office-contract-test-powerpoint";
@@ -102,6 +102,72 @@ fn confirmed_command(capability: &str, input: serde_json::Value) -> CommandParam
     params
 }
 
+fn execute_batch(client: &mut OfficeHostClient, params: &CommandParams) -> CommandResult {
+    let submission = client.execute(params).expect("submit batch job");
+    assert_eq!(submission.backend.as_deref(), Some("job"));
+    let job_id = submission.job_id.expect("batch submission job_id");
+    let deadline = Instant::now() + Duration::from_secs(180);
+    let terminal = loop {
+        let status = client.job_get(&job_id).expect("poll batch job");
+        if status.phase.is_terminal() {
+            break status;
+        }
+        assert!(Instant::now() < deadline, "batch job {job_id} timed out");
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    let notifications = collect_job_notifications(client, &job_id, Duration::from_secs(5));
+    assert!(
+        notifications.iter().any(|message| {
+            message["method"] == "office.job.progress" && message["params"]["job_id"] == job_id
+        }),
+        "job {job_id} emitted no progress notification"
+    );
+    assert!(
+        notifications.iter().any(|message| {
+            message["method"] == "office.job.completed"
+                && message["params"]["correlation_id"] == job_id
+        }),
+        "job {job_id} emitted no completion event"
+    );
+    assert!(
+        matches!(
+            terminal.phase,
+            JobPhase::Succeeded | JobPhase::PartiallySucceeded
+        ),
+        "job {job_id} ended as {:?}: {:?}",
+        terminal.phase,
+        terminal.error
+    );
+    serde_json::from_value(terminal.result.expect("successful batch result"))
+        .expect("deserialize terminal command result")
+}
+
+fn collect_job_notifications(
+    client: &mut OfficeHostClient,
+    job_id: &str,
+    timeout: Duration,
+) -> Vec<serde_json::Value> {
+    let deadline = Instant::now() + timeout;
+    let mut notifications = Vec::new();
+    loop {
+        // A request/response read boundary lets the client consume any
+        // notifications already written by the independent Host pump.
+        let _ = client.ping().expect("flush job notifications");
+        notifications.extend(client.drain_notifications());
+        if notifications.iter().any(|message| {
+            message["method"] == "office.job.completed"
+                && message["params"]["correlation_id"] == job_id
+        }) {
+            return notifications;
+        }
+        assert!(
+            Instant::now() < deadline,
+            "job {job_id} emitted no completion event"
+        );
+        std::thread::sleep(Duration::from_millis(20));
+    }
+}
+
 #[test]
 #[ignore = "requires a built dcc-office-host; CI runs this Office-free contract explicitly"]
 fn office_host_openxml_contract() {
@@ -142,6 +208,10 @@ fn office_host_openxml_contract() {
         .capability_manifest
         .capabilities
         .contains_key("batch.convert"));
+    let status = client.status().expect("typed sidecar status");
+    assert_eq!(status.app, "powerpoint");
+    assert_eq!(status.com_attach_state, "unavailable");
+    assert!(!status.busy);
 
     let temp = std::env::temp_dir().join(format!("dcc-office-openxml-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&temp);
@@ -168,6 +238,42 @@ fn office_host_openxml_contract() {
         .expect("document.inspect");
     assert_eq!(inspected.backend.as_deref(), Some("openxml"));
     assert_eq!(inspected.changed["summary"]["slide_count"], 3);
+
+    // Even when desktop COM is unavailable, a valid long-running request is
+    // accepted immediately and its failure is observable through office.job.get.
+    let submission = client
+        .execute(&command(
+            "batch.convert",
+            json!({
+                "inputs": [pptx.to_string_lossy()],
+                "output_directory": temp.join("pdf").to_string_lossy(),
+            }),
+        ))
+        .expect("submit Office-free batch");
+    assert_eq!(submission.backend.as_deref(), Some("job"));
+    let job_id = submission.job_id.expect("job_id");
+    let deadline = Instant::now() + Duration::from_secs(10);
+    let terminal = loop {
+        let status = client.job_get(&job_id).expect("poll Office-free batch");
+        if status.phase.is_terminal() {
+            break status;
+        }
+        assert!(Instant::now() < deadline, "Office-free batch timed out");
+        std::thread::sleep(Duration::from_millis(20));
+    };
+    assert_eq!(terminal.phase, JobPhase::Failed);
+    assert_eq!(
+        terminal.error.expect("terminal error").code,
+        "OFFICE_BACKEND_UNAVAILABLE"
+    );
+    assert!(
+        collect_job_notifications(&mut client, &job_id, Duration::from_secs(5))
+            .iter()
+            .any(|message| {
+                message["method"] == "office.job.completed"
+                    && message["params"]["correlation_id"] == job_id
+            })
+    );
 
     let denied = CommandParams {
         capability: "batch.replace_text".to_string(),
@@ -317,8 +423,9 @@ fn office_host_full_contract() {
     let pdf = pdf_dir.join("deck.pdf");
     let previous_pdf = b"previous output";
     std::fs::write(&pdf, previous_pdf).expect("seed existing PDF");
-    let convert = client
-        .execute(&confirmed_command(
+    let convert = execute_batch(
+        &mut client,
+        &confirmed_command(
             "batch.convert",
             json!({
                 "inputs": [pptx.to_string_lossy()],
@@ -326,8 +433,8 @@ fn office_host_full_contract() {
                 "output_directory": pdf_dir.to_string_lossy(),
                 "overwrite": "overwrite",
             }),
-        ))
-        .expect("batch.convert");
+        ),
+    );
     assert_eq!(convert.backend.as_deref(), Some("desktop_com"));
     assert_eq!(convert.changed["succeeded"], 1);
     let checkpoint = convert
@@ -344,8 +451,9 @@ fn office_host_full_contract() {
     assert!(head.starts_with(b"%PDF"), "PDF magic mismatch");
 
     // 4. batch.replace_text — dry-run first, then commit (§27 criterion 4)
-    let dry = client
-        .execute(&command(
+    let dry = execute_batch(
+        &mut client,
+        &command(
             "batch.replace_text",
             json!({
                 "inputs": [pptx.to_string_lossy()],
@@ -353,13 +461,14 @@ fn office_host_full_contract() {
                 "scope": ["body"],
                 "dry_run": true,
             }),
-        ))
-        .expect("replace dry-run");
+        ),
+    );
     assert!(dry.changed["total_matched"].as_u64().unwrap_or(0) >= 1);
     assert_eq!(dry.changed["total_replaced"], 0);
 
-    let commit = client
-        .execute(&confirmed_command(
+    let commit = execute_batch(
+        &mut client,
+        &confirmed_command(
             "batch.replace_text",
             json!({
                 "inputs": [pptx.to_string_lossy()],
@@ -367,8 +476,8 @@ fn office_host_full_contract() {
                 "scope": ["body"],
                 "dry_run": false,
             }),
-        ))
-        .expect("replace commit");
+        ),
+    );
     assert!(commit.changed["total_replaced"].as_u64().unwrap_or(0) >= 1);
     assert!(commit
         .artefacts
@@ -503,8 +612,9 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
     ));
     let previous_pdf = b"previous output";
     std::fs::write(&pdf, previous_pdf).expect("seed existing PDF");
-    let convert = client
-        .execute(&confirmed_command(
+    let convert = execute_batch(
+        &mut client,
+        &confirmed_command(
             "batch.convert",
             json!({
                 "inputs": [copy.to_string_lossy()],
@@ -512,8 +622,8 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
                 "output_directory": pdf_dir.to_string_lossy(),
                 "overwrite": "overwrite",
             }),
-        ))
-        .expect("batch.convert");
+        ),
+    );
     assert_eq!(convert.changed["succeeded"], 1);
     let checkpoint = convert
         .artefacts
@@ -528,8 +638,9 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
     assert!(head.starts_with(b"%PDF"), "PDF magic mismatch");
 
     // replace dry-run → commit
-    let dry = client
-        .execute(&command(
+    let dry = execute_batch(
+        &mut client,
+        &command(
             "batch.replace_text",
             json!({
                 "inputs": [copy.to_string_lossy()],
@@ -537,13 +648,14 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
                 "scope": ["body"],
                 "dry_run": true,
             }),
-        ))
-        .expect("replace dry-run");
+        ),
+    );
     assert!(dry.changed["total_matched"].as_u64().unwrap_or(0) >= 1);
     assert_eq!(dry.changed["total_replaced"], 0);
 
-    let commit = client
-        .execute(&confirmed_command(
+    let commit = execute_batch(
+        &mut client,
+        &confirmed_command(
             "batch.replace_text",
             json!({
                 "inputs": [copy.to_string_lossy()],
@@ -551,8 +663,8 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
                 "scope": ["body"],
                 "dry_run": false,
             }),
-        ))
-        .expect("replace commit");
+        ),
+    );
     assert!(commit.changed["total_replaced"].as_u64().unwrap_or(0) >= 1);
     assert!(commit
         .artefacts
@@ -594,8 +706,9 @@ fn office_host_word_headers_contract() {
     let copy = temp.join("fixture-document.docx");
     std::fs::copy(&fixture, &copy).expect("copy fixture");
 
-    let dry = client
-        .execute(&command(
+    let dry = execute_batch(
+        &mut client,
+        &command(
             "batch.replace_text",
             json!({
                 "inputs": [copy.to_string_lossy()],
@@ -603,8 +716,8 @@ fn office_host_word_headers_contract() {
                 "scope": ["headers"],
                 "dry_run": true,
             }),
-        ))
-        .expect("headers dry-run");
+        ),
+    );
     // section 1 header + section 2 header (footer excluded by scope)
     assert!(
         dry.changed["total_matched"].as_u64().unwrap_or(0) >= 2,
