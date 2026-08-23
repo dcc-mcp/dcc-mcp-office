@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","id":3,"error":{"code":"OFFICE_MACRO_BLOCKED","message":"policy.macros must stay 'deny' — deny-by-default is not negotiable at the COM boundary"}}

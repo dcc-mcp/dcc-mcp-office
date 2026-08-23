@@ -14,6 +14,7 @@ using Office.Automation.Runtime;
 ///   --app=<app> --self-test        Open XML round-trip, no Office required
 ///   --app=<app> --self-test-com    Open XML + real COM probe (PDF convert,
 ///                                  replace-text dry-run/commit, slide previews)
+///   --openxml-only                 disable desktop COM for deterministic runs
 ///   --version                      print host + protocol versions and exit
 ///
 /// Commands (office.command.execute capabilities):
@@ -37,6 +38,7 @@ public static class Program
         bool selfTestCom = false;
         bool stdio = false;
         bool showVersion = false;
+        bool openXmlOnly = false;
         string? pipeName = null;
         foreach (var arg in args)
         {
@@ -53,6 +55,9 @@ public static class Program
                     break;
                 case "--version":
                     showVersion = true;
+                    break;
+                case "--openxml-only":
+                    openXmlOnly = true;
                     break;
                 default:
                     if (arg.StartsWith("--app=", StringComparison.Ordinal))
@@ -77,7 +82,7 @@ public static class Program
         if (app is null || !SupportedApps.Contains(app))
         {
             Console.Error.WriteLine(
-                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--self-test|--self-test-com]");
+                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--openxml-only] [--self-test|--self-test-com]");
             return 2;
         }
 
@@ -90,7 +95,7 @@ public static class Program
             return SelfTest(app, probeCom: true);
         }
 
-        using var router = new CommandRouter(app);
+        using var router = new CommandRouter(app, enableDesktopCom: !openXmlOnly);
         if (stdio)
         {
             return JsonRpcLoop(router);
@@ -114,10 +119,8 @@ public static class Program
 
     private static int JsonRpcLoop(CommandRouter router)
     {
-        using var stdin = Console.OpenStandardInput();
-        using var reader = new StreamReader(stdin, Console.InputEncoding);
         string? line;
-        while ((line = reader.ReadLine()) is not null)
+        while ((line = Console.In.ReadLine()) is not null)
         {
             if (string.IsNullOrWhiteSpace(line))
             {

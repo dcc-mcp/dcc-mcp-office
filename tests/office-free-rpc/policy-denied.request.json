@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","id":3,"method":"office.command.execute","params":{"capability":"batch.replace_text","input":{},"policy":{"macros":"confirm"}}}

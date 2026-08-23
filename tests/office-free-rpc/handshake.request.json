@@ -1,0 +1,1 @@
+{"jsonrpc":"2.0","id":1,"method":"office.host.handshake","params":{"gateway_version":"contract-fixture","protocol_versions":["office-rpc/1"],"requested_app":"powerpoint"}}

@@ -36,6 +36,7 @@ jobs:
         run: |
           # dcc-mcp-cli ships through the dcc-mcp-core release train, not pip.
           curl -fL -o "$RUNNER_TEMP/dcc-mcp-cli" "https://github.com/dcc-mcp/dcc-mcp-core/releases/download/v0.20.6/dcc-mcp-cli-linux-x86_64"
+          echo "d35b5581b326321b62dc63fbf37a95c1b600fd02d558557a005a9fc4988af577  $RUNNER_TEMP/dcc-mcp-cli" | sha256sum --check --strict
           chmod +x "$RUNNER_TEMP/dcc-mcp-cli"
           "$RUNNER_TEMP/dcc-mcp-cli" lint skills --warnings-as-errors --non-interactive
       - name: Dashboard e2e
@@ -54,12 +55,24 @@ jobs:
           setup: "true"
       - name: Build (zero NuGet dependencies)
         run: vx run build
+      - name: .NET format gate
+        run: vx run format-check
       - name: .NET unit tests (Office-free)
         run: vx run test-dotnet
       - name: Host self-test (compile + inspect round-trip)
         run: vx run self-test
       - uses: dtolnay/rust-toolchain@stable
-      - name: Rust client reliability + host contract (skips COM when Office is absent)
+      - name: Rust client reliability + explicit skip inventory
         env:
           DCC_OFFICE_HOST_EXE: ${{ github.workspace }}\dotnet\Office.Automation.Host\bin\Debug\net8.0-windows\dcc-office-host.exe
         run: cargo test -p dcc-mcp-office-client
+      - name: Office-free Rust to C# pipe contract
+        env:
+          DCC_OFFICE_HOST_EXE: ${{ github.workspace }}\dotnet\Office.Automation.Host\bin\Debug\net8.0-windows\dcc-office-host.exe
+        run: cargo test -p dcc-mcp-office-client --test pipe_contract office_host_openxml_contract -- --ignored --exact
+      - name: Report real-Office coverage boundary
+        shell: pwsh
+        run: |
+          $message = "Four desktop COM contracts are intentionally ignored on hosted CI. Run 'vx run test-office-com' on a provisioned real-Office Windows host."
+          Write-Output "::warning title=Real Office contract lane not provisioned::$message"
+          Add-Content -LiteralPath $env:GITHUB_STEP_SUMMARY -Value "### Real Office coverage`n`n⚠️ $message"

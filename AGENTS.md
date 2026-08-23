@@ -43,7 +43,7 @@ Office.js remain Phase 3; Visio/Project/Access Phase 4.
 | `dotnet/Office.Automation.Runtime` | STA dispatcher (message pump, soft timeouts), IOleMessageFilter busy retry, modal-dialog detection, COM lifecycle | sidecar internals |
 | `dotnet/Office.Automation.Com` | Per-app COM backends (PowerPoint/Word/Excel): attach + security defaults, PDF export, replace-text, inspect, slide previews | COM capabilities |
 | `dotnet/Office.Automation.OpenXml` | Batch structural worker — compiler, never a renderer | bulk edits |
-| `dotnet/Office.Automation.Host` | `office-host.exe` entry (`--app=powerpoint|word|...`, `--pipe`/`--stdio`/`--self-test[--com]`) + office-rpc/1 pipe server | host startup |
+| `dotnet/Office.Automation.Host` | `office-host.exe` entry (`--app=powerpoint|word|...`, `--pipe`/`--stdio`, deterministic `--openxml-only`, `--self-test[--com]`) + office-rpc/1 pipe server | host startup |
 | `skills/` | Office-wide skill packs (SKILL.md, dcc-mcp-skills format) | workflows |
 | `manifests/` | Capability manifest examples + input JSON Schemas (batch-convert / batch-replace-text / slide-render) | gateway validation |
 | `templates/registry.json` | Brand template registry (`brand-registry/1.0`) consumed by `deck.compile` | template-first generation |
@@ -78,9 +78,13 @@ pins the SDK, `vx.lock` freezes it. CI (`ci.yml`, `publish-host.yml`,
 `release.yml`) installs vx through the `loonghao/vx` action so local and CI
 SDKs stay identical; releases are automated by release-please.
 
-CI matrix (proposal §22.3): M365 current channel, Office LTSC, 32/64-bit,
-Windows 11, zh-CN + en-US — golden-file and visual-snapshot tests live under
-`tests/` and run against the published `office-host` binaries.
+Hosted CI runs Office-free unit, stdio-fixture, Open XML, and Rust ↔ C# pipe
+contracts. The proposal §22.3 real-Office matrix (M365 current, LTSC, 32/64-bit,
+Windows 11, zh-CN + en-US) is not provisioned yet: its COM tests are explicit
+`#[ignore]` cases run with `vx run test-office-com`, and CI reports that
+coverage boundary instead of silently treating it as passed. The directories
+under `tests/` are the planned golden/visual/compatibility corpus unless they
+contain real fixtures.
 
 ## Conventions
 
