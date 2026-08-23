@@ -4,7 +4,7 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <TargetFramework>net8.0</TargetFramework>
-    <Version>0.2.1</Version> <!-- x-release-please-version -->
+    <Version>0.2.2</Version> <!-- x-release-please-version -->
     <Product>DCC-MCP Office Automation</Product>
     <Company>dcc-mcp</Company>
     <RepositoryUrl>https://github.com/dcc-mcp/dcc-mcp-office</RepositoryUrl>
