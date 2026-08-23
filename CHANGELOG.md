@@ -1,5 +1,27 @@
 # Changelog
 
+## [0.2.3](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.2...v0.2.3) (2026-08-23)
+
+
+### Features
+
+* add external office templates ([#40](https://github.com/dcc-mcp/dcc-mcp-office/issues/40)) ([0efe573](https://github.com/dcc-mcp/dcc-mcp-office/commit/0efe5730b1c5e757e6a0e4ae3b8e5f04a28ecfa8))
+* add office job runtime ([#38](https://github.com/dcc-mcp/dcc-mcp-office/issues/38)) ([e71797d](https://github.com/dcc-mcp/dcc-mcp-office/commit/e71797d82b065750f280541798dd7ffd2458c1b5))
+* add reference Office MCP server ([08290bd](https://github.com/dcc-mcp/dcc-mcp-office/commit/08290bdd3294f6907bae287c58939e3e57efa4c6))
+* add verified office distribution ([#39](https://github.com/dcc-mcp/dcc-mcp-office/issues/39)) ([6582b06](https://github.com/dcc-mcp/dcc-mcp-office/commit/6582b063a60ee23f3b9029070a567736be46da48))
+* improve Office host operability ([db29df5](https://github.com/dcc-mcp/dcc-mcp-office/commit/db29df541b10535295d31b5927ec1fcb3cb4fdd4)), closes [#25](https://github.com/dcc-mcp/dcc-mcp-office/issues/25)
+
+
+### Bug Fixes
+
+* enforce Office write safety contracts ([#36](https://github.com/dcc-mcp/dcc-mcp-office/issues/36)) ([75b5f24](https://github.com/dcc-mcp/dcc-mcp-office/commit/75b5f2432c21c0473e87eec9bae761920798a6b4))
+
+
+### Documentation
+
+* align Office documentation contracts ([8600ff4](https://github.com/dcc-mcp/dcc-mcp-office/commit/8600ff4c4a413160295b9b739892a49e4c1a06a1))
+* close architecture health review ([4f37926](https://github.com/dcc-mcp/dcc-mcp-office/commit/4f3792616eb4c6d6cff31baec658a6ad958449ca))
+
 ## [0.2.2](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.1...v0.2.2) (2026-08-23)
 
 
