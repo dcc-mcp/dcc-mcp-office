@@ -7,17 +7,21 @@ This repository implements the **shared core** of the
 [DCC-MCP Office Automation Platform proposal](./docs/proposals/office-automation-platform-v1.0.md):
 the `office-rpc/1` wire protocol, application document IRs, the C# STA COM
 sidecar runtime (`office-host`), a reference stdio MCP server, the Open XML
-batch worker, the Microsoft Graph connector and the Office-wide skill packs.
+batch worker, the Microsoft Graph connector stub and the Office-wide skill packs.
 Application-specific adapters live in thin sibling repos and depend on this
 one the way `dcc-mcp-maya` depends on `dcc-mcp-core`.
 
 | Repo | Scope | Status |
 |---|---|---|
-| **dcc-mcp-office** (this repo) | shared protocol / IR / C# runtime / Open XML / Graph / generic skills | M1 COM sidecar MVP |
-| dcc-mcp-PowerPoint | deck generate, slide compose, review decks | M1 consumes |
-| dcc-mcp-word | reflow, fields, TOC | M1 consumes (COM legs) |
-| dcc-mcp-excel | calculate, tables, charts, Graph workbook | M1 consumes (COM legs) |
-| dcc-mcp-outlook | drafts, calendar | Phase 3 (placeholder) |
+| **dcc-mcp-office** (this repo) | shared protocol / IR / C# runtime / Open XML / Graph / generic skills | repository M1 complete; M2 shared core in place |
+| dcc-mcp-PowerPoint | deck generate, slide compose, review decks | proposal Phase 1; external adapter |
+| dcc-mcp-word | reflow, fields, TOC | proposal Phase 2; external adapter |
+| dcc-mcp-excel | calculate, tables, charts, Graph workbook | proposal Phase 2; external adapter |
+| dcc-mcp-outlook | drafts, calendar | planned proposal Phase 3; external adapter |
+
+These status vocabularies describe different dimensions. See the
+[delivery vocabulary crosswalk](./docs/README.md#delivery-vocabulary) before
+comparing proposal phases, repository milestones, or tool priorities.
 
 ## Layout
 
@@ -109,8 +113,7 @@ and slide previews end to end:
 ```powershell
 dotnet build dotnet/Office.Automation.Host          # or: vx run build
 dotnet/Office.Automation.Host/bin/Debug/net8.0-windows/dcc-office-host.exe --app=powerpoint --self-test-com
-$env:DCC_OFFICE_HOST_EXE = "F:githubdcc-mcp-officedotnetOffice.Automation.HostinDebug
-et8.0-windowsdcc-office-host.exe"
+$env:DCC_OFFICE_HOST_EXE = (Resolve-Path "dotnet/Office.Automation.Host/bin/Debug/net8.0-windows/dcc-office-host.exe").Path
 cargo test -p dcc-mcp-office-client --test pipe_contract   # skips gracefully without Office
 ```
 
@@ -133,7 +136,12 @@ dotnet build dotnet/Office.Automation.Host
   checksums, SPDX SBOM, and GitHub attestations. See
   [`docs/distribution.md`](./docs/distribution.md).
 
-## Roadmap
+## Repository roadmap
+
+The `M` identifiers below are repository implementation checkpoints, not the
+proposal's delivery phases or the tool registry's `P` support priorities. The
+[canonical crosswalk](./docs/README.md#delivery-vocabulary) records how the
+three dimensions relate.
 
 | Milestone | Content | Acceptance (proposal §26/§27) |
 |---|---|---|

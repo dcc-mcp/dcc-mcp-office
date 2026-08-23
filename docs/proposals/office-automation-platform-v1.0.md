@@ -1626,6 +1626,10 @@ CI/实验室至少覆盖：
 
 ## 23. 推荐仓库结构
 
+> Implementation note (2026-08-24): the following is a conceptual target layout,
+> not a claim about the current checkout. In particular, `addins/` is planned for Phase 3;
+> it is not an implemented directory in this repository today.
+
 ```text
 dcc-mcp-office/
 ├── crates/

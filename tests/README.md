@@ -27,7 +27,8 @@ not evidence that a matrix cell ran.
 | `security/` | macro/XLM blocking, AutomationSecurity restore, ExecuteMso whitelist, path traversal, workspace confinement |
 | `stress/` | fault injection: Busy, modal, file lock, Protected View, COM call rejected, sidecar crash, gateway restart, Graph 429, network drop, concurrent user edit, disk full |
 
-Agent evaluation (§24.5) runs on the fixed task set with `dcc-mcp-tester`:
-tool-selection accuracy, unnecessary visual-degradation rate, batch success
-rate, human-acceptable deck rate, edit-scope accuracy, high-risk confirmation
-rate, failure-explanation completeness.
+Agent evaluation (§24.5) remains planned. No evaluation runner is selected yet.
+When provisioned, the fixed task set will measure tool-selection accuracy,
+unnecessary visual-degradation rate, batch success rate, human-acceptable deck
+rate, edit-scope accuracy, high-risk confirmation rate, and
+failure-explanation completeness.

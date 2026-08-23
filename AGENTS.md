@@ -28,6 +28,9 @@ layout warnings). Skills: batch-to-pdf, global-text-replace, dashboard.
 Remaining M1 wiring: `dcc-mcp-host-rpc` lifecycle integration in the
 gateway — blocked on crates.io publication (see dependency map). Graph and
 Office.js remain Phase 3; Visio/Project/Access Phase 4.
+See the [delivery vocabulary crosswalk](./docs/README.md#delivery-vocabulary)
+for the distinction between proposal phases, repository milestones, and tool
+support priorities.
 
 ## Repo Map
 
@@ -38,7 +41,7 @@ Office.js remain Phase 3; Visio/Project/Access Phase 4.
 | `crates/office-client` | Rust client for `office-host.exe`: named-pipe transport (std-only), handshake, execute | gateway/sidecar wiring |
 | `crates/office-mcp-server` | Consumable stdio MCP server: Host lifecycle, live capability filtering, schema validation, structured Office errors | direct MCP clients / interim gateway surface |
 | `crates/office-client/tests/pipe_contract.rs` | Rust ↔ C# contract test: compile → COM inspect/convert/replace/render (env `DCC_OFFICE_HOST_EXE`, skips without Office) | transport changes |
-| `crates/office-tools` | Task-level MCP tool registry (names, app, phase) | adding a capability |
+| `crates/office-tools` | Task-level MCP tool registry (names, app, support priority) | adding a capability |
 | `crates/office-jobs` | Job phases + per-item bookkeeping + pure aggregation helpers (dcc-mcp-job layering blocked on crates.io) | batch operations |
 | `crates/office-graph` | Graph connector stub (Phase 3) | cloud scenarios |
 | `crates/office-security` | Default-deny policy: ExecuteMso whitelist, AutomationSecurity, risk levels | any write path |
@@ -50,7 +53,7 @@ Office.js remain Phase 3; Visio/Project/Access Phase 4.
 | `skills/` | Office-wide skill packs (SKILL.md, dcc-mcp-skills format) | workflows |
 | `manifests/` | Input JSON Schemas referenced by the canonical catalog in `crates/office-protocol` and embedded by the Host | capability input changes |
 | `templates/registry.json` | Brand template registry (`brand-registry/1.0`) consumed by `deck.compile` | template-first generation |
-| `docs/adr/` | Decision records (001-006) | "why is it built this way" |
+| `docs/adr/` | Decision records (001-007) | "why is it built this way" |
 | `docs/proposals/office-automation-platform-v1.0.md` | Full platform proposal | architecture questions |
 
 ## Dependency Map
@@ -86,8 +89,8 @@ contracts. The proposal §22.3 real-Office matrix (M365 current, LTSC, 32/64-bit
 Windows 11, zh-CN + en-US) is not provisioned yet: its COM tests are explicit
 `#[ignore]` cases run with `vx run test-office-com`, and CI reports that
 coverage boundary instead of silently treating it as passed. The directories
-under `tests/` are the planned golden/visual/compatibility corpus unless they
-contain real fixtures.
+under `tests/` are the planned golden/visual/compatibility corpus; an empty `.gitkeep`
+placeholder is not evidence that a matrix cell ran.
 
 ## Conventions
 

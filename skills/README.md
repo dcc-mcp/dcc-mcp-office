@@ -19,12 +19,8 @@ Each skill defines all eight items required by proposal §11.3:
 
 | Skill | Status |
 |---|---|
-| `office-batch-to-pdf` | **implemented** — COM sidecar batch PDF export with validation (M1 tooling landed) |
+| `office-batch-to-pdf` | **implemented** — COM sidecar batch PDF export with validation (repository M1) |
 | `office-global-text-replace` | **implemented** — dry-run/commit replace across pptx/docx/xlsx (body/headers/footers/notes) |
-| `office-brand-template-migration` | planned (M2) |
-| `office-document-redaction` | planned (M2) |
-| `office-generate-executive-deck` | planned (M2) |
-| `office-generate-technical-report` | planned (Phase 2) |
 | `office-generate-production-dashboard` | **implemented** — Workbook IR → styled XLSX with summary formulas + bar chart (see `examples/capability-dashboard.json`) |
 
 PowerPoint-specific packs (`powerpoint-deck`, `powerpoint-review`,

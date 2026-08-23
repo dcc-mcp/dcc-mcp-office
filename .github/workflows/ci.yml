@@ -51,7 +51,9 @@ jobs:
           "$RUNNER_TEMP/dcc-mcp-cli" lint skills --warnings-as-errors --non-interactive
       - name: Dashboard e2e
         run: |
-          python skills/office-generate-production-dashboard/scripts/generate_dashboard.py             --input examples/capability-dashboard.json --out /tmp/dash
+          python skills/office-generate-production-dashboard/scripts/generate_dashboard.py \
+            --input examples/capability-dashboard.json \
+            --out /tmp/dash
           test -s /tmp/dash/draft-dcc-mcp-capability-dashboard.xlsx
 
   dotnet:
