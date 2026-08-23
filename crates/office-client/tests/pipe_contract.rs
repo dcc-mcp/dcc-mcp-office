@@ -5,10 +5,11 @@
 //!   batch.convert (COM PDF) → batch.replace_text dry-run/commit (COM) →
 //!   slide.render (COM previews) → error contract.
 //!
-//! Requirements (test skips otherwise):
-//!   - env DCC_OFFICE_HOST_EXE pointing at the built dcc-office-host.exe
-//!   - Microsoft PowerPoint installed (the COM legs skip if the handshake
-//!     manifest lacks desktop_com capabilities — progressive discovery).
+//! Requirements:
+//!   - DCC_OFFICE_HOST_EXE points at the built dcc-office-host.exe.
+//!   - Hosted CI explicitly runs the deterministic `--openxml-only` case.
+//!   - Desktop COM cases are visible `#[ignore]` tests and fail when invoked
+//!     without their required PowerPoint, Word, or Excel installation.
 #![cfg(windows)]
 
 use std::path::PathBuf;
@@ -20,6 +21,7 @@ use dcc_mcp_office_protocol::CommandParams;
 use serde_json::json;
 
 const PIPE: &str = r"\\.\pipe\dcc-office-contract-test-powerpoint";
+const OPENXML_PIPE: &str = r"\\.\pipe\dcc-office-contract-test-openxml";
 
 struct HostGuard(Child);
 
@@ -79,11 +81,87 @@ fn command(capability: &str, input: serde_json::Value) -> CommandParams {
 }
 
 #[test]
-fn office_host_full_contract() {
-    let Some(exe) = host_exe() else {
-        eprintln!("SKIP: DCC_OFFICE_HOST_EXE not set");
-        return;
+#[ignore = "requires a built dcc-office-host; CI runs this Office-free contract explicitly"]
+fn office_host_openxml_contract() {
+    let exe = host_exe().expect("DCC_OFFICE_HOST_EXE must point to a built dcc-office-host.exe");
+    let pipe_arg = format!("--pipe-name={OPENXML_PIPE}");
+    let child = Command::new(&exe)
+        .args(["--app=powerpoint", "--pipe", "--openxml-only", &pipe_arg])
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("spawn Office-free dcc-office-host");
+    let mut guard = HostGuard(child);
+    let mut client = OfficeHostClient::new("powerpoint");
+    connect_or_panic(
+        &mut client,
+        &mut guard.0,
+        OPENXML_PIPE,
+        Duration::from_secs(30),
+    );
+
+    let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
+    assert_eq!(handshake.protocol_version, "office-rpc/1");
+    assert_eq!(
+        handshake.capability_manifest.provider_version,
+        env!("CARGO_PKG_VERSION")
+    );
+    assert_eq!(
+        handshake.capability_manifest.execution_modes,
+        vec!["openxml"]
+    );
+    assert!(!handshake
+        .capability_manifest
+        .capabilities
+        .contains_key("batch.convert"));
+
+    let temp = std::env::temp_dir().join(format!("dcc-office-openxml-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&temp);
+    std::fs::create_dir_all(&temp).expect("create temp dir");
+    let pptx = temp.join("deck.pptx");
+    let compiled = client
+        .execute(&command(
+            "deck.compile",
+            json!({ "ir": SAMPLE_DECK_IR, "output": pptx.to_string_lossy() }),
+        ))
+        .expect("deck.compile");
+    assert_eq!(compiled.backend.as_deref(), Some("openxml"));
+    assert_eq!(compiled.changed["slides"], 3);
+    assert_eq!(
+        compiled.audit.as_ref().expect("audit")["host_version"],
+        env!("CARGO_PKG_VERSION")
+    );
+
+    let inspected = client
+        .execute(&command(
+            "document.inspect",
+            json!({ "path": pptx.to_string_lossy(), "backend": "openxml" }),
+        ))
+        .expect("document.inspect");
+    assert_eq!(inspected.backend.as_deref(), Some("openxml"));
+    assert_eq!(inspected.changed["summary"]["slide_count"], 3);
+
+    let denied = CommandParams {
+        capability: "batch.replace_text".to_string(),
+        document: None,
+        input: json!({}),
+        policy: json!({ "macros": "confirm" }),
     };
+    match client.execute(&denied) {
+        Err(dcc_mcp_office_client::ClientError::Rpc { code, .. }) => {
+            assert_eq!(code, json!("OFFICE_MACRO_BLOCKED"));
+        }
+        other => panic!("macro policy relaxation must fail, got {other:?}"),
+    }
+
+    guard.shutdown(&mut client);
+    drop(client);
+    let _ = std::fs::remove_dir_all(&temp);
+}
+
+#[test]
+#[ignore = "requires Microsoft PowerPoint desktop; run the explicit real-Office lane"]
+fn office_host_full_contract() {
+    let exe = host_exe().expect("DCC_OFFICE_HOST_EXE must point to dcc-office-host.exe");
 
     let pipe_arg = format!("--pipe-name={PIPE}");
     let child = Command::new(&exe)
@@ -110,14 +188,13 @@ fn office_host_full_contract() {
     let ping = client.ping().expect("ping");
     assert_eq!(ping["app"], "powerpoint");
 
-    if !handshake
-        .capability_manifest
-        .capabilities
-        .contains_key("batch.convert")
-    {
-        eprintln!("SKIP: PowerPoint desktop COM not available in this session");
-        return;
-    }
+    assert!(
+        handshake
+            .capability_manifest
+            .capabilities
+            .contains_key("batch.convert"),
+        "PowerPoint desktop COM is required for this ignored contract"
+    );
 
     let temp = std::env::temp_dir().join(format!("dcc-office-contract-{}", std::process::id()));
     let _ = std::fs::remove_dir_all(&temp);
@@ -307,10 +384,10 @@ const SAMPLE_DECK_IR: &str = r#"{
   "outputs": ["pptx"]
 }"#;
 
-/// Spawns the host for an app, retries connect, returns guard + client.
-/// None when the host binary is unavailable (env not set on non-Windows CI).
-fn spawn_and_connect(app: &str, pipe: &str) -> Option<(HostGuard, OfficeHostClient)> {
-    let exe = host_exe()?;
+/// Spawns the host for an app and retries connect. Ignored COM contracts fail
+/// loudly when their explicitly provisioned host is unavailable.
+fn spawn_and_connect(app: &str, pipe: &str) -> (HostGuard, OfficeHostClient) {
+    let exe = host_exe().expect("DCC_OFFICE_HOST_EXE must point to dcc-office-host.exe");
     let pipe_arg = format!("--pipe-name={pipe}");
     let child = Command::new(&exe)
         .args([format!("--app={app}"), "--pipe".to_string(), pipe_arg])
@@ -325,27 +402,22 @@ fn spawn_and_connect(app: &str, pipe: &str) -> Option<(HostGuard, OfficeHostClie
         .capability_manifest
         .capabilities
         .contains_key("deck.compile"));
-    Some((guard, client))
+    (guard, client)
 }
 
-/// Converts + replaces text on a fixture through its own app sidecar,
-/// skipping when that app's COM backend is unavailable (progressive
-/// discovery — the manifest only lists desktop_com capabilities when the
-/// app attached).
+/// Converts + replaces text on a fixture through its own app sidecar. The
+/// ignored real-Office lane treats a missing desktop_com capability as a
+/// failure rather than a passing early return.
 fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_kind: &str) {
-    let Some((mut guard, mut client)) = spawn_and_connect(app, pipe) else {
-        eprintln!("SKIP: DCC_OFFICE_HOST_EXE not set");
-        return;
-    };
+    let (mut guard, mut client) = spawn_and_connect(app, pipe);
     let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
-    if !handshake
-        .capability_manifest
-        .capabilities
-        .contains_key("batch.convert")
-    {
-        eprintln!("SKIP: {app} desktop COM not available in this session");
-        return;
-    }
+    assert!(
+        handshake
+            .capability_manifest
+            .capabilities
+            .contains_key("batch.convert"),
+        "{app} desktop COM is required for this ignored contract"
+    );
 
     let temp =
         std::env::temp_dir().join(format!("dcc-office-contract-{app}-{}", std::process::id()));
@@ -422,28 +494,21 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
 /// headers (and one footer) carry the marker; the NextStoryRange ladder must
 /// reach them (proposal §15.2 scope "headers"/"footers").
 #[test]
+#[ignore = "requires Microsoft Word desktop; run the explicit real-Office lane"]
 fn office_host_word_headers_contract() {
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/fixture-document.docx");
-    if !fixture.exists() {
-        eprintln!("SKIP: fixture missing: {}", fixture.display());
-        return;
-    }
-    let Some((mut guard, mut client)) =
-        spawn_and_connect("word", r"\\.\pipe\dcc-office-contract-test-word-hdr")
-    else {
-        eprintln!("SKIP: DCC_OFFICE_HOST_EXE not set");
-        return;
-    };
+    assert!(fixture.exists(), "fixture missing: {}", fixture.display());
+    let (mut guard, mut client) =
+        spawn_and_connect("word", r"\\.\pipe\dcc-office-contract-test-word-hdr");
     let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
-    if !handshake
-        .capability_manifest
-        .capabilities
-        .contains_key("batch.convert")
-    {
-        eprintln!("SKIP: word desktop COM not available in this session");
-        return;
-    }
+    assert!(
+        handshake
+            .capability_manifest
+            .capabilities
+            .contains_key("batch.convert"),
+        "Word desktop COM is required for this ignored contract"
+    );
 
     let temp = std::env::temp_dir().join(format!(
         "dcc-office-contract-word-hdr-{}",
@@ -478,13 +543,11 @@ fn office_host_word_headers_contract() {
 }
 
 #[test]
+#[ignore = "requires Microsoft Word desktop; run the explicit real-Office lane"]
 fn office_host_word_contract() {
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/fixture-document.docx");
-    if !fixture.exists() {
-        eprintln!("SKIP: fixture missing: {}", fixture.display());
-        return;
-    }
+    assert!(fixture.exists(), "fixture missing: {}", fixture.display());
     exercise_com_legs(
         "word",
         r"\\.\pipe\dcc-office-contract-test-word",
@@ -494,13 +557,11 @@ fn office_host_word_contract() {
 }
 
 #[test]
+#[ignore = "requires Microsoft Excel desktop; run the explicit real-Office lane"]
 fn office_host_excel_contract() {
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/fixture-workbook.xlsx");
-    if !fixture.exists() {
-        eprintln!("SKIP: fixture missing: {}", fixture.display());
-        return;
-    }
+    assert!(fixture.exists(), "fixture missing: {}", fixture.display());
     exercise_com_legs(
         "excel",
         r"\\.\pipe\dcc-office-contract-test-excel",

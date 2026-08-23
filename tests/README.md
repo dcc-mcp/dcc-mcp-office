@@ -1,5 +1,24 @@
 # tests — Test Matrix (proposal §24)
 
+## Current automated coverage
+
+Hosted CI runs the C# runtime, COM-classification, Open XML, Host stdio, and
+Rust ↔ C# named-pipe contracts without requiring Office. The Host contracts
+use `--openxml-only`, so they remain deterministic even on a developer machine
+with desktop Office installed. The real PowerPoint/Word/Excel COM contracts
+are marked `#[ignore]` instead of silently returning success; run them on a
+provisioned Windows desktop with:
+
+```powershell
+$env:DCC_OFFICE_HOST_EXE = "<path-to-dcc-office-host.exe>"
+vx run test-office-com
+```
+
+The hosted runner emits a warning and job summary for this coverage boundary.
+A scheduled M365/LTSC self-hosted lane is still to be provisioned. The matrix
+directories below describe that planned lane; empty `.gitkeep` directories are
+not evidence that a matrix cell ran.
+
 | Dir | Content |
 |---|---|
 | `golden-files/` | minimal / large / image-chart-table / macro / corrupt / protected / external-link / multilingual / legacy-format / special-font files per app; asserted: structure before/after, openability, page/slide counts, text deltas, formula results, export hashes |

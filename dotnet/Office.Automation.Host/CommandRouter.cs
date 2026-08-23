@@ -34,10 +34,14 @@ public sealed class CommandRouter : IDisposable
     private readonly object _attachLock = new();
     private bool _comAttached;
 
-    public CommandRouter(string app)
+    public CommandRouter(string app) : this(app, enableDesktopCom: true)
+    {
+    }
+
+    internal CommandRouter(string app, bool enableDesktopCom)
     {
         _app = app;
-        _com = ComBackendFactory.IsSupported(app)
+        _com = enableDesktopCom && ComBackendFactory.IsSupported(app)
             ? ComBackendFactory.Create(app, _sta)
             : null;
     }

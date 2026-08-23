@@ -50,9 +50,9 @@ jobs:
         shell: pwsh
         run: vx run publish -- -o "$env:RUNNER_TEMP\host"
 
-      - name: Smoke test
+      - name: Smoke test with explicit COM probe
         shell: pwsh
-        run: '& "$env:RUNNER_TEMP\host\dcc-office-host.exe" --app=powerpoint --self-test'
+        run: '& "$env:RUNNER_TEMP\host\dcc-office-host.exe" --app=powerpoint --self-test-com'
 
       - name: Upload host artifact to the GitHub release
         shell: pwsh

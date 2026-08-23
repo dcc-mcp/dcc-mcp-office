@@ -85,8 +85,9 @@ Hard gates (run before every commit):
 cargo fmt --check
 cargo clippy --all-targets -- -D warnings
 cargo test
-dotnet format --verify-no-changes
-dotnet build
+vx run build
+vx run format-check
+vx run test-dotnet
 ```
 
 House rules:
