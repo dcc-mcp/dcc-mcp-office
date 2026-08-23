@@ -13,14 +13,14 @@ members = [
 ]
 
 [workspace.package]
-version = "0.2.2"
+version = "0.2.3"
 edition = "2021"
 license = "MIT"
 repository = "https://github.com/dcc-mcp/dcc-mcp-office"
 rust-version = "1.88"
 
 [workspace.dependencies]
-dcc-mcp-office-protocol = { version = "0.2.2", path = "crates/office-protocol" }
+dcc-mcp-office-protocol = { version = "0.2.3", path = "crates/office-protocol" }
 dcc-mcp-office-client = { version = "0.2.2", path = "crates/office-client" }
 dcc-mcp-office-security = { version = "0.2.2", path = "crates/office-security" }
 serde = { version = "1", features = ["derive"] }
