@@ -14,6 +14,7 @@ using Office.Automation.Runtime;
 ///   --app=<app> --self-test        Open XML round-trip, no Office required
 ///   --app=<app> --self-test-com    Open XML + real COM probe (PDF convert,
 ///                                  replace-text dry-run/commit, slide previews)
+///   --version                      print host + protocol versions and exit
 ///
 /// Commands (office.command.execute capabilities):
 ///   deck.compile          {input:{ir, output}}                → Deck IR → PPTX
@@ -35,6 +36,7 @@ public static class Program
         bool selfTest = false;
         bool selfTestCom = false;
         bool stdio = false;
+        bool showVersion = false;
         string? pipeName = null;
         foreach (var arg in args)
         {
@@ -49,6 +51,9 @@ public static class Program
                 case "--stdio":
                     stdio = true;
                     break;
+                case "--version":
+                    showVersion = true;
+                    break;
                 default:
                     if (arg.StartsWith("--app=", StringComparison.Ordinal))
                     {
@@ -62,10 +67,17 @@ public static class Program
             }
         }
 
+        if (showVersion)
+        {
+            Console.Out.WriteLine(
+                $"dcc-office-host {HostBuildInfo.Version} ({HostBuildInfo.ProtocolVersion})");
+            return 0;
+        }
+
         if (app is null || !SupportedApps.Contains(app))
         {
             Console.Error.WriteLine(
-                "usage: dcc-office-host --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--self-test|--self-test-com]");
+                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--self-test|--self-test-com]");
             return 2;
         }
 

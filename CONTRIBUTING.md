@@ -26,6 +26,19 @@ Start from domain invariants, not from tools:
 - Artifact/Job/results follow the proposal shapes (§16/§17) so agents always
   read back *what changed*, not just "succeeded".
 
+### Versioning policy
+
+- The workspace release version is the provider and host build version.
+  release-please stamps both `Cargo.toml` and
+  `dotnet/Directory.Build.props`; `Cargo.lock`, assembly metadata,
+  `--version`, handshake `provider_version`, and audit `host_version` must
+  remain equal to it.
+- Capability versions are independent semantic versions. Bump **major** for
+  incompatible input/output schema or behavior, **minor** for backward-
+  compatible optional fields or execution modes, and **patch** for fixes that
+  preserve the capability contract. A capability version changes only with
+  its contract, not with every provider release.
+
 ## 3. SOLID
 
 - **S** — one crate, one responsibility: protocol ≠ IR ≠ security ≠ tools

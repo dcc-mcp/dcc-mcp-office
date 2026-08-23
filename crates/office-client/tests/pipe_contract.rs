@@ -97,6 +97,10 @@ fn office_host_full_contract() {
     connect_or_panic(&mut client, &mut guard.0, PIPE, Duration::from_secs(30));
     let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
     assert_eq!(handshake.protocol_version, "office-rpc/1");
+    assert_eq!(
+        handshake.capability_manifest.provider_version,
+        env!("CARGO_PKG_VERSION")
+    );
     assert!(handshake
         .capability_manifest
         .capabilities
@@ -138,6 +142,7 @@ fn office_host_full_contract() {
         .expect("deck.compile result must carry an audit trail");
     assert_eq!(audit["security"]["automation_security"], "force_disable");
     assert_eq!(audit["backend"], "openxml");
+    assert_eq!(audit["host_version"], env!("CARGO_PKG_VERSION"));
     assert!(audit["duration_ms"].as_u64().unwrap_or(0) > 0 || audit["duration_ms"].is_null());
 
     // 1c. §19 second-layer policy gate: relaxing deny-by-default is refused
