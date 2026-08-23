@@ -77,6 +77,12 @@ materialized packages in the handshake. See
 [`templates/README.md`](./templates/README.md) for the package contract and the
 resolvable `brand://dcc-mcp/studio-light` example.
 
+Host runtime settings use defaults → optional adjacent JSON → environment →
+CLI precedence. JSONL request logs carry correlation, outcome, and duration
+without payloads; `--parent-pid` and cancellable pipe I/O prevent orphaned
+Office processes. Handshake now probes installation without launching an
+empty PowerPoint window. See [`docs/operations.md`](./docs/operations.md).
+
 ## Quickstart
 
 C# development uses [vx](https://github.com/loonghao/vx) (universal version

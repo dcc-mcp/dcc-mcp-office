@@ -21,24 +21,28 @@ namespace Office.Automation.Host;
 /// </summary>
 public sealed class OfficePipeServer
 {
-    private readonly string _app;
     private readonly string _pipeName;
     private readonly Func<string, string> _dispatch;
     private readonly Func<IReadOnlyList<string>>? _drainNotifications;
     private readonly Func<bool>? _shouldStop;
+    private readonly int _bufferSize;
+    private readonly HostLogger? _logger;
 
     public OfficePipeServer(
         string app,
         Func<string, string> dispatch,
         string? explicitPipeName = null,
         Func<bool>? shouldStop = null,
-        Func<IReadOnlyList<string>>? drainNotifications = null)
+        Func<IReadOnlyList<string>>? drainNotifications = null,
+        int bufferSize = 64 * 1024,
+        HostLogger? logger = null)
     {
-        _app = app;
         _pipeName = explicitPipeName ?? BuildPipeName(app);
         _dispatch = dispatch;
         _shouldStop = shouldStop;
         _drainNotifications = drainNotifications;
+        _bufferSize = bufferSize;
+        _logger = logger;
     }
 
     public string PipeName => _pipeName;
@@ -63,8 +67,8 @@ public sealed class OfficePipeServer
                 var server = CreateServerPipe();
                 try
                 {
-                    server.WaitForConnection();
-                    Serve(server);
+                    server.WaitForConnectionAsync(cancellation).GetAwaiter().GetResult();
+                    Serve(server, cancellation);
                 }
                 finally
                 {
@@ -79,7 +83,9 @@ public sealed class OfficePipeServer
             {
                 // e.g. ERROR_INVALID_NAME for a malformed --pipe-name: report
                 // and stop instead of crashing the process silently.
-                Console.Error.WriteLine($"[office-host:{_app}] pipe failure ({ex.NativeErrorCode}): {ex.Message}");
+                _logger?.Warning(
+                    "pipe.failure",
+                    $"native_error={ex.NativeErrorCode}; {ex.Message}");
                 return;
             }
             catch (IOException)
@@ -114,18 +120,22 @@ public sealed class OfficePipeServer
             };
             SafePipeHandle handle = NativeMethods.CreateNamedPipe(
                 _pipeName,
-                NativeMethods.PIPE_ACCESS_DUPLEX,
+                NativeMethods.PIPE_ACCESS_DUPLEX | NativeMethods.FILE_FLAG_OVERLAPPED,
                 NativeMethods.PIPE_TYPE_BYTE | NativeMethods.PIPE_READMODE_BYTE | NativeMethods.PIPE_WAIT,
                 1,
-                64 * 1024,
-                64 * 1024,
+                (uint)_bufferSize,
+                (uint)_bufferSize,
                 0,
                 ref attributes);
             if (handle.IsInvalid)
             {
                 throw new Win32Exception(Marshal.GetLastWin32Error(), "CreateNamedPipe");
             }
-            return new NamedPipeServerStream(PipeDirection.InOut, isAsync: false, isConnected: false, handle);
+            return new NamedPipeServerStream(
+                PipeDirection.InOut,
+                isAsync: true,
+                isConnected: false,
+                handle);
         }
         finally
         {
@@ -133,10 +143,19 @@ public sealed class OfficePipeServer
         }
     }
 
-    private void Serve(Stream stream)
+    private void Serve(Stream stream, CancellationToken cancellation)
     {
-        using var reader = new StreamReader(stream, new UTF8Encoding(false), detectEncodingFromByteOrderMarks: false, bufferSize: 64 * 1024, leaveOpen: true);
-        using var writer = new StreamWriter(stream, new UTF8Encoding(false), bufferSize: 64 * 1024, leaveOpen: true)
+        using var reader = new StreamReader(
+            stream,
+            new UTF8Encoding(false),
+            detectEncodingFromByteOrderMarks: false,
+            bufferSize: _bufferSize,
+            leaveOpen: true);
+        using var writer = new StreamWriter(
+            stream,
+            new UTF8Encoding(false),
+            bufferSize: _bufferSize,
+            leaveOpen: true)
         {
             NewLine = "\n",
         };
@@ -150,9 +169,14 @@ public sealed class OfficePipeServer
                 notificationCancellation.Token));
         try
         {
-            string? line;
-            while ((line = reader.ReadLine()) is not null)
+            while (true)
             {
+                string? line = reader.ReadLineAsync(cancellation).AsTask()
+                    .GetAwaiter().GetResult();
+                if (line is null)
+                {
+                    return;
+                }
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     continue;
@@ -223,6 +247,7 @@ public sealed class OfficePipeServer
     private static class NativeMethods
     {
         public const uint PIPE_ACCESS_DUPLEX = 0x3;
+        public const uint FILE_FLAG_OVERLAPPED = 0x40000000;
         public const uint PIPE_TYPE_BYTE = 0x0;
         public const uint PIPE_READMODE_BYTE = 0x0;
         public const uint PIPE_WAIT = 0x0;

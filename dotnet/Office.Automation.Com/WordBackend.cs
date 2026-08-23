@@ -31,8 +31,11 @@ public sealed class WordBackend : OfficeComBackend
     private static readonly int[] HeaderStories = { 6, 7, 10 };
     private static readonly int[] FooterStories = { 8, 9, 11 };
 
-    public WordBackend(StaDispatcher sta)
-        : base(OfficeAppKind.Word, sta)
+    public WordBackend(
+        StaDispatcher sta,
+        TimeSpan? requestTimeout = null,
+        int timeoutStreakForRecovery = 2)
+        : base(OfficeAppKind.Word, sta, requestTimeout, timeoutStreakForRecovery)
     {
     }
 

@@ -15,23 +15,26 @@ namespace Office.Automation.Host;
 ///
 /// Routing (proposal §6 backends):
 ///   - deck.compile                      → Open XML worker (no Office needed)
-///   - document.inspect                  → COM when attached, Open XML (pptx) otherwise
+///   - document.inspect                  → COM on first desktop request, Open XML when selected
 ///   - batch.convert / batch.replace_text → COM (per-app: this sidecar handles
 ///     only its own app's files — §8.2 one process per application)
 ///   - slide.render                      → COM (PowerPoint only)
 ///
 /// Progressive discovery (§10.2): the handshake capability manifest lists
-/// desktop_com capabilities only when the COM backend attached successfully.
+/// desktop_com capabilities when the registry-only installation probe succeeds.
 /// </summary>
 public sealed class CommandRouter : IDisposable
 {
-    private static readonly TimeSpan AttachBudget = TimeSpan.FromSeconds(60);
     private static readonly CapabilityCatalog Catalog = CapabilityCatalog.Current;
 
     private readonly string _app;
     private readonly string _workspaceRoot;
-    private readonly StaDispatcher _sta = new();
+    private readonly StaDispatcher _sta;
     private readonly OfficeComBackend? _com;
+    private readonly bool _desktopComAvailable;
+    private readonly Func<TimeSpan, bool>? _attachDesktop;
+    private readonly TimeSpan _attachBudget;
+    private readonly HostLogger? _logger;
     private readonly TemplateRegistry _templates;
     private readonly object _attachLock = new();
     private readonly HostNotificationQueue _notifications;
@@ -45,7 +48,10 @@ public sealed class CommandRouter : IDisposable
             app,
             enableDesktopCom: true,
             workspaceRoot: Directory.GetCurrentDirectory(),
-            includeDefaultTemplateDirectories: true)
+            includeDefaultTemplateDirectories: true,
+            settings: HostSettings.Load(
+                Array.Empty<string>(),
+                AppContext.BaseDirectory))
     {
     }
 
@@ -54,9 +60,17 @@ public sealed class CommandRouter : IDisposable
         bool enableDesktopCom,
         string? workspaceRoot = null,
         IEnumerable<string>? templateDirectories = null,
-        bool includeDefaultTemplateDirectories = false)
+        bool includeDefaultTemplateDirectories = false,
+        HostSettings? settings = null,
+        HostLogger? logger = null,
+        bool? desktopComAvailable = null,
+        Func<TimeSpan, bool>? attachDesktop = null)
     {
+        HostSettings effectiveSettings = settings ?? new HostSettings();
         _app = app;
+        _attachBudget = effectiveSettings.AttachTimeout;
+        _logger = logger;
+        _sta = new StaDispatcher(effectiveSettings.BusyRetryCount);
         _workspaceRoot = WorkspaceGuard.CanonicalizeRoot(
             workspaceRoot ?? Directory.GetCurrentDirectory());
         _templates = new TemplateRegistry(
@@ -65,13 +79,22 @@ public sealed class CommandRouter : IDisposable
         _notifications = new HostNotificationQueue(app, HostId);
         _jobs = new InMemoryJobTracker(_notifications);
         _com = enableDesktopCom && ComBackendFactory.IsSupported(app)
-            ? ComBackendFactory.Create(app, _sta)
+            ? ComBackendFactory.Create(
+                app,
+                _sta,
+                effectiveSettings.RequestTimeout,
+                effectiveSettings.RecoveryTimeoutStreak)
             : null;
+        _desktopComAvailable = desktopComAvailable
+            ?? (_com is not null && ComBackendFactory.IsInstalled(app));
+        _attachDesktop = attachDesktop ?? (_com is null ? null : _com.TryAttach);
     }
 
     public string App => _app;
 
     public bool ComAttached => _comAttached;
+
+    internal bool ComAttachAttempted => _comAttachAttempted;
 
     internal IReadOnlyList<string> DrainNotifications() => _notifications.Drain();
 
@@ -119,7 +142,10 @@ public sealed class CommandRouter : IDisposable
     /// <summary>Processes one JSON-RPC request line and returns the response line.</summary>
     public string Dispatch(string requestJson)
     {
+        var requestTimer = Stopwatch.StartNew();
         JsonElement id = JsonSerializer.SerializeToElement<object?>(null);
+        string correlationId = "rpc:null";
+        string? capability = null;
         string method;
         CommandPolicy? commandPolicy = null;
         RpcMethodDefinition? rpcMethod = null;
@@ -132,6 +158,7 @@ public sealed class CommandRouter : IDisposable
                 throw new OfficeArgumentException("JSON-RPC request must be an object");
             }
             id = root.TryGetProperty("id", out var idElement) ? idElement.Clone() : id;
+            correlationId = $"rpc:{id.GetRawText()}";
             method = root.TryGetProperty("method", out var methodElement)
                 && methodElement.ValueKind == JsonValueKind.String
                 ? methodElement.GetString()!
@@ -153,6 +180,9 @@ public sealed class CommandRouter : IDisposable
             if (method == "office.command.execute")
             {
                 Catalog.ValidateCommandParams(parameters);
+                capability = parameters.TryGetProperty("capability", out JsonElement requested)
+                    ? requested.GetString()
+                    : null;
                 commandPolicy = CommandPolicy.Evaluate(
                     parameters,
                     Catalog.SecurityPolicy,
@@ -176,10 +206,24 @@ public sealed class CommandRouter : IDisposable
                     commandPolicy ?? throw new InvalidOperationException("command policy was not evaluated"),
                     stopwatch.ElapsedMilliseconds)
                 : result;
+            string? operationId = JsonSerializer.SerializeToNode(finalResult)?["operation_id"]?
+                .GetValue<string>();
+            LogRequestOutcome(
+                requestTimer,
+                correlationId,
+                capability,
+                operationId,
+                "ok");
             return JsonSerializer.Serialize(new { jsonrpc = "2.0", id, result = finalResult });
         }
         catch (OfficeComException ex)
         {
+            LogRequestOutcome(
+                requestTimer,
+                correlationId,
+                capability,
+                operationId: null,
+                ex.Code.ToWireName());
             if (ex.Code == OfficeErrorCode.OfficeModalDialog)
             {
                 _notifications.PublishEvent(
@@ -198,17 +242,51 @@ public sealed class CommandRouter : IDisposable
         }
         catch (OfficeArgumentException ex)
         {
+            LogRequestOutcome(
+                requestTimer,
+                correlationId,
+                capability,
+                operationId: null,
+                OfficeErrorCode.OfficeInvalidRequest.ToWireName());
             return Error(id, OfficeErrorCode.OfficeInvalidRequest, ex.Message);
         }
         catch (JsonException ex)
         {
+            LogRequestOutcome(
+                requestTimer,
+                correlationId,
+                capability,
+                operationId: null,
+                OfficeErrorCode.OfficeInvalidRequest.ToWireName());
             return Error(id, OfficeErrorCode.OfficeInvalidRequest, ex.Message);
         }
         catch (Exception ex)
         {
-            Console.Error.WriteLine($"[office-host:{_app}] unhandled: {ex}");
+            LogRequestOutcome(
+                requestTimer,
+                correlationId,
+                capability,
+                operationId: null,
+                OfficeErrorCode.OfficeBackendUnavailable.ToWireName());
+            _logger?.Warning("request.unhandled", ex.GetType().Name);
             return Error(id, OfficeErrorCode.OfficeBackendUnavailable, ex.Message);
         }
+    }
+
+    private void LogRequestOutcome(
+        Stopwatch timer,
+        string correlationId,
+        string? capability,
+        string? operationId,
+        string outcomeCode)
+    {
+        timer.Stop();
+        _logger?.RequestCompleted(
+            correlationId,
+            capability,
+            operationId,
+            timer.ElapsedMilliseconds,
+            outcomeCode);
     }
 
     internal static string Error(
@@ -267,13 +345,13 @@ public sealed class CommandRouter : IDisposable
         bool busy = _jobs.IsBusy;
         bool modal = _com?.OfficeProcessId is int pid
             && ModalDialogDetector.FindModalDialogTitle(pid) is not null;
-        string attachState = _com is null
+        string attachState = !_desktopComAvailable
             ? "unavailable"
             : _comAttached
                 ? "attached"
                 : _comAttachAttempted
                     ? "failed"
-                    : "unknown";
+                    : "available";
         return new
         {
             protocol_version = HostBuildInfo.ProtocolVersion,
@@ -300,15 +378,6 @@ public sealed class CommandRouter : IDisposable
         {
             throw new OfficeArgumentException(
                 $"requested_app '{requestedApp}' does not match this sidecar's app '{_app}'");
-        }
-        EnsureComAttached();
-        if (!_applicationStartedEventPublished)
-        {
-            _applicationStartedEventPublished = true;
-            _notifications.PublishEvent(
-                "office.application.started",
-                "host:handshake",
-                new { com_attach_state = _comAttached ? "attached" : "failed" });
         }
         return new
         {
@@ -627,7 +696,7 @@ public sealed class CommandRouter : IDisposable
         string backend = input.TryGetProperty("backend", out var b) ? b.GetString() ?? "auto" : "auto";
         bool useCom = backend switch
         {
-            "auto" => ComAttached,
+            "auto" => _desktopComAvailable,
             "desktop_com" => true,
             "openxml" => false,
             _ => throw new OfficeArgumentException($"unknown backend '{backend}' (auto | desktop_com | openxml)"),
@@ -710,10 +779,12 @@ public sealed class CommandRouter : IDisposable
         outputDir = Path.GetFullPath(outputDir);
         Directory.CreateDirectory(outputDir);
 
-        var paths = ResolveInputs(input);
+        InputResolution inputResolution = ResolveInputs(input);
+        string[] paths = inputResolution.Paths.ToArray();
         if (paths.Length == 0)
         {
-            throw new OfficeArgumentException("input.inputs resolved to no files");
+            throw new OfficeArgumentException(
+                $"input.inputs resolved to no files: {string.Join("; ", inputResolution.Warnings)}");
         }
         job?.SetTotal(paths.Length);
 
@@ -742,7 +813,10 @@ public sealed class CommandRouter : IDisposable
                 artefacts.Add(CreateCheckpoint(outputPath, operationId));
             }
         }
-        var warnings = new JsonArray();
+        var warnings = new JsonArray(
+            inputResolution.Warnings
+                .Select(warning => JsonValue.Create(warning))
+                .ToArray());
         var successful = new List<FileConvertOutcome>();
         int processed = 0;
         int succeeded = 0;
@@ -860,10 +934,12 @@ public sealed class CommandRouter : IDisposable
         }
         bool dryRun = !input.TryGetProperty("dry_run", out var dryElement) || dryElement.ValueKind != JsonValueKind.False;
 
-        var paths = ResolveInputs(input);
+        InputResolution inputResolution = ResolveInputs(input);
+        string[] paths = inputResolution.Paths.ToArray();
         if (paths.Length == 0)
         {
-            throw new OfficeArgumentException("input.inputs resolved to no files");
+            throw new OfficeArgumentException(
+                $"input.inputs resolved to no files: {string.Join("; ", inputResolution.Warnings)}");
         }
         job?.SetTotal(paths.Length);
 
@@ -943,7 +1019,7 @@ public sealed class CommandRouter : IDisposable
                 total_replaced = totalReplaced,
                 items,
             },
-            warnings = Array.Empty<string>(),
+            warnings = inputResolution.Warnings,
             artefacts,
             validation = new { },
             backend = "desktop_com",
@@ -1037,7 +1113,7 @@ public sealed class CommandRouter : IDisposable
 
     private void EnsureComAttached()
     {
-        if (_com is null)
+        if (_com is null || !_desktopComAvailable)
         {
             return;
         }
@@ -1048,15 +1124,25 @@ public sealed class CommandRouter : IDisposable
                 return;
             }
             _comAttachAttempted = true;
-            _comAttached = _com.TryAttach(AttachBudget);
+            _comAttached = _attachDesktop?.Invoke(_attachBudget) == true;
+            if (_comAttached && !_applicationStartedEventPublished)
+            {
+                _applicationStartedEventPublished = true;
+                _notifications.PublishEvent(
+                    "office.application.started",
+                    "host:desktop-attach",
+                    new { com_attach_state = "attached" });
+            }
         }
     }
 
     private object Manifest()
     {
         IReadOnlyDictionary<string, string> capabilities =
-            Catalog.ManifestCapabilities(_app, _comAttached);
-        IReadOnlyList<string> modes = Catalog.ManifestExecutionModes(_app, _comAttached);
+            Catalog.ManifestCapabilities(_app, _desktopComAvailable);
+        IReadOnlyList<string> modes = Catalog.ManifestExecutionModes(
+            _app,
+            _desktopComAvailable);
         object? application = null;
         if (_comAttached)
         {
@@ -1231,57 +1317,17 @@ public sealed class CommandRouter : IDisposable
     /// Resolves input.inputs: plain paths plus simple wildcard patterns
     /// (* and ?, with **/ for recursion) — proposal §15.1 glob surface.
     /// </summary>
-    private static string[] ResolveInputs(JsonElement input)
+    private static InputResolution ResolveInputs(JsonElement input)
     {
-        var paths = new List<string>();
+        var specifications = new List<string>();
         if (input.TryGetProperty("inputs", out var inputsElement) && inputsElement.ValueKind == JsonValueKind.Array)
         {
             foreach (var item in inputsElement.EnumerateArray())
             {
-                var spec = item.GetString();
-                if (string.IsNullOrWhiteSpace(spec))
-                {
-                    continue;
-                }
-                if (spec.Contains('*') || spec.Contains('?'))
-                {
-                    paths.AddRange(ExpandGlob(spec));
-                }
-                else
-                {
-                    paths.Add(Path.GetFullPath(spec));
-                }
+                specifications.Add(item.GetString() ?? "");
             }
         }
-        return paths.Where(File.Exists).Select(Path.GetFullPath).Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
-    }
-
-    private static IEnumerable<string> ExpandGlob(string pattern)
-    {
-        string norm = pattern.Replace('/', '\\');
-        string regexPattern = "^" + Regex.Escape(norm)
-            .Replace(@"\*\*\\", @"(?:.*\\)?")
-            .Replace(@"\*\*", ".*")
-            .Replace(@"\*", @"[^\\]*")
-            .Replace(@"\?", @"[^\\]") + "$";
-        var regex = new Regex(regexPattern, RegexOptions.IgnoreCase);
-
-        int wildcardAt = norm.IndexOfAny(new[] { '*', '?' });
-        if (wildcardAt < 0)
-        {
-            return new[] { norm };
-        }
-        string literalPrefix = norm[..wildcardAt];
-        string startDir = Directory.Exists(literalPrefix)
-            ? literalPrefix
-            : Path.GetDirectoryName(literalPrefix) ?? Directory.GetCurrentDirectory();
-        if (startDir.Length == 0)
-        {
-            startDir = Directory.GetCurrentDirectory();
-        }
-        return Directory.EnumerateFiles(startDir, "*", SearchOption.AllDirectories)
-            .Where(f => regex.IsMatch(f))
-            .ToArray();
+        return InputResolver.Resolve(specifications);
     }
 
     public void Dispose()

@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dcc-mcp/dcc-mcp-office/manifests/schemas/host-settings.schema.json",
+  "title": "DCC-MCP Office Host runtime settings",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "attach_timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+    "request_timeout_seconds": {"type": "number", "exclusiveMinimum": 0},
+    "recovery_timeout_streak": {"type": "integer", "minimum": 1},
+    "busy_retry_count": {"type": "integer", "minimum": 1},
+    "pipe_buffer_bytes": {"type": "integer", "minimum": 4096, "maximum": 4194304},
+    "log_level": {"enum": ["debug", "info", "warning", "error"]},
+    "log_path": {"type": "string", "minLength": 1},
+    "template_directories": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  }
+}

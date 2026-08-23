@@ -11,7 +11,12 @@ public sealed class JobRuntimeTests
     [Fact]
     public void PingIsSideEffectFreeAndReportsHostStatus()
     {
-        using var router = new CommandRouter("powerpoint", enableDesktopCom: true);
+        using var router = new CommandRouter(
+            "powerpoint",
+            enableDesktopCom: true,
+            desktopComAvailable: true,
+            attachDesktop: _ => throw new InvalidOperationException(
+                "ping must not attach desktop COM"));
 
         JsonNode response = Parse(router.Dispatch(
             """
@@ -19,7 +24,7 @@ public sealed class JobRuntimeTests
             """));
 
         Assert.False(router.ComAttached);
-        Assert.Equal("unknown", response["result"]!["com_attach_state"]!.GetValue<string>());
+        Assert.Equal("available", response["result"]!["com_attach_state"]!.GetValue<string>());
         Assert.Equal("ready", response["result"]!["state"]!.GetValue<string>());
         Assert.False(response["result"]!["busy"]!.GetValue<bool>());
     }

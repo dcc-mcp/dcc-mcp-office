@@ -23,8 +23,11 @@ public sealed class PowerPointBackend : OfficeComBackend
     private const int MsoFalse = 0;
     private const int PpSaveAsPdf = 32;
 
-    public PowerPointBackend(StaDispatcher sta)
-        : base(OfficeAppKind.PowerPoint, sta)
+    public PowerPointBackend(
+        StaDispatcher sta,
+        TimeSpan? requestTimeout = null,
+        int timeoutStreakForRecovery = 2)
+        : base(OfficeAppKind.PowerPoint, sta, requestTimeout, timeoutStreakForRecovery)
     {
     }
 

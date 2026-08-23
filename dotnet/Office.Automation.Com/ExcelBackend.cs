@@ -26,8 +26,11 @@ public sealed class ExcelBackend : OfficeComBackend
     private const int XlTypePdf = 0;
     private const int XlUpdateLinksNever = 0;
 
-    public ExcelBackend(StaDispatcher sta)
-        : base(OfficeAppKind.Excel, sta)
+    public ExcelBackend(
+        StaDispatcher sta,
+        TimeSpan? requestTimeout = null,
+        int timeoutStreakForRecovery = 2)
+        : base(OfficeAppKind.Excel, sta, requestTimeout, timeoutStreakForRecovery)
     {
     }
 

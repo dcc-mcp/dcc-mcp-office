@@ -1,0 +1,10 @@
+{
+  "attach_timeout_seconds": 60,
+  "request_timeout_seconds": 120,
+  "recovery_timeout_streak": 2,
+  "busy_retry_count": 30,
+  "pipe_buffer_bytes": 65536,
+  "log_level": "info",
+  "log_path": "logs/office-host.jsonl",
+  "template_directories": []
+}
