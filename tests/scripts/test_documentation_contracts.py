@@ -12,6 +12,39 @@ def read(relative_path: str) -> str:
 
 
 class DocumentationContractTests(unittest.TestCase):
+    def test_architecture_health_closeout_maps_every_child_issue(self):
+        closeout_path = ROOT / "docs" / "architecture-health-review-v0.2.1.md"
+        self.assertTrue(closeout_path.is_file())
+        closeout = closeout_path.read_text(encoding="utf-8")
+        issue_pr_pairs = {
+            15: 29,
+            16: 31,
+            17: 32,
+            18: 36,
+            19: 35,
+            20: 38,
+            21: 34,
+            22: 33,
+            23: 39,
+            24: 40,
+            25: 41,
+            26: 42,
+            27: 43,
+        }
+
+        for issue, pull_request in issue_pr_pairs.items():
+            matching_rows = [
+                line
+                for line in closeout.splitlines()
+                if f"/issues/{issue})" in line and f"/pull/{pull_request})" in line
+            ]
+            self.assertEqual(1, len(matching_rows), f"missing closeout row for #{issue}")
+        self.assertIn("Remaining boundaries", closeout)
+        self.assertIn(
+            "architecture-health-review-v0.2.1.md",
+            read("docs/README.md"),
+        )
+
     def test_host_contract_example_is_repository_relative(self):
         documentation = read("README.md")
 
