@@ -4,6 +4,7 @@ Versioned GitHub Releases are the durable binary distribution channel. Each
 release publishes:
 
 - `dcc-office-host.exe`, plus PowerPoint, Word, and Excel alias executables;
+- `dcc-mcp-office-mcp-server.exe`, the reference stdio MCP entry point;
 - `dcc-mcp-office-host-<version>-win-x64.zip`, containing the binaries,
   protocol catalog, input schemas, materialized template packages, install contract, release
   manifest, license, and SPDX 2.3 SBOM;
@@ -21,10 +22,11 @@ $actual = (Get-FileHash -Algorithm SHA256 -LiteralPath dcc-mcp-office-host-0.2.2
 if ($actual -ne $expected) { throw "SHA-256 verification failed" }
 ```
 
-Install the canonical executable at:
+Install the canonical executables at:
 
 ```text
 %LOCALAPPDATA%\dcc-mcp\office-host\<version>\dcc-office-host.exe
+%LOCALAPPDATA%\dcc-mcp\office-host\<version>\dcc-mcp-office-mcp-server.exe
 ```
 
 Copy the bundle's `templates` directory beside the executable to install its
@@ -52,6 +54,39 @@ The subsequent `office.host.handshake` enforces provider compatibility: before
 1.0 the client and Host must share major and minor versions; from 1.0 onward
 they must share the major version. A missing or incompatible Host is an
 installation error and must not silently fall back to another executable.
+
+## Reference MCP server
+
+The release bundle is directly consumable by any client that can launch a
+stdio MCP server. Bind one server process to one Office application and one
+existing workspace directory. For example:
+
+```json
+{
+  "mcpServers": {
+    "office-powerpoint": {
+      "command": "<install-root>\\dcc-mcp-office-mcp-server.exe",
+      "args": [
+        "--app=powerpoint",
+        "--workspace-root=<existing-workspace>"
+      ]
+    }
+  }
+}
+```
+
+`--app` is required and currently accepts `powerpoint`, `word`, or `excel`.
+`--workspace-root` defaults to the server working directory. The server finds
+the matching Host through the strict locator order above; `--host=<path>` is
+available for an explicit installation. MCP JSON-RPC uses stdout exclusively,
+while lifecycle diagnostics use stderr.
+
+At startup the server handshakes with the Host, exposes only capabilities
+advertised for the selected application, and derives every tool's input and
+output schema from the canonical catalog. Handshake does not attach COM or
+launch an empty Office window. Invalid schemas and policy relaxations fail
+before dispatch; sidecar failures preserve their `OFFICE_*` code, data, and
+retryability in the MCP tool result.
 
 Rust crates use the release's immutable Git tag as their source distribution
 channel. Pin the tag explicitly instead of tracking a branch:

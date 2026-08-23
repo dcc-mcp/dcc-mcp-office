@@ -23,6 +23,14 @@ jobs:
       - name: Test
         run: cargo test
 
+  rust-msrv:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.88
+      - name: Check declared Rust 1.88 minimum
+        run: cargo check --locked --workspace --all-targets
+
   scripts:
     runs-on: ubuntu-latest
     steps:
@@ -72,6 +80,10 @@ jobs:
         env:
           DCC_OFFICE_HOST_EXE: ${{ github.workspace }}\dotnet\Office.Automation.Host\bin\Debug\net8.0-windows\dcc-office-host.exe
         run: cargo test -p dcc-mcp-office-client --test pipe_contract office_host_openxml_contract -- --ignored --exact
+      - name: Office-free MCP to Rust to C# contract
+        env:
+          DCC_OFFICE_HOST_EXE: ${{ github.workspace }}\dotnet\Office.Automation.Host\bin\Debug\net8.0-windows\dcc-office-host.exe
+        run: cargo test -p dcc-mcp-office-mcp-server --test production_contract mcp_server_spawns_host_and_compiles_deck_without_office -- --ignored --exact
       - name: Report real-Office coverage boundary
         shell: pwsh
         run: |

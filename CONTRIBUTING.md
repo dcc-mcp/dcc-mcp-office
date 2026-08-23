@@ -74,7 +74,8 @@ Dependency rule: source code dependencies point **inward** only.
   dcc-mcp-core gateway (use cases)
         |
         v
-  office-client / office-tools / office-jobs   (application layer)
+  office-mcp-server / office-client / office-tools / office-jobs
+                                                (application + outer adapter)
         |
         v
   office-protocol + office-ir                  (domain core: pure schemas)
@@ -86,6 +87,9 @@ Dependency rule: source code dependencies point **inward** only.
 ```
 
 - Domain crates have zero I/O dependencies (M0 rule: only serde).
+- The reference MCP server is a replaceable outer adapter: it derives tool
+  contracts from `office-protocol`, applies `office-security`, and reaches the
+  Host only through `office-client`.
 - COM interop, pipe I/O and HTTP live in adapters only.
 - Tests assert the dependency direction stays clean.
 

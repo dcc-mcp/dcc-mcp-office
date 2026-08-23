@@ -381,7 +381,7 @@ internal static class WorkspaceGuard
                 FileSystemInfo? target = entry?.ResolveLinkTarget(returnFinalTarget: true);
                 current = Path.GetFullPath(target?.FullName ?? next);
             }
-            return TrimTrailingSeparators(current);
+            return TrimTrailingSeparators(NormalizeExtendedLengthPrefix(current));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
@@ -390,6 +390,26 @@ internal static class WorkspaceGuard
                 $"path could not be resolved safely: {path}: {ex.Message}",
                 ex);
         }
+    }
+
+    private static string NormalizeExtendedLengthPrefix(string path)
+    {
+        const string uncPrefix = @"\\?\UNC\";
+        if (path.StartsWith(uncPrefix, StringComparison.OrdinalIgnoreCase))
+        {
+            return @"\\" + path[uncPrefix.Length..];
+        }
+        const string localPrefix = @"\\?\";
+        if (path.Length >= 7
+            && path.StartsWith(localPrefix, StringComparison.Ordinal)
+            && char.IsAsciiLetter(path[4])
+            && path[5] == Path.VolumeSeparatorChar
+            && (path[6] == Path.DirectorySeparatorChar
+                || path[6] == Path.AltDirectorySeparatorChar))
+        {
+            return path[localPrefix.Length..];
+        }
+        return path;
     }
 
     private static string TrimTrailingSeparators(string path)

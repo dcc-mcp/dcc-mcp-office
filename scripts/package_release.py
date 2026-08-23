@@ -15,6 +15,7 @@ from pathlib import Path
 
 
 CANONICAL_HOST = "dcc-office-host.exe"
+MCP_SERVER = "dcc-mcp-office-mcp-server.exe"
 HOST_ALIASES = [
     "dcc-office-powerpoint-host.exe",
     "dcc-office-word-host.exe",
@@ -145,6 +146,7 @@ def write_archive(source: Path, destination: Path, prefix: str) -> None:
 
 def package_release(
     host_dir: Path,
+    mcp_server: Path,
     output_dir: Path,
     repository: Path,
     version: str,
@@ -152,14 +154,19 @@ def package_release(
     source_host = host_dir / CANONICAL_HOST
     if not source_host.is_file():
         raise FileNotFoundError(f"published host is missing: {source_host}")
+    if not mcp_server.is_file():
+        raise FileNotFoundError(f"published MCP server is missing: {mcp_server}")
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    executable_assets = [
+    host_assets = [
         output_dir / CANONICAL_HOST,
         *[output_dir / name for name in HOST_ALIASES],
     ]
-    for destination in executable_assets:
+    for destination in host_assets:
         shutil.copyfile(source_host, destination)
+    mcp_server_asset = output_dir / MCP_SERVER
+    shutil.copyfile(mcp_server, mcp_server_asset)
+    executable_assets = [*host_assets, mcp_server_asset]
 
     package_name = f"dcc-mcp-office-host-{version}-win-x64"
     sbom_name = f"dcc-mcp-office-host-{version}.spdx.json"
@@ -190,6 +197,7 @@ def package_release(
             "version": version,
             "platform": "win-x64",
             "canonical_host": CANONICAL_HOST,
+            "mcp_server": MCP_SERVER,
             "aliases": ALIAS_APPS,
             "install_root": r"%LOCALAPPDATA%\dcc-mcp\office-host\<version>",
             "locator_order": [
@@ -224,6 +232,7 @@ def package_release(
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--host-dir", type=Path, required=True)
+    parser.add_argument("--mcp-server", type=Path, required=True)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--version")
     parser.add_argument(
@@ -235,6 +244,7 @@ def main() -> int:
     repository = arguments.repository.resolve()
     assets = package_release(
         arguments.host_dir.resolve(),
+        arguments.mcp_server.resolve(),
         arguments.output_dir.resolve(),
         repository,
         arguments.version or workspace_version(repository),

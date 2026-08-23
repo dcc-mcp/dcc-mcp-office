@@ -215,6 +215,27 @@ public sealed class SafetyContractTests
     }
 
     [Fact]
+    public void ExtendedLengthWorkspaceRootMatchesTheNormalChildPath()
+    {
+        if (!OperatingSystem.IsWindows())
+        {
+            return;
+        }
+        string workspace = TempDirectory();
+        try
+        {
+            string extendedRoot = $@"\\?\{workspace}";
+            string output = Path.Combine(workspace, "deck.pptx");
+
+            WorkspaceGuard.ValidatePaths([output], extendedRoot);
+        }
+        finally
+        {
+            Directory.Delete(workspace, recursive: true);
+        }
+    }
+
+    [Fact]
     public void RequestCannotReplaceTheHostBoundWorkspaceRoot()
     {
         string workspace = TempDirectory();

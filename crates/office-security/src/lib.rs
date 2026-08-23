@@ -8,9 +8,12 @@
 
 #![forbid(unsafe_code)]
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
+
+use dcc_mcp_office_protocol::OfficeErrorCode;
 
 /// Policy action for a capability class.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -109,6 +112,129 @@ impl SecurityPolicy {
     }
 }
 
+/// First-layer policy rejection returned before a sidecar is contacted.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct PolicyViolation {
+    /// Closed Office wire error associated with the rejected policy field.
+    pub code: OfficeErrorCode,
+    /// Human-readable explanation of the attempted relaxation.
+    pub message: String,
+}
+
+/// Enforces the catalog policy at the MCP boundary. Requests may retain a
+/// canonical action or tighten it to `deny`; all other divergence fails closed.
+pub fn validate_policy_tightening(requested: &Value) -> Result<(), PolicyViolation> {
+    let requested = requested
+        .as_object()
+        .ok_or_else(|| invalid("policy must be an object"))?;
+    let canonical = dcc_mcp_office_protocol::capability_catalog();
+    let mut known: BTreeSet<&str> = canonical
+        .security_policy
+        .actions
+        .keys()
+        .map(String::as_str)
+        .collect();
+    known.extend([
+        "workspace_only",
+        "workspace_root",
+        "execute_mso_allowlist",
+        "execute_mso_confirm",
+        "checkpoint",
+        "render_after",
+    ]);
+    if let Some(name) = requested.keys().find(|name| !known.contains(name.as_str())) {
+        return Err(invalid(format!(
+            "policy.{name} is not defined by the catalog"
+        )));
+    }
+
+    for (name, canonical_action) in &canonical.security_policy.actions {
+        let Some(value) = requested.get(name) else {
+            continue;
+        };
+        let action = value
+            .as_str()
+            .ok_or_else(|| invalid(format!("policy.{name} must be a string")))?;
+        if action != canonical_action && action != "deny" {
+            return Err(PolicyViolation {
+                code: policy_error(name),
+                message: format!(
+                    "policy.{name} cannot relax canonical action '{canonical_action}' to '{action}'"
+                ),
+            });
+        }
+    }
+
+    if requested
+        .get("workspace_only")
+        .is_some_and(|value| value != &Value::Bool(true))
+    {
+        return Err(PolicyViolation {
+            code: OfficeErrorCode::OfficeAccessDenied,
+            message: "policy.workspace_only must remain true".into(),
+        });
+    }
+    if requested
+        .get("checkpoint")
+        .is_some_and(|value| value != &Value::Bool(true))
+    {
+        return Err(PolicyViolation {
+            code: OfficeErrorCode::OfficeCapabilityUnsupported,
+            message: "policy.checkpoint must remain true".into(),
+        });
+    }
+    if requested.get("execute_mso_allowlist").is_some_and(|value| {
+        value
+            .as_object()
+            .is_none_or(|allowlist| !allowlist.is_empty())
+    }) {
+        return Err(PolicyViolation {
+            code: OfficeErrorCode::OfficeCapabilityUnsupported,
+            message: "policy.execute_mso_allowlist must stay empty".into(),
+        });
+    }
+    if let Some(confirm) = requested.get("execute_mso_confirm") {
+        let expected = serde_json::to_value(&canonical.security_policy.execute_mso_confirm)
+            .expect("canonical confirmation list must serialize");
+        if confirm != &expected {
+            return Err(PolicyViolation {
+                code: OfficeErrorCode::OfficeCapabilityUnsupported,
+                message: "policy.execute_mso_confirm cannot diverge from the catalog".into(),
+            });
+        }
+    }
+    for name in ["render_after"] {
+        if requested.get(name).is_some_and(|value| !value.is_boolean()) {
+            return Err(invalid(format!("policy.{name} must be a boolean")));
+        }
+    }
+    if requested
+        .get("workspace_root")
+        .is_some_and(|value| value.as_str().is_none_or(str::is_empty))
+    {
+        return Err(invalid("policy.workspace_root must be a non-empty string"));
+    }
+    Ok(())
+}
+
+fn invalid(message: impl Into<String>) -> PolicyViolation {
+    PolicyViolation {
+        code: OfficeErrorCode::OfficeInvalidRequest,
+        message: message.into(),
+    }
+}
+
+fn policy_error(name: &str) -> OfficeErrorCode {
+    match name {
+        "vba_application_run" | "macros" | "ole_activex_activation" | "access_macros" => {
+            OfficeErrorCode::OfficeMacroBlocked
+        }
+        "external_links_auto_update" => OfficeErrorCode::OfficeExternalLinkBlocked,
+        "protected_view_bypass" => OfficeErrorCode::OfficeProtectedView,
+        _ => OfficeErrorCode::OfficeCapabilityUnsupported,
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -157,5 +283,21 @@ mod tests {
         );
         assert_eq!(p.execute_mso("powerpoint", "PasteAsPicture"), None);
         assert_eq!(p.execute_mso("excel", "Copy"), None);
+    }
+
+    #[test]
+    fn first_layer_allows_tightening_but_rejects_relaxation() {
+        assert!(validate_policy_tightening(&serde_json::json!({
+            "print": "deny",
+            "workspace_only": true,
+            "checkpoint": true
+        }))
+        .is_ok());
+
+        let violation = validate_policy_tightening(&serde_json::json!({
+            "macros": "confirm"
+        }))
+        .expect_err("macro policy relaxation must fail");
+        assert_eq!(violation.code, OfficeErrorCode::OfficeMacroBlocked);
     }
 }

@@ -13,7 +13,9 @@ that drives desktop Office over COM; Open XML handles bulk structural work;
 Microsoft Graph handles cloud files (Phase 3); UIA/Computer Use fallback is
 reused from `dcc-mcp-computer-use`, not rebuilt here.
 
-**Current status:** M1 COM sidecar MVP — complete. Named-pipe
+**Current status:** M1 COM sidecar MVP — complete. A reference stdio MCP
+server now owns sidecar lifecycle, derives its tools from the live handshake
+and canonical schemas, and ships in the Windows release bundle. Named-pipe
 `office-rpc/1` server (per-user DACL, graceful `office.host.shutdown`),
 per-app COM backends (PowerPoint/Word/Excel: batch PDF export, replace-text
 dry-run/commit incl. multi-section headers/footers, inspect, slide previews +
@@ -34,6 +36,7 @@ Office.js remain Phase 3; Visio/Project/Access Phase 4.
 | `crates/office-protocol` | Canonical office-rpc catalog + wire schema: handshake, manifest, generated error codes, progress/events, pipe naming | any RPC work |
 | `crates/office-ir` | Common envelope + application IRs: presentation, word (sections/paragraphs/tables/fields/review policy), workbook (worksheets/tables/charts/calc policy) | generation pipelines |
 | `crates/office-client` | Rust client for `office-host.exe`: named-pipe transport (std-only), handshake, execute | gateway/sidecar wiring |
+| `crates/office-mcp-server` | Consumable stdio MCP server: Host lifecycle, live capability filtering, schema validation, structured Office errors | direct MCP clients / interim gateway surface |
 | `crates/office-client/tests/pipe_contract.rs` | Rust ↔ C# contract test: compile → COM inspect/convert/replace/render (env `DCC_OFFICE_HOST_EXE`, skips without Office) | transport changes |
 | `crates/office-tools` | Task-level MCP tool registry (names, app, phase) | adding a capability |
 | `crates/office-jobs` | Job phases + per-item bookkeeping + pure aggregation helpers (dcc-mcp-job layering blocked on crates.io) | batch operations |
