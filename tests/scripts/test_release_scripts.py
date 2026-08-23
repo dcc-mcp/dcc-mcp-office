@@ -33,6 +33,25 @@ class SourceDistributionTests(unittest.TestCase):
         self.assertIn("Release tags are treated as immutable", documentation)
 
 
+class TemplateCatalogTests(unittest.TestCase):
+    def test_every_file_catalog_entry_resolves_to_a_matching_package(self):
+        template_root = ROOT / "templates"
+        catalog = json.loads(
+            (template_root / "registry.json").read_text(encoding="utf-8")
+        )
+
+        for entry in catalog["templates"]:
+            if not entry["source"].startswith("file://"):
+                continue
+            package_path = template_root / entry["source"].removeprefix("file://")
+            package = json.loads(
+                (package_path / "package.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(package["uri"], entry["uri"])
+            self.assertEqual(package["version"], entry["version"])
+            self.assertEqual(set(package["layouts"]), set(entry["layouts"]))
+
+
 class ReleasePackageTests(unittest.TestCase):
     def test_workspace_version_requires_no_rust_toolchain(self):
         module = load_script("package_release.py")
@@ -58,6 +77,10 @@ class ReleasePackageTests(unittest.TestCase):
             (repository / "manifests" / "batch.json").write_text("{}", encoding="utf-8")
             (repository / "templates").mkdir()
             (repository / "templates" / "registry.json").write_text("{}", encoding="utf-8")
+            package = repository / "templates" / "presentations" / "studio-light"
+            package.mkdir(parents=True)
+            (package / "package.json").write_text("{}", encoding="utf-8")
+            (package / "theme.xml").write_text("<theme/>", encoding="utf-8")
             (repository / "docs").mkdir()
             (repository / "docs" / "distribution.md").write_text("install", encoding="utf-8")
             (repository / "LICENSE").write_text("MIT", encoding="utf-8")
@@ -75,6 +98,14 @@ class ReleasePackageTests(unittest.TestCase):
             self.assertTrue(all(f"{prefix}bin/{name}" in names for name in expected_executables))
             self.assertIn(f"{prefix}manifests/batch.json", names)
             self.assertIn(f"{prefix}templates/registry.json", names)
+            self.assertIn(
+                f"{prefix}templates/presentations/studio-light/package.json",
+                names,
+            )
+            self.assertIn(
+                f"{prefix}templates/presentations/studio-light/theme.xml",
+                names,
+            )
             self.assertIn(f"{prefix}INSTALL.md", names)
             self.assertIn(f"{prefix}release-manifest.json", names)
             self.assertIn(f"{prefix}dcc-mcp-office-host-0.2.2.spdx.json", names)

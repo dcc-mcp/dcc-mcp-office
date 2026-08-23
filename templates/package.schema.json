@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/dcc-mcp/dcc-mcp-office/templates/package.schema.json",
+  "title": "DCC-MCP Office presentation template package",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "uri", "version", "kind", "extends", "layouts"],
+  "properties": {
+    "schema_version": {"const": "office-template-package/1.0"},
+    "uri": {"type": "string", "pattern": "^brand://[^/]+/.+$"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "kind": {"const": "presentation"},
+    "extends": {"const": "brand://dcc-mcp/default"},
+    "brand_name": {"type": "string", "minLength": 1},
+    "layouts": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "enum": [
+          "title_cover", "section_cover", "two_columns", "comparison",
+          "timeline", "kpi_dashboard", "technical_architecture",
+          "image_left_text_right", "image_grid", "closing", "bullets"
+        ]
+      }
+    },
+    "parts": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "slide_master": {"type": "string"},
+        "slide_layout": {"type": "string"},
+        "theme": {"type": "string"},
+        "slide": {"type": "string"},
+        "notes_master": {"type": "string"},
+        "notes_slide": {"type": "string"}
+      }
+    },
+    "style": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "colors": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "background": {"$ref": "#/$defs/color"},
+            "background_soft": {"$ref": "#/$defs/color"},
+            "panel": {"$ref": "#/$defs/color"},
+            "accent": {"$ref": "#/$defs/color"},
+            "accent_secondary": {"$ref": "#/$defs/color"},
+            "text": {"$ref": "#/$defs/color"},
+            "muted": {"$ref": "#/$defs/color"},
+            "ghost": {"$ref": "#/$defs/color"}
+          }
+        },
+        "fonts": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "latin": {"type": "string", "minLength": 1},
+            "east_asian": {"type": "string", "minLength": 1}
+          }
+        }
+      }
+    },
+    "media": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {"logo": {"type": "string"}}
+    }
+  },
+  "$defs": {"color": {"type": "string", "pattern": "^[0-9A-Fa-f]{6}$"}}
+}

@@ -16,6 +16,7 @@ using Office.Automation.Runtime;
 ///                                  replace-text dry-run/commit, slide previews)
 ///   --openxml-only                 disable desktop COM for deterministic runs
 ///   --workspace-root=&lt;path&gt;       bind all file operations to this existing root
+///   --template-dir=&lt;path&gt;         add an external template package root (repeatable)
 ///   --version                      print host + protocol versions and exit
 ///
 /// Commands (office.command.execute capabilities):
@@ -42,6 +43,7 @@ public static class Program
         bool openXmlOnly = false;
         string? pipeName = null;
         string? workspaceRoot = null;
+        var templateDirectories = new List<string>();
         foreach (var arg in args)
         {
             switch (arg)
@@ -74,6 +76,10 @@ public static class Program
                     {
                         workspaceRoot = arg["--workspace-root=".Length..];
                     }
+                    else if (arg.StartsWith("--template-dir=", StringComparison.Ordinal))
+                    {
+                        templateDirectories.Add(arg["--template-dir=".Length..]);
+                    }
                     break;
             }
         }
@@ -88,7 +94,7 @@ public static class Program
         if (app is null || !SupportedApps.Contains(app))
         {
             Console.Error.WriteLine(
-                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--openxml-only] [--workspace-root=<path>] [--self-test|--self-test-com]");
+                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--openxml-only] [--workspace-root=<path>] [--template-dir=<path>] [--self-test|--self-test-com]");
             return 2;
         }
 
@@ -113,7 +119,9 @@ public static class Program
         using var router = new CommandRouter(
             app,
             enableDesktopCom: !openXmlOnly,
-            workspaceRoot: workspaceRoot ?? Directory.GetCurrentDirectory());
+            workspaceRoot: workspaceRoot ?? Directory.GetCurrentDirectory(),
+            templateDirectories: templateDirectories,
+            includeDefaultTemplateDirectories: true);
         if (stdio)
         {
             return JsonRpcLoop(router);

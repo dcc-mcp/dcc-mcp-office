@@ -1,38 +1,55 @@
-# templates — Brand Template Registry
+# Brand template packages
 
-Template-first generation, never free-coordinate drawing (proposal §15.4).
-Templates are addressed by `brand://` URIs with pinned versions:
+`deck.compile` resolves `brand://` URIs to validated, materialized packages.
+The Host advertises exactly those packages in
+`capability_manifest.template_packages`; an advertised URI is therefore
+executable, not just a catalog entry.
 
-```text
-brand://studio/review-v3
-brand://dcc-mcp/product-launch-v2
-brand://internal/technical-report-v1
+## Install and select
+
+Folder packages are discovered recursively from:
+
+1. each repeatable `--template-dir=<path>` argument;
+2. the release bundle's `templates/` directory;
+3. `%LOCALAPPDATA%\dcc-mcp\office-templates`.
+
+The process working directory is never searched. To use the repository's
+example during development:
+
+```powershell
+dcc-office-host.exe --app=powerpoint --openxml-only --template-dir=templates
 ```
 
-Importing a template extracts (proposal §15.4): theme colors, theme fonts,
-masters, layouts, placeholders, logo safe areas, title hierarchy, chart
-styles, margins and aspect ratio.
+Then pass `"template":"brand://dcc-mcp/studio-light"` to `deck.compile`, or
+set `template.uri` in the Deck IR. An unknown or invalid package is refused.
 
-Layouts gain semantic tags the agent selects instead of guessing coordinates:
+## Package contract
+
+Each package directory contains `package.json` conforming to
+[`package.schema.json`](./package.schema.json). It pins a semantic version,
+maps public semantic layout names to built-in renderers, and may override the
+inherited master, layout, theme, slide, notes, style, and logo files. Paths
+must remain inside the package; absolute paths, traversal, and escaping
+symlinks are refused.
+
+The complete renderer set is:
 
 ```text
-title_cover section_cover two_columns image_left_text_right comparison
-timeline kpi_dashboard full_bleed_image technical_architecture
+title_cover section_cover two_columns comparison timeline kpi_dashboard
+technical_architecture image_left_text_right image_grid closing bullets
 ```
 
-| Dir | Content |
-|---|---|
-| `registry.json` | machine-readable registry (schema `brand-registry/1.0`): URI → package source, version, kind, semantic layout list |
-| `presentations/` | PPTX brand templates (POTX/PPTX) |
-| `documents/` | DOCX templates with Content Controls as anchors |
-| `workbooks/` | XLSX templates with named ranges / tables |
-| `diagrams/` | Visio stencils (Phase 4) |
+`presentations/studio-light` is a working external package. It inherits the
+default skeleton and media while replacing the palette, fonts, semantic
+layout map, and brand name. Copy it outside the release bundle to create a
+package that can be updated without rebuilding the Host.
 
-## Current packages
+## Catalog
 
-| URI | Kind | Source | Status |
-|---|---|---|---|
-| `brand://dcc-mcp/default` | presentation | embedded Open XML skeletons (master, 11 layouts: title_cover, section_cover, two_columns, comparison, timeline, kpi_dashboard, technical_architecture, image_left_text_right, image_grid, closing, bullets) + brand logo | shipped — `deck.compile` default |
+`registry.json` is the release catalog used by documentation and packaging.
+Runtime discovery is package-driven and the handshake is the authoritative
+materialized capability surface, preventing a stale catalog from promising an
+unavailable template.
 
-`deck.compile` refuses URIs outside the registry (OFFICE_CAPABILITY_UNSUPPORTED)
-and warns when a slide's `semantic_layout` is not part of the resolved package.
+The `documents/`, `workbooks/`, and `diagrams/` directories are reserved for
+future package kinds; they are not current runtime capabilities.

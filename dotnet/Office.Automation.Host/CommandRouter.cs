@@ -32,7 +32,7 @@ public sealed class CommandRouter : IDisposable
     private readonly string _workspaceRoot;
     private readonly StaDispatcher _sta = new();
     private readonly OfficeComBackend? _com;
-    private readonly TemplateRegistry _templates = new();
+    private readonly TemplateRegistry _templates;
     private readonly object _attachLock = new();
     private readonly HostNotificationQueue _notifications;
     private readonly InMemoryJobTracker _jobs;
@@ -41,15 +41,27 @@ public sealed class CommandRouter : IDisposable
     private bool _applicationStartedEventPublished;
 
     public CommandRouter(string app)
-        : this(app, enableDesktopCom: true, workspaceRoot: Directory.GetCurrentDirectory())
+        : this(
+            app,
+            enableDesktopCom: true,
+            workspaceRoot: Directory.GetCurrentDirectory(),
+            includeDefaultTemplateDirectories: true)
     {
     }
 
-    internal CommandRouter(string app, bool enableDesktopCom, string? workspaceRoot = null)
+    internal CommandRouter(
+        string app,
+        bool enableDesktopCom,
+        string? workspaceRoot = null,
+        IEnumerable<string>? templateDirectories = null,
+        bool includeDefaultTemplateDirectories = false)
     {
         _app = app;
         _workspaceRoot = WorkspaceGuard.CanonicalizeRoot(
             workspaceRoot ?? Directory.GetCurrentDirectory());
+        _templates = new TemplateRegistry(
+            templateDirectories,
+            includeDefaultTemplateDirectories);
         _notifications = new HostNotificationQueue(app, HostId);
         _jobs = new InMemoryJobTracker(_notifications);
         _com = enableDesktopCom && ComBackendFactory.IsSupported(app)
@@ -492,24 +504,13 @@ public sealed class CommandRouter : IDisposable
             : throw new OfficeArgumentException("input.output is required");
         output = Path.GetFullPath(output);
 
-        // Brand template gate (proposal §15.4): only the built-in package
-        // ships in this host build; unknown URIs are refused up front.
+        string templateUri = InputTemplateUri(input, ir) ?? TemplateRegistry.DefaultUri;
+        TemplateEntry template = _templates.Resolve(templateUri)
+            ?? throw new OfficeComException(
+                OfficeErrorCode.OfficeCapabilityUnsupported,
+                $"brand template '{templateUri}' is not materialized; available: {string.Join(", ", _templates.AllUris)}");
         var warnings = new List<string>();
-        if (input.TryGetProperty("template", out var templateElement)
-            && templateElement.ValueKind == JsonValueKind.String
-            && templateElement.GetString() is string templateUri
-            && !string.Equals(templateUri, TemplateRegistry.DefaultUri, StringComparison.OrdinalIgnoreCase))
-        {
-            var entry = _templates.Resolve(templateUri);
-            if (entry is null)
-            {
-                throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
-                    $"brand template '{templateUri}' is not in the registry; available: {string.Join(", ", _templates.AllUris)}");
-            }
-            throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
-                $"brand template '{templateUri}' resolves to {entry.Source}, which is not packaged in this host build");
-        }
-        warnings.AddRange(CheckLayoutsAgainstRegistry(ir));
+        warnings.AddRange(CheckLayoutsAgainstTemplate(ir, template));
 
         if (File.Exists(output))
         {
@@ -534,7 +535,7 @@ public sealed class CommandRouter : IDisposable
                 File.WriteAllText(irTemp, ir);
                 try
                 {
-                    PptxWriter.CompileDeck(irTemp, stagedOutput);
+                    PptxWriter.CompileDeck(irTemp, stagedOutput, template.Package);
                 }
                 finally
                 {
@@ -543,7 +544,7 @@ public sealed class CommandRouter : IDisposable
             }
             else
             {
-                PptxWriter.CompileDeck(ir, stagedOutput);
+                PptxWriter.CompileDeck(ir, stagedOutput, template.Package);
             }
             info = PptxInspector.Inspect(stagedOutput);
             File.Move(stagedOutput, output, overwrite: false);
@@ -569,7 +570,24 @@ public sealed class CommandRouter : IDisposable
     /// unknown layouts still compile (the worker falls back to bullets) but
     /// the result carries a warning so agents notice the substitution.
     /// </summary>
-    private List<string> CheckLayoutsAgainstRegistry(string ir)
+    private static string? InputTemplateUri(JsonElement input, string ir)
+    {
+        if (input.TryGetProperty("template", out JsonElement requested)
+            && requested.ValueKind == JsonValueKind.String)
+        {
+            return requested.GetString();
+        }
+        string json = ir.TrimStart().StartsWith('{') ? ir : File.ReadAllText(ir);
+        using JsonDocument document = JsonDocument.Parse(json);
+        return document.RootElement.TryGetProperty("template", out JsonElement template)
+            && template.ValueKind == JsonValueKind.Object
+            && template.TryGetProperty("uri", out JsonElement uri)
+            && uri.ValueKind == JsonValueKind.String
+            ? uri.GetString()
+            : null;
+    }
+
+    private static List<string> CheckLayoutsAgainstTemplate(string ir, TemplateEntry template)
     {
         var warnings = new List<string>();
         try
@@ -580,7 +598,7 @@ public sealed class CommandRouter : IDisposable
                 && doc.TryGetProperty("slides", out var slides)
                 && slides.ValueKind == JsonValueKind.Array)
             {
-                var known = _templates.Default.Layouts.ToHashSet(StringComparer.Ordinal);
+                var known = template.Package.Layouts.ToHashSet(StringComparer.Ordinal);
                 foreach (var slide in slides.EnumerateArray())
                 {
                     var layout = slide.TryGetProperty("semantic_layout", out var sl)
@@ -588,7 +606,8 @@ public sealed class CommandRouter : IDisposable
                         : "";
                     if (layout.Length > 0 && !known.Contains(layout))
                     {
-                        warnings.Add($"semantic_layout '{layout}' is not in {TemplateRegistry.DefaultUri}; compiled as 'bullets'");
+                        warnings.Add(
+                            $"semantic_layout '{layout}' is not in {template.Package.Uri}; compiled as 'bullets'");
                     }
                 }
             }
@@ -1058,6 +1077,7 @@ public sealed class CommandRouter : IDisposable
             application,
             execution_modes = modes,
             capabilities,
+            template_packages = _templates.Capabilities,
             limits = new { max_parallel_writes = 1, requires_user_session = true },
         };
     }

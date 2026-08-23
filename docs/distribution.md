@@ -5,7 +5,7 @@ release publishes:
 
 - `dcc-office-host.exe`, plus PowerPoint, Word, and Excel alias executables;
 - `dcc-mcp-office-host-<version>-win-x64.zip`, containing the binaries,
-  protocol catalog, input schemas, template registry, install contract, release
+  protocol catalog, input schemas, materialized template packages, install contract, release
   manifest, license, and SPDX 2.3 SBOM;
 - `release-manifest.json`, the SPDX SBOM, and `SHA256SUMS`;
 - GitHub build-provenance and SBOM attestations.
@@ -26,6 +26,13 @@ Install the canonical executable at:
 ```text
 %LOCALAPPDATA%\dcc-mcp\office-host\<version>\dcc-office-host.exe
 ```
+
+Copy the bundle's `templates` directory beside the executable to install its
+versioned packages. Independently managed packages may instead be placed in
+`%LOCALAPPDATA%\dcc-mcp\office-templates` or supplied with a repeatable
+`--template-dir=<path>` argument. The Host never searches its working
+directory and advertises only packages that it successfully validates and
+materializes.
 
 `dcc-mcp-office-client` locates the executable in this strict order:
 

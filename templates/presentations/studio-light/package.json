@@ -1,0 +1,38 @@
+{
+  "$schema": "../../package.schema.json",
+  "schema_version": "office-template-package/1.0",
+  "uri": "brand://dcc-mcp/studio-light",
+  "version": "1.0.0",
+  "kind": "presentation",
+  "extends": "brand://dcc-mcp/default",
+  "brand_name": "DCC-MCP Studio",
+  "layouts": {
+    "title_cover": "title_cover",
+    "section_cover": "section_cover",
+    "two_columns": "two_columns",
+    "comparison": "comparison",
+    "timeline": "timeline",
+    "kpi_dashboard": "kpi_dashboard",
+    "technical_architecture": "technical_architecture",
+    "image_left_text_right": "image_left_text_right",
+    "image_grid": "image_grid",
+    "closing": "closing",
+    "bullets": "bullets"
+  },
+  "style": {
+    "colors": {
+      "background": "F7F9FC",
+      "background_soft": "EDF2F7",
+      "panel": "FFFFFF",
+      "accent": "2563EB",
+      "accent_secondary": "0D9488",
+      "text": "172033",
+      "muted": "5D6B82",
+      "ghost": "DCE5F2"
+    },
+    "fonts": {
+      "latin": "Aptos",
+      "east_asian": "Microsoft YaHei"
+    }
+  }
+}

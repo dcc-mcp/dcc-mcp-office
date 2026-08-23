@@ -46,7 +46,7 @@ dotnet/
                               bounded in-memory job tracker and event producer
 skills/            office-wide skill packs (SKILL.md)
 manifests/         catalog-referenced input JSON Schemas
-templates/         brand template registry (brand:// URIs, registry.json)
+templates/         external brand template packages and release catalog
 tests/             golden-files / visual-snapshots / compatibility / security / stress
 tests/fixtures/    small docx/xlsx fixtures for the Rust ↔ C# contract tests
 docs/adr/          architecture decision records
@@ -69,6 +69,13 @@ delivers `office.job.progress` notifications plus job/application/document,
 security, and modal events. `office.host.ping` reports Host state without
 attaching to or starting an Office application. Job state is intentionally
 process-local for M1; durable recovery remains the later `dcc-mcp-job` adapter.
+
+Presentation templates are external, versioned folder packages. The Host
+discovers packages from the release bundle, `%LOCALAPPDATA%\dcc-mcp\office-templates`,
+or repeatable `--template-dir=<path>` arguments and advertises only validated,
+materialized packages in the handshake. See
+[`templates/README.md`](./templates/README.md) for the package contract and the
+resolvable `brand://dcc-mcp/studio-light` example.
 
 ## Quickstart
 

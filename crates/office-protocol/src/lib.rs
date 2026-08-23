@@ -148,7 +148,17 @@ pub struct CapabilityManifest {
     pub execution_modes: Vec<String>,
     /// capability name → semantic version.
     pub capabilities: std::collections::BTreeMap<String, String>,
+    /// Materialized template URI → executable package surface.
+    pub template_packages: std::collections::BTreeMap<String, TemplatePackageCapability>,
     pub limits: Limits,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TemplatePackageCapability {
+    pub version: String,
+    pub kind: String,
+    pub source_kind: String,
+    pub layouts: Vec<String>,
 }
 
 impl Default for CapabilityManifest {
@@ -160,6 +170,7 @@ impl Default for CapabilityManifest {
             application: None,
             execution_modes: Vec::new(),
             capabilities: Default::default(),
+            template_packages: Default::default(),
             limits: Limits::default(),
         }
     }
