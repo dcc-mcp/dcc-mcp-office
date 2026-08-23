@@ -28,6 +28,10 @@
       "type": "string",
       "enum": ["job", "openxml", "desktop_com", "graph", "office_js", "uia", "cua"]
     },
-    "indeterminate": {"type": "boolean"}
+    "indeterminate": {"type": "boolean"},
+    "audit": {
+      "type": "object",
+      "description": "Criterion-10 audit enrichment added by the Host after handler validation."
+    }
   }
 }

@@ -73,6 +73,8 @@ class ReleasePackageTests(unittest.TestCase):
             repository = root / "repository"
             host_dir.mkdir()
             (host_dir / module.CANONICAL_HOST).write_bytes(b"office-host-fixture")
+            mcp_server = root / module.MCP_SERVER
+            mcp_server.write_bytes(b"office-mcp-server-fixture")
             (repository / "manifests").mkdir(parents=True)
             (repository / "manifests" / "batch.json").write_text("{}", encoding="utf-8")
             (repository / "templates").mkdir()
@@ -86,17 +88,28 @@ class ReleasePackageTests(unittest.TestCase):
             (repository / "docs" / "operations.md").write_text("operate", encoding="utf-8")
             (repository / "LICENSE").write_text("MIT", encoding="utf-8")
 
-            assets = module.package_release(host_dir, output_dir, repository, "0.2.2")
+            assets = module.package_release(
+                host_dir,
+                mcp_server,
+                output_dir,
+                repository,
+                "0.2.2",
+            )
 
             expected_executables = [module.CANONICAL_HOST, *module.HOST_ALIASES]
             for name in expected_executables:
                 self.assertEqual((output_dir / name).read_bytes(), b"office-host-fixture")
+            self.assertEqual(
+                (output_dir / module.MCP_SERVER).read_bytes(),
+                b"office-mcp-server-fixture",
+            )
 
             archive = output_dir / "dcc-mcp-office-host-0.2.2-win-x64.zip"
             with zipfile.ZipFile(archive) as package:
                 names = set(package.namelist())
             prefix = "dcc-mcp-office-host-0.2.2-win-x64/"
             self.assertTrue(all(f"{prefix}bin/{name}" in names for name in expected_executables))
+            self.assertIn(f"{prefix}bin/{module.MCP_SERVER}", names)
             self.assertIn(f"{prefix}manifests/batch.json", names)
             self.assertIn(f"{prefix}templates/registry.json", names)
             self.assertIn(
@@ -118,6 +131,7 @@ class ReleasePackageTests(unittest.TestCase):
             self.assertEqual(manifest["schema"], "dcc-mcp-office-release/1")
             self.assertEqual(manifest["version"], "0.2.2")
             self.assertEqual(set(manifest["aliases"]), set(module.HOST_ALIASES))
+            self.assertEqual(manifest["mcp_server"], module.MCP_SERVER)
 
             sbom_name = "dcc-mcp-office-host-0.2.2.spdx.json"
             sbom = json.loads((output_dir / sbom_name).read_text(encoding="utf-8"))

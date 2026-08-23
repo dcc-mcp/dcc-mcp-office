@@ -8,3 +8,4 @@
 | [004](004-task-level-capabilities.md) | 任务级 MCP Capability，不暴露原始 COM | Accepted |
 | [005](005-vsto-thin-bridge-only.md) | VSTO 仅作可选薄桥，核心不走 VSTO | Accepted |
 | [006](006-shared-office-core-split.md) | 底座/应用适配/技能包的仓库拆分 | Accepted |
+| [007](007-reference-stdio-mcp-server.md) | Reference stdio MCP server | Accepted |

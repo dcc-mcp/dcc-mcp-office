@@ -6,10 +6,10 @@ PowerPoint / Word / Excel / Outlook / Visio / Project / Access.
 This repository implements the **shared core** of the
 [DCC-MCP Office Automation Platform proposal](./docs/proposals/office-automation-platform-v1.0.md):
 the `office-rpc/1` wire protocol, application document IRs, the C# STA COM
-sidecar runtime (`office-host`), the Open XML batch worker, the Microsoft
-Graph connector and the Office-wide skill packs. Application-specific
-adapters live in thin sibling repos and depend on this one the way
-`dcc-mcp-maya` depends on `dcc-mcp-core`.
+sidecar runtime (`office-host`), a reference stdio MCP server, the Open XML
+batch worker, the Microsoft Graph connector and the Office-wide skill packs.
+Application-specific adapters live in thin sibling repos and depend on this
+one the way `dcc-mcp-maya` depends on `dcc-mcp-core`.
 
 | Repo | Scope | Status |
 |---|---|---|
@@ -27,6 +27,8 @@ crates/
                     commands, jobs, progress, events, and error codes
   office-ir         document IRs: common envelope + presentation / word / workbook
   office-client     Rust-side client for office-host.exe (namedpipe://)
+  office-mcp-server reference stdio MCP surface; owns Host lifecycle and maps
+                    live handshake capabilities through the catalog schemas
   office-tools      task-level MCP tool registry (office.batch.convert, ...)
   office-jobs       approval/checkpoint job phases + per-item aggregation
   office-graph      Microsoft Graph connector (OneDrive/SharePoint/Workbook)
@@ -89,9 +91,12 @@ C# development uses [vx](https://github.com/loonghao/vx) (universal version
 executor): `vx.toml` pins the .NET 8 LTS SDK and `vx.lock` makes installs
 reproducible. CI installs the same toolchain through the official
 [`loonghao/vx`](https://github.com/loonghao/vx) GitHub Action.
+The Rust workspace requires Rust 1.88 or newer (the official MCP SDK's MSRV),
+and CI checks both that minimum and current stable.
 
 ```bash
 cargo test            # protocol/IR round-trips, policy defaults, no Office required
+cargo run -p dcc-mcp-office-mcp-server -- --help
 vx setup              # install the pinned .NET 8 LTS SDK into the vx store
 vx run build          # build office-host with the vx-managed SDK
 vx run self-test      # host self-test (compile + inspect round-trip, no Office needed)
@@ -120,11 +125,12 @@ dotnet build dotnet/Office.Automation.Host
 - `.github/workflows/ci.yml` — Rust fmt/clippy/test, skill lint + dashboard
   e2e, and the C# host build/self-test (Windows, via `loonghao/vx`).
 - `.github/workflows/publish-host.yml` — builds the complete Host bundle as a
-  short-lived verification artifact on every distribution-related change.
+  short-lived verification artifact, including the reference MCP server, on
+  every distribution-related change.
 - `.github/workflows/release.yml` — release-please automated versioning and
   releases: merging the release PR creates the immutable Rust source tag and
-  attaches the Host binaries, install bundle, manifest, checksums, SPDX SBOM,
-  and GitHub attestations. See
+  attaches the Host and MCP server binaries, install bundle, manifest,
+  checksums, SPDX SBOM, and GitHub attestations. See
   [`docs/distribution.md`](./docs/distribution.md).
 
 ## Roadmap

@@ -49,6 +49,14 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           setup: "true"
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Build reference stdio MCP server
+        run: cargo build --locked --release -p dcc-mcp-office-mcp-server
+
+      - name: Smoke test MCP server entry point
+        shell: pwsh
+        run: '& "$env:GITHUB_WORKSPACE\target\release\dcc-mcp-office-mcp-server.exe" --help'
 
       - name: Publish single-file host (zero NuGet dependencies)
         shell: pwsh
@@ -62,7 +70,7 @@ jobs:
         shell: pwsh
         run: |
           $version = "${{ needs.release-please.outputs.tag_name }}".TrimStart("v")
-          python scripts/package_release.py --host-dir "$env:RUNNER_TEMP\host" --output-dir "$env:RUNNER_TEMP\release" --version $version
+          python scripts/package_release.py --host-dir "$env:RUNNER_TEMP\host" --mcp-server "$env:GITHUB_WORKSPACE\target\release\dcc-mcp-office-mcp-server.exe" --output-dir "$env:RUNNER_TEMP\release" --version $version
 
       - name: Verify release checksums
         shell: pwsh

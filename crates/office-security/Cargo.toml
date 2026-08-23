@@ -9,3 +9,4 @@ description = "Default-deny Office security policy (ExecuteMso whitelist, Automa
 [dependencies]
 dcc-mcp-office-protocol = { workspace = true }
 serde = { workspace = true }
+serde_json = { workspace = true }

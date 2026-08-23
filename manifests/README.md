@@ -12,8 +12,9 @@ The namespace boundary is intentional:
 
 - Agents call task-level MCP tools such as `office.batch.convert` and
   `powerpoint.slide.render`.
-- The gateway maps them through the catalog's `mcp_tool` field to compact
-  sidecar wire names such as `batch.convert` and `slide.render`.
+- The reference stdio MCP server (and, later, the gateway adapter) maps them
+  through the catalog's `mcp_tool` field to compact sidecar wire names such as
+  `batch.convert` and `slide.render`.
 - `office-host` accepts only catalog wire names. There is no implicit prefix
   stripping or second handwritten mapping.
 
