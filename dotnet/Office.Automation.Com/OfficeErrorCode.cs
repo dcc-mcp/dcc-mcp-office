@@ -14,6 +14,7 @@ public enum OfficeErrorCode
     OfficeAppBusy,
     OfficeModalDialog,
     OfficeProtectedView,
+    OfficeAccessDenied,
     OfficeDocumentNotFound,
     OfficeDocumentLocked,
     OfficeFileCorrupt,
@@ -25,6 +26,7 @@ public enum OfficeErrorCode
     OfficeRenderTimeout,
     OfficeUserConfirmationRequired,
     OfficePartialSuccess,
+    OfficeUnclassified,
 }
 
 public static class OfficeErrorCodeExtensions

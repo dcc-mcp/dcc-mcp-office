@@ -44,13 +44,16 @@ public static class ModalDialogDetector
                 continue;
             }
             IntPtr owner = NativeMethods.GetWindow(popup.hWnd, 4 /* GW_OWNER */);
-            if (owner == disabledMain.hWnd || owner != IntPtr.Zero)
+            if (IsOwnedByDisabledMain(owner, disabledMain.hWnd))
             {
                 return popup.Title.Length > 0 ? popup.Title : "(untitled dialog)";
             }
         }
         return null;
     }
+
+    internal static bool IsOwnedByDisabledMain(IntPtr owner, IntPtr disabledMain) =>
+        owner != IntPtr.Zero && owner == disabledMain;
 
     private static string GetTitle(IntPtr hWnd)
     {
