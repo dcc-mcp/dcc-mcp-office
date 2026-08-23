@@ -31,6 +31,15 @@ Contract → Workbook IR → base workbook (openpyxl as the Open XML builder) �
 formulas → XLSX artifact. Charts and pivots stay declarative in the IR;
 native recalc/refresh belongs to the Excel COM sidecar (Phase 2).
 
+## Contract boundary
+
+This script is an offline authoring adapter for a **new draft artifact**, not
+an `office-rpc/1` provider and not an alternative capability namespace. It
+consumes the shared Workbook IR envelope but does not report a Host audit,
+mutate an open workbook, run native Excel validation, or claim that an
+`office.command.execute` call succeeded. Those operations must go through the
+catalog-mapped MCP/sidecar path when the Excel generation capability lands.
+
 ## Input contract
 
 - `input` — path to a Workbook IR JSON

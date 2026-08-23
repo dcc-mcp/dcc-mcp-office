@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dcc-mcp.github.io/schemas/office/batch-convert.schema.json",
-  "title": "office.batch.convert input",
-  "description": "Input contract for office.batch.convert (proposal §15.1). The host expands glob patterns and routes each file to its own app sidecar.",
+  "title": "batch.convert input",
+  "description": "Sidecar input contract for batch.convert. The task-level MCP tool is office.batch.convert.",
   "type": "object",
   "required": ["inputs", "output_directory"],
   "additionalProperties": false,

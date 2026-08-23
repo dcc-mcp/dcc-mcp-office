@@ -1,0 +1,129 @@
+{
+  "schema_version": "office-capability-catalog/1.0",
+  "protocol_version": "office-rpc/1",
+  "provider": "dcc-mcp-office",
+  "errors": [
+    {"code": "OFFICE_INVALID_REQUEST", "retryable": false},
+    {"code": "OFFICE_APP_NOT_INSTALLED", "retryable": false},
+    {"code": "OFFICE_APP_VERSION_UNSUPPORTED", "retryable": false},
+    {"code": "OFFICE_APP_BUSY", "retryable": true},
+    {"code": "OFFICE_MODAL_DIALOG", "retryable": false},
+    {"code": "OFFICE_PROTECTED_VIEW", "retryable": false},
+    {"code": "OFFICE_ACCESS_DENIED", "retryable": false},
+    {"code": "OFFICE_DOCUMENT_NOT_FOUND", "retryable": false},
+    {"code": "OFFICE_DOCUMENT_LOCKED", "retryable": false},
+    {"code": "OFFICE_DOCUMENT_CONFLICT", "retryable": false},
+    {"code": "OFFICE_FILE_CORRUPT", "retryable": false},
+    {"code": "OFFICE_MACRO_BLOCKED", "retryable": false},
+    {"code": "OFFICE_EXTERNAL_LINK_BLOCKED", "retryable": false},
+    {"code": "OFFICE_CAPABILITY_UNSUPPORTED", "retryable": false},
+    {"code": "OFFICE_BACKEND_UNAVAILABLE", "retryable": true},
+    {"code": "OFFICE_RPC_TIMEOUT", "retryable": true},
+    {"code": "OFFICE_RENDER_TIMEOUT", "retryable": false},
+    {"code": "OFFICE_GRAPH_THROTTLED", "retryable": true},
+    {"code": "OFFICE_GRAPH_AUTH_REQUIRED", "retryable": false},
+    {"code": "OFFICE_USER_CONFIRMATION_REQUIRED", "retryable": false},
+    {"code": "OFFICE_PARTIAL_SUCCESS", "retryable": false},
+    {"code": "OFFICE_UNCLASSIFIED", "retryable": false}
+  ],
+  "capabilities": [
+    {
+      "name": "deck.compile",
+      "version": "0.1.0",
+      "handler": "deck_compile",
+      "mcp_tool": "powerpoint.deck.generate",
+      "input_schema": "schemas/deck-compile.schema.json",
+      "output_schema": "schemas/command-result.schema.json",
+      "availability": [
+        {"execution_mode": "openxml", "apps": ["powerpoint"]}
+      ],
+      "errors": [
+        "OFFICE_INVALID_REQUEST",
+        "OFFICE_CAPABILITY_UNSUPPORTED",
+        "OFFICE_FILE_CORRUPT",
+        "OFFICE_BACKEND_UNAVAILABLE"
+      ]
+    },
+    {
+      "name": "document.inspect",
+      "version": "0.1.0",
+      "handler": "document_inspect",
+      "mcp_tool": "office.document.inspect",
+      "input_schema": "schemas/document-inspect.schema.json",
+      "output_schema": "schemas/command-result.schema.json",
+      "availability": [
+        {"execution_mode": "openxml", "apps": ["powerpoint"]},
+        {"execution_mode": "desktop_com", "apps": ["powerpoint", "word", "excel"]}
+      ],
+      "errors": [
+        "OFFICE_INVALID_REQUEST",
+        "OFFICE_DOCUMENT_NOT_FOUND",
+        "OFFICE_FILE_CORRUPT",
+        "OFFICE_BACKEND_UNAVAILABLE",
+        "OFFICE_RPC_TIMEOUT"
+      ]
+    },
+    {
+      "name": "batch.convert",
+      "version": "0.1.0",
+      "handler": "batch_convert",
+      "mcp_tool": "office.batch.convert",
+      "input_schema": "schemas/batch-convert.schema.json",
+      "output_schema": "schemas/command-result.schema.json",
+      "availability": [
+        {"execution_mode": "desktop_com", "apps": ["powerpoint", "word", "excel"]}
+      ],
+      "errors": [
+        "OFFICE_INVALID_REQUEST",
+        "OFFICE_APP_BUSY",
+        "OFFICE_MODAL_DIALOG",
+        "OFFICE_DOCUMENT_LOCKED",
+        "OFFICE_CAPABILITY_UNSUPPORTED",
+        "OFFICE_BACKEND_UNAVAILABLE",
+        "OFFICE_RPC_TIMEOUT",
+        "OFFICE_PARTIAL_SUCCESS"
+      ]
+    },
+    {
+      "name": "batch.replace_text",
+      "version": "0.1.0",
+      "handler": "batch_replace_text",
+      "mcp_tool": "office.batch.replace_text",
+      "input_schema": "schemas/batch-replace-text.schema.json",
+      "output_schema": "schemas/command-result.schema.json",
+      "availability": [
+        {"execution_mode": "desktop_com", "apps": ["powerpoint", "word", "excel"]}
+      ],
+      "errors": [
+        "OFFICE_INVALID_REQUEST",
+        "OFFICE_APP_BUSY",
+        "OFFICE_MODAL_DIALOG",
+        "OFFICE_DOCUMENT_LOCKED",
+        "OFFICE_MACRO_BLOCKED",
+        "OFFICE_EXTERNAL_LINK_BLOCKED",
+        "OFFICE_BACKEND_UNAVAILABLE",
+        "OFFICE_RPC_TIMEOUT",
+        "OFFICE_PARTIAL_SUCCESS"
+      ]
+    },
+    {
+      "name": "slide.render",
+      "version": "0.1.0",
+      "handler": "slide_render",
+      "mcp_tool": "powerpoint.slide.render",
+      "input_schema": "schemas/slide-render.schema.json",
+      "output_schema": "schemas/command-result.schema.json",
+      "availability": [
+        {"execution_mode": "desktop_com", "apps": ["powerpoint"]}
+      ],
+      "errors": [
+        "OFFICE_INVALID_REQUEST",
+        "OFFICE_APP_BUSY",
+        "OFFICE_MODAL_DIALOG",
+        "OFFICE_DOCUMENT_NOT_FOUND",
+        "OFFICE_RENDER_TIMEOUT",
+        "OFFICE_BACKEND_UNAVAILABLE"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/deck-compile.schema.json",
+  "title": "deck.compile input",
+  "type": "object",
+  "required": ["ir", "output"],
+  "additionalProperties": false,
+  "properties": {
+    "ir": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Inline office-ir presentation JSON or a path to an IR JSON file."
+    },
+    "output": {"type": "string", "minLength": 1},
+    "template": {"type": "string", "pattern": "^brand://"}
+  }
+}

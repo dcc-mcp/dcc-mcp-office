@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "$id": "https://dcc-mcp.github.io/schemas/office/batch-replace-text.schema.json",
-  "title": "office.batch.replace_text input",
-  "description": "Input contract for office.batch.replace_text (proposal §15.2). dry_run defaults to true: matches are reported, files are never mutated without an explicit commit.",
+  "title": "batch.replace_text input",
+  "description": "Sidecar input contract for batch.replace_text. The task-level MCP tool is office.batch.replace_text. dry_run defaults to true.",
   "type": "object",
   "required": ["inputs", "rules"],
   "additionalProperties": false,

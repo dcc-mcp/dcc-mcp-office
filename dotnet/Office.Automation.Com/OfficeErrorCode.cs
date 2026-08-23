@@ -4,19 +4,22 @@ namespace Office.Automation.Com;
 
 /// <summary>
 /// Error codes the COM backend surfaces (proposal §20). Wire names are the
-/// SCREAMING_SNAKE strings the Rust gateway expects — the Rust protocol crate
-/// owns the canonical enum and both sides stay in lockstep through the
-/// contract tests.
+/// SCREAMING_SNAKE strings the Rust gateway expects. The machine-readable
+/// office-rpc catalog owns the canonical set; Office-free Host tests require
+/// this enum and the generated Rust enum to match it exactly.
 /// </summary>
 public enum OfficeErrorCode
 {
+    OfficeInvalidRequest,
     OfficeAppNotInstalled,
+    OfficeAppVersionUnsupported,
     OfficeAppBusy,
     OfficeModalDialog,
     OfficeProtectedView,
     OfficeAccessDenied,
     OfficeDocumentNotFound,
     OfficeDocumentLocked,
+    OfficeDocumentConflict,
     OfficeFileCorrupt,
     OfficeMacroBlocked,
     OfficeExternalLinkBlocked,
@@ -24,6 +27,8 @@ public enum OfficeErrorCode
     OfficeBackendUnavailable,
     OfficeRpcTimeout,
     OfficeRenderTimeout,
+    OfficeGraphThrottled,
+    OfficeGraphAuthRequired,
     OfficeUserConfirmationRequired,
     OfficePartialSuccess,
     OfficeUnclassified,
