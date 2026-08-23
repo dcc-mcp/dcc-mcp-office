@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://dcc-mcp.github.io/schemas/office/command-params.schema.json",
+  "title": "office.command.execute params",
+  "type": "object",
+  "required": ["capability", "input"],
+  "additionalProperties": false,
+  "properties": {
+    "capability": {"type": "string", "minLength": 1},
+    "document": {
+      "properties": {
+        "document_id": {"type": "string", "minLength": 1},
+        "expected_revision": {"type": "integer", "minimum": 0}
+      },
+      "required": ["document_id", "expected_revision"],
+      "additionalProperties": false
+    },
+    "confirmation": {
+      "type": "object",
+      "required": ["action", "confirmed", "confirmed_by", "confirmed_at"],
+      "additionalProperties": false,
+      "properties": {
+        "action": {"type": "string", "enum": ["overwrite_original"]},
+        "confirmed": {"type": "boolean"},
+        "confirmed_by": {"type": "string", "pattern": "^human:.+"},
+        "confirmed_at": {"type": "string", "minLength": 1}
+      }
+    },
+    "input": {"type": "object"},
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "vba_application_run": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "macros": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "external_links_auto_update": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "ole_activex_activation": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "protected_view_bypass": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "arbitrary_execute_mso": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "print": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "overwrite_original": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "send_email": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "meeting_invite": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "access_macros": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "project_publish": {"type": "string", "enum": ["deny", "confirm", "checkpoint_and_confirm", "deny_or_confirm"]},
+        "workspace_only": {"type": "boolean"},
+        "workspace_root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Optional echo of the process-bound --workspace-root; it cannot select or widen the Host boundary."
+        },
+        "execute_mso_allowlist": {"type": "object"},
+        "execute_mso_confirm": {
+          "type": "array",
+          "items": {"type": "string"}
+        },
+        "checkpoint": {"type": "boolean"},
+        "render_after": {"type": "boolean"}
+      }
+    }
+  }
+}

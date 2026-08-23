@@ -59,6 +59,7 @@ public abstract class OfficeComBackend : IDisposable
     private dynamic? _application;
     private bool _attached;
     private int? _processId;
+    private OfficeSecurityPosture? _securityPosture;
     private int _timeoutStreak;
     private bool _disposed;
 
@@ -90,6 +91,8 @@ public abstract class OfficeComBackend : IDisposable
     public bool IsAttached => _attached;
 
     public int? OfficeProcessId => _processId;
+
+    public OfficeSecurityPosture? SecurityPosture => _securityPosture;
 
     protected StaDispatcher Sta => _sta;
 
@@ -126,6 +129,7 @@ public abstract class OfficeComBackend : IDisposable
 
         _application = state.Instance;
         _processId = state.ProcessId;
+        _securityPosture = state.SecurityPosture;
         _attached = true;
         Interlocked.Exchange(ref _timeoutStreak, 0);
     }
@@ -157,7 +161,25 @@ public abstract class OfficeComBackend : IDisposable
         {
             throw MapComException(ex, $"attach {AppName}");
         }
-        ApplySecurityDefaults(instance);
+        OfficeSecurityPosture securityPosture;
+        try
+        {
+            securityPosture = ApplySecurityDefaults(instance);
+        }
+        catch
+        {
+            try
+            {
+                instance.Quit();
+            }
+            catch (Exception cleanupError)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Office cleanup after security failure also failed: {cleanupError.Message}");
+            }
+            ComObjectLifecycle.ReleaseRequestScoped((object?)instance);
+            throw;
+        }
         try
         {
             instance.Visible = false;
@@ -170,6 +192,7 @@ public abstract class OfficeComBackend : IDisposable
         {
             Instance = instance,
             ProcessId = TryGetProcessId(instance),
+            SecurityPosture = securityPosture,
         };
     }
 
@@ -221,7 +244,11 @@ public abstract class OfficeComBackend : IDisposable
     // ------------------------------------------------------------- shared pieces
 
     /// <summary>Runs void work on the STA queue with the standard error ladder.</summary>
-    protected void RunRequest(string context, Action work, TimeSpan? timeout = null)
+    protected void RunRequest(
+        string context,
+        Action work,
+        TimeSpan? timeout = null,
+        bool mayWrite = false)
     {
         ThrowIfDisposed();
         try
@@ -231,7 +258,7 @@ public abstract class OfficeComBackend : IDisposable
         }
         catch (StaSoftTimeoutException)
         {
-            throw MapTimeout(context, timeout ?? RequestTimeout);
+            throw MapTimeout(context, timeout ?? RequestTimeout, mayWrite);
         }
         catch (StaDispatcherBusyException ex)
         {
@@ -243,12 +270,16 @@ public abstract class OfficeComBackend : IDisposable
         }
         catch (COMException ex)
         {
-            throw MapComException(ex, context);
+            throw MapComException(ex, context, mayWrite);
         }
     }
 
     /// <summary>Runs one request on the STA queue with the standard error ladder.</summary>
-    protected T RunRequest<T>(string context, Func<T> work, TimeSpan? timeout = null)
+    protected T RunRequest<T>(
+        string context,
+        Func<T> work,
+        TimeSpan? timeout = null,
+        bool mayWrite = false)
     {
         ThrowIfDisposed();
         try
@@ -259,7 +290,7 @@ public abstract class OfficeComBackend : IDisposable
         }
         catch (StaSoftTimeoutException)
         {
-            throw MapTimeout(context, timeout ?? RequestTimeout);
+            throw MapTimeout(context, timeout ?? RequestTimeout, mayWrite);
         }
         catch (StaDispatcherBusyException ex)
         {
@@ -271,12 +302,15 @@ public abstract class OfficeComBackend : IDisposable
         }
         catch (COMException ex)
         {
-            throw MapComException(ex, context);
+            throw MapComException(ex, context, mayWrite);
         }
     }
 
     /// <summary>Timeout ladder: modal dialog detection, then sidecar recovery.</summary>
-    private OfficeComException MapTimeout(string context, TimeSpan? timeout = null)
+    private OfficeComException MapTimeout(
+        string context,
+        TimeSpan? timeout = null,
+        bool mayWrite = false)
     {
         int streak = Interlocked.Increment(ref _timeoutStreak);
         var modalTitle = _processId is int pid
@@ -286,16 +320,22 @@ public abstract class OfficeComBackend : IDisposable
         {
             RecoverAfterTimeout();
             Interlocked.Exchange(ref _timeoutStreak, 0);
-            return new OfficeComException(OfficeErrorCode.OfficeBackendUnavailable,
-                $"{context}: {AppName} sidecar recovered after repeated request timeouts.");
+            return new OfficeComException(
+                OfficeErrorCode.OfficeBackendUnavailable,
+                $"{context}: {AppName} sidecar recovered after repeated request timeouts.",
+                indeterminate: mayWrite);
         }
         if (modalTitle is not null)
         {
-            return new OfficeComException(OfficeErrorCode.OfficeModalDialog,
-                $"{context}: a modal dialog blocks {AppName}: {modalTitle}");
+            return new OfficeComException(
+                OfficeErrorCode.OfficeModalDialog,
+                $"{context}: a modal dialog blocks {AppName}: {modalTitle}",
+                indeterminate: mayWrite);
         }
-        return new OfficeComException(OfficeErrorCode.OfficeRpcTimeout,
-            $"{context}: request exceeded {(timeout ?? RequestTimeout).TotalSeconds:F0}s soft timeout.");
+        return new OfficeComException(
+            OfficeErrorCode.OfficeRpcTimeout,
+            $"{context}: request exceeded {(timeout ?? RequestTimeout).TotalSeconds:F0}s soft timeout.",
+            indeterminate: mayWrite);
     }
 
     private static OfficeComException MapBusy(string context, StaDispatcherBusyException ex) =>
@@ -327,9 +367,13 @@ public abstract class OfficeComBackend : IDisposable
         _application = null;
         _attached = false;
         _processId = null;
+        _securityPosture = null;
     }
 
-    protected internal static OfficeComException MapComException(COMException ex, string context)
+    protected internal static OfficeComException MapComException(
+        COMException ex,
+        string context,
+        bool mayHaveWritten = false)
     {
         uint hr = unchecked((uint)ex.HResult);
         OfficeErrorCode code = hr switch
@@ -351,7 +395,11 @@ public abstract class OfficeComBackend : IDisposable
             ComHResult.StgEDocFileCorrupt => OfficeErrorCode.OfficeFileCorrupt,
             _ => OfficeErrorCode.OfficeUnclassified,
         };
-        return new OfficeComException(code, $"{context}: {ex.Message}", ex);
+        return new OfficeComException(
+            code,
+            $"{context}: {ex.Message}",
+            ex,
+            indeterminate: mayHaveWritten);
     }
 
     protected static OfficeComException DocumentNotFound(string path) =>
@@ -396,7 +444,40 @@ public abstract class OfficeComBackend : IDisposable
 
     protected abstract void CloseQuietly(dynamic document);
 
-    protected abstract void ApplySecurityDefaults(dynamic app);
+    protected abstract OfficeSecurityPosture ApplySecurityDefaults(dynamic app);
+
+    /// <summary>Applies a security setting and proves the live value before use.</summary>
+    internal static T VerifySecuritySetting<T>(
+        string name,
+        Action apply,
+        Func<T> observe,
+        T expected,
+        OfficeErrorCode errorCode)
+    {
+        try
+        {
+            apply();
+            T actual = observe();
+            if (!EqualityComparer<T>.Default.Equals(actual, expected))
+            {
+                throw new OfficeComException(
+                    errorCode,
+                    $"security setting {name} read back '{actual}', expected '{expected}'");
+            }
+            return actual;
+        }
+        catch (OfficeComException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new OfficeComException(
+                errorCode,
+                $"security setting {name} could not be enforced: {ex.Message}",
+                ex);
+        }
+    }
 
     // ------------------------------------------------------------- helpers
 
@@ -437,6 +518,7 @@ public abstract class OfficeComBackend : IDisposable
             Ok = false,
             ErrorCode = ex.Code.ToWireName(),
             Error = ex.Message,
+            Indeterminate = ex.Indeterminate,
         };
 
     protected static double SafeNumber(dynamic value)
@@ -544,6 +626,7 @@ public abstract class OfficeComBackend : IDisposable
         }
         ComObjectLifecycle.ReleaseRequestScoped((object?)app);
         _application = null;
+        _securityPosture = null;
     }
 
     [DllImport("user32.dll")]
@@ -554,5 +637,6 @@ public abstract class OfficeComBackend : IDisposable
     {
         public dynamic? Instance;
         public int? ProcessId;
+        public OfficeSecurityPosture? SecurityPosture;
     }
 }

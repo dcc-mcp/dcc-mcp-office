@@ -25,10 +25,18 @@ Start from domain invariants, not from tools:
   returns `indeterminate: true` — never a guessed success/failure.
 - Artifact/Job/results follow the proposal shapes (§16/§17) so agents always
   read back *what changed*, not just "succeeded".
-- `crates/office-protocol/office-rpc.catalog.json` is the only capability and
-  Office error-code registry. Add or version a capability there, reference an
-  embedded schema, and let the Host manifest/dispatch plus Rust mappings derive
-  from it; never add a second handwritten capability list.
+- `crates/office-protocol/office-rpc.catalog.json` is the only capability,
+  Office error-code, and default security-policy registry. Add or version a
+  capability or policy there, reference an embedded schema, and let the Host
+  manifest/dispatch/policy gate plus Rust mappings derive from it; never add a
+  second handwritten registry.
+- In-place writes require a byte-exact checkpoint and structured confirmation
+  proof. `expected_revision` requests are refused until revision tracking is
+  real; no adapter may accept and ignore an optimistic-concurrency guard.
+- File paths are confined to the process-bound workspace root at the Host
+  boundary; request policy may never widen that root.
+  Session 0 cannot start desktop COM automation. Audit security fields report
+  read-back state, not desired settings.
 
 ### Versioning policy
 

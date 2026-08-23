@@ -52,6 +52,15 @@ docs/adr/          architecture decision records
 docs/proposals/    the platform proposal this repo implements
 ```
 
+The Host applies the catalog-owned default-deny policy again at the desktop
+boundary. File access is confined to the process-bound `--workspace-root`
+(the Host working directory when omitted); a request may echo that root but
+cannot replace it. In-place replace commits and existing-output overwrites
+require a byte-exact checkpoint plus structured `confirmation` proof. Desktop
+COM is refused in Session 0, and audit records contain values read back from
+the live Office application rather than unverified intent. Capabilities with
+no explicit overwrite mode refuse existing destination artifacts.
+
 ## Quickstart
 
 C# development uses [vx](https://github.com/loonghao/vx) (universal version

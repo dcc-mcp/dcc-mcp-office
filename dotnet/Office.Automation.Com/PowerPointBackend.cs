@@ -30,11 +30,26 @@ public sealed class PowerPointBackend : OfficeComBackend
 
     protected override string DocumentKind => "presentation";
 
-    protected override void ApplySecurityDefaults(dynamic app)
+    protected override OfficeSecurityPosture ApplySecurityDefaults(dynamic app)
     {
-        // §19: macros disabled while opening untrusted files; alerts off.
-        try { app.AutomationSecurity = 3; } catch { } // msoAutomationSecurityForceDisable
-        try { app.DisplayAlerts = 1; } catch { }      // ppAlertsNone
+        int automationSecurity = VerifySecuritySetting(
+            "PowerPoint.AutomationSecurity",
+            () => { app.AutomationSecurity = 3; },
+            () => Convert.ToInt32(app.AutomationSecurity),
+            3,
+            OfficeErrorCode.OfficeMacroBlocked);
+        int displayAlerts = VerifySecuritySetting(
+            "PowerPoint.DisplayAlerts",
+            () => { app.DisplayAlerts = 1; },
+            () => Convert.ToInt32(app.DisplayAlerts),
+            1,
+            OfficeErrorCode.OfficeBackendUnavailable);
+        return new OfficeSecurityPosture
+        {
+            AutomationSecurity = automationSecurity,
+            DisplayAlertsDisabled = displayAlerts == 1,
+            ExternalLinksAutoUpdateDisabled = null,
+        };
     }
 
     protected override ComLease OpenReadOnly(string path)
@@ -92,7 +107,7 @@ public sealed class PowerPointBackend : OfficeComBackend
                 using var doc = OpenReadOnly(path);
                 ExportPdf(doc.Target!, outputPath);
                 CloseQuietly(doc.Target!);
-            });
+            }, mayWrite: true);
             ValidatePdfOutput(outputPath, path);
             return new FileConvertOutcome
             {
@@ -236,11 +251,12 @@ public sealed class PowerPointBackend : OfficeComBackend
                     SaveEditable(pres);
                 }
                 CloseQuietly(pres);
-            });
+            }, mayWrite: apply);
         }
         catch (OfficeComException ex)
         {
             // §15.2 dry-run contract: report per-file failure, never a silent drop.
+            outcome.Indeterminate = ex.Indeterminate;
             outcome.Warnings.Add($"replace failed: {ex.Code.ToWireName()}: {ex.Message}");
         }
 
@@ -305,7 +321,7 @@ public sealed class PowerPointBackend : OfficeComBackend
             }
             CloseQuietly(pres);
             return results;
-        });
+        }, mayWrite: true);
     }
 
     // ------------------------------------------------------------- internals

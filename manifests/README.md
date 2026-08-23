@@ -3,7 +3,8 @@
 [`crates/office-protocol/office-rpc.catalog.json`](../crates/office-protocol/office-rpc.catalog.json)
 is the machine-readable source of truth for the
 sidecar contract: wire capability names and semvers, task-level MCP mappings,
-handler IDs, app/execution-mode availability, input schemas, and error subsets.
+handler IDs, app/execution-mode availability, input schemas, error subsets, and
+the default-deny security policy.
 Rust embeds it through `dcc-mcp-office-protocol`; the C# Host embeds the same
 file and derives both dispatch and handshake manifests from it.
 
@@ -35,3 +36,25 @@ Host before a handler runs. The catalog is the only capability-to-schema map:
 
 Every capability also references `schemas/command-result.schema.json`; the
 Host validates the handler result against it before audit enrichment.
+
+`schemas/command-params.schema.json` owns the outer
+`office.command.execute` envelope, including `document`, `policy`, and the
+structured confirmation proof. The Host validates it before applying the
+catalog policy or dispatching a capability.
+
+## Write-safety envelope
+
+- `--workspace-root` binds every input/output path when the Host starts;
+  omission uses the Host working directory, never an unrestricted filesystem
+  root. A request's `policy.workspace_root` may only echo that bound value.
+- `document.expected_revision` is currently rejected with
+  `OFFICE_CAPABILITY_UNSUPPORTED` because revision tracking is not yet real.
+- `batch.replace_text` with `dry_run: false`, and `batch.convert` with
+  `overwrite: "overwrite"`, require
+  `confirmation: {action: "overwrite_original", confirmed: true,
+  confirmed_by, confirmed_at}` and create byte-exact checkpoint artifacts for
+  every pre-existing file before the first destructive write.
+- `deck.compile` and `slide.render` have no overwrite mode, so the Host
+  refuses existing destination artifacts instead of silently replacing them.
+- A soft timeout on work that may have written returns or aggregates
+  `indeterminate: true`; callers must re-inspect instead of retrying blindly.

@@ -156,6 +156,7 @@ fn write_timeout_is_bounded_when_the_server_never_reads() {
     let params = CommandParams {
         capability: "deck.compile".into(),
         document: None,
+        confirmation: None,
         input: json!({"payload": "x".repeat(8 * 1024 * 1024)}),
         policy: json!({}),
     };

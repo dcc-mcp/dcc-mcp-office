@@ -803,6 +803,14 @@ Windows Named Pipe
 }
 ```
 
+> M1 implementation note: the catalog-referenced
+> `schemas/command-params.schema.json` is authoritative for the current wire
+> envelope. Current capabilities use the catalog wire names, require
+> the process-bound `--workspace-root` to contain every path (a request may
+> echo but cannot replace that root), and carry structured `confirmation`
+> evidence for confirm-gated writes. The `presentation.patch` example above
+> remains a target capability.
+
 ### 12.4 进度与事件
 
 ```json
@@ -1001,6 +1009,10 @@ expected_revision != current_revision
 ```
 
 不得静默覆盖。可由 Agent重新 inspect、合并 Patch 或请求用户确认。
+
+M1 尚未维护稳定 revision。为保持契约诚实，任何携带 `document` /
+`expected_revision` 的请求都会返回 `OFFICE_CAPABILITY_UNSUPPORTED`，直到
+Host 能读取、比较并返回真实 revision；绝不接受后忽略该 guard。
 
 ---
 
@@ -1398,6 +1410,24 @@ Protected View 自动绕过        deny
 Access 宏                      deny/confirm
 Project 发布                   confirm
 ```
+
+需要确认的 wire 请求携带：
+
+```json
+{
+  "confirmation": {
+    "action": "overwrite_original",
+    "confirmed": true,
+    "confirmed_by": "human:<id>",
+    "confirmed_at": "2026-08-23T14:00:00Z"
+  }
+}
+```
+
+Host 在连接 COM 前验证该证明；原位修改或 `overwrite` 已有输出时，还
+必须在第一次破坏性写入前创建带 SHA-256 的 byte-exact checkpoint
+artifact。文件边界由 Host 启动参数 `--workspace-root` 绑定，请求不得
+自行扩大。
 
 PowerPoint、Word、Excel、Access、Project 等应用提供程序化打开时的 `AutomationSecurity` 控制，应在打开不可信文件时临时强制禁用宏，并在操作后恢复原值。[MS‑23][MS‑24][MS‑27][MS‑28][MS‑29]
 

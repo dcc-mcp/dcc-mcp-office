@@ -1,7 +1,27 @@
 {
-  "schema_version": "office-capability-catalog/1.0",
+  "schema_version": "office-capability-catalog/1.1",
   "protocol_version": "office-rpc/1",
   "provider": "dcc-mcp-office",
+  "command_params_schema": "schemas/command-params.schema.json",
+  "security_policy": {
+    "actions": {
+      "vba_application_run": "deny",
+      "macros": "deny",
+      "external_links_auto_update": "deny",
+      "ole_activex_activation": "deny",
+      "protected_view_bypass": "deny",
+      "arbitrary_execute_mso": "deny",
+      "print": "confirm",
+      "overwrite_original": "checkpoint_and_confirm",
+      "send_email": "confirm",
+      "meeting_invite": "confirm",
+      "access_macros": "deny_or_confirm",
+      "project_publish": "confirm"
+    },
+    "workspace_only": true,
+    "execute_mso_allowlist": {},
+    "execute_mso_confirm": ["PrintPreviewAndPrint"]
+  },
   "errors": [
     {"code": "OFFICE_INVALID_REQUEST", "retryable": false},
     {"code": "OFFICE_APP_NOT_INSTALLED", "retryable": false},
@@ -39,6 +59,7 @@
       ],
       "errors": [
         "OFFICE_INVALID_REQUEST",
+        "OFFICE_ACCESS_DENIED",
         "OFFICE_CAPABILITY_UNSUPPORTED",
         "OFFICE_FILE_CORRUPT",
         "OFFICE_BACKEND_UNAVAILABLE"
@@ -57,6 +78,7 @@
       ],
       "errors": [
         "OFFICE_INVALID_REQUEST",
+        "OFFICE_ACCESS_DENIED",
         "OFFICE_DOCUMENT_NOT_FOUND",
         "OFFICE_FILE_CORRUPT",
         "OFFICE_BACKEND_UNAVAILABLE",
@@ -75,6 +97,7 @@
       ],
       "errors": [
         "OFFICE_INVALID_REQUEST",
+        "OFFICE_ACCESS_DENIED",
         "OFFICE_APP_BUSY",
         "OFFICE_MODAL_DIALOG",
         "OFFICE_DOCUMENT_LOCKED",
@@ -96,13 +119,16 @@
       ],
       "errors": [
         "OFFICE_INVALID_REQUEST",
+        "OFFICE_ACCESS_DENIED",
         "OFFICE_APP_BUSY",
         "OFFICE_MODAL_DIALOG",
         "OFFICE_DOCUMENT_LOCKED",
         "OFFICE_MACRO_BLOCKED",
         "OFFICE_EXTERNAL_LINK_BLOCKED",
+        "OFFICE_CAPABILITY_UNSUPPORTED",
         "OFFICE_BACKEND_UNAVAILABLE",
         "OFFICE_RPC_TIMEOUT",
+        "OFFICE_USER_CONFIRMATION_REQUIRED",
         "OFFICE_PARTIAL_SUCCESS"
       ]
     },
@@ -118,6 +144,7 @@
       ],
       "errors": [
         "OFFICE_INVALID_REQUEST",
+        "OFFICE_ACCESS_DENIED",
         "OFFICE_APP_BUSY",
         "OFFICE_MODAL_DIALOG",
         "OFFICE_DOCUMENT_NOT_FOUND",

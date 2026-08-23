@@ -28,6 +28,10 @@ only after the caller confirms the diff report (proposal §15.2).
 - scope — body, headers, footers, notes, comments, charts
 - dry_run — boolean, defaults to true; a commit is a separate call with
   dry_run: false after human confirmation
+- policy.workspace_root — absolute workspace boundary containing every input
+- confirmation — commit-only proof:
+  `{ "action": "overwrite_original", "confirmed": true,
+  "confirmed_by": "human:<id>", "confirmed_at": "<RFC3339>" }`
 
 ## Planning steps
 
@@ -48,8 +52,9 @@ silent skips.
 ## Safety confirmation
 
 Dry-run requires no confirmation. Commit requires human confirmation
-(checkpoint + confirm policy). The host refuses any policy that relaxes the
-deny-by-default items (macros, VBA, external links, ExecuteMso).
+(checkpoint + confirm policy). The host validates the structured confirmation
+proof before attaching COM and refuses any policy that relaxes catalog defaults
+(macros, VBA, external links, ExecuteMso, workspace confinement).
 
 ## Validation rules
 
@@ -61,12 +66,14 @@ deny-by-default items (macros, VBA, external links, ExecuteMso).
 
 Per-file failures do not abort the batch (partial success). Busy / modal /
 timeout follow the retry ladder; dry-run opens documents read-only so a
-failed scan never mutates anything.
+failed scan never mutates anything. A timed-out commit reports
+`indeterminate: true`; re-inspect the source before deciding whether to retry.
 
 ## Artifact naming
 
-No new artifacts for dry-run. Commit changes files in place; the checkpoint
-policy may pin a pre-image copy before writing.
+No new artifacts for dry-run. Before each commit changes a file in place, the
+Host creates a byte-exact `*.dcc-checkpoint-<operation_id>.*` pre-image beside
+the source and returns it as a `checkpoint` artifact with SHA-256.
 
 ## Agent-visible summary
 

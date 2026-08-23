@@ -33,12 +33,32 @@ public sealed class ExcelBackend : OfficeComBackend
 
     protected override string DocumentKind => "workbook";
 
-    protected override void ApplySecurityDefaults(dynamic app)
+    protected override OfficeSecurityPosture ApplySecurityDefaults(dynamic app)
     {
-        // §19: no alerts, no link auto-update, macros disabled.
-        try { app.DisplayAlerts = false; } catch { }
-        try { app.AskToUpdateLinks = false; } catch { }
-        try { app.AutomationSecurity = 3; } catch { } // msoAutomationSecurityForceDisable
+        bool displayAlerts = VerifySecuritySetting(
+            "Excel.DisplayAlerts",
+            () => { app.DisplayAlerts = false; },
+            () => Convert.ToBoolean(app.DisplayAlerts),
+            false,
+            OfficeErrorCode.OfficeBackendUnavailable);
+        bool askToUpdateLinks = VerifySecuritySetting(
+            "Excel.AskToUpdateLinks",
+            () => { app.AskToUpdateLinks = false; },
+            () => Convert.ToBoolean(app.AskToUpdateLinks),
+            false,
+            OfficeErrorCode.OfficeExternalLinkBlocked);
+        int automationSecurity = VerifySecuritySetting(
+            "Excel.AutomationSecurity",
+            () => { app.AutomationSecurity = 3; },
+            () => Convert.ToInt32(app.AutomationSecurity),
+            3,
+            OfficeErrorCode.OfficeMacroBlocked);
+        return new OfficeSecurityPosture
+        {
+            AutomationSecurity = automationSecurity,
+            DisplayAlertsDisabled = !displayAlerts,
+            ExternalLinksAutoUpdateDisabled = !askToUpdateLinks,
+        };
     }
 
     protected override ComLease OpenReadOnly(string path) => OpenWorkbook(path, readOnly: true);
@@ -79,7 +99,7 @@ public sealed class ExcelBackend : OfficeComBackend
                 using var doc = OpenReadOnly(path);
                 ExportPdf(doc.Target!, outputPath);
                 CloseQuietly(doc.Target!);
-            });
+            }, mayWrite: true);
             ValidatePdfOutput(outputPath, path);
             return new FileConvertOutcome
             {
@@ -188,10 +208,11 @@ public sealed class ExcelBackend : OfficeComBackend
                     SaveEditable(wb);
                 }
                 CloseQuietly(wb);
-            });
+            }, mayWrite: apply);
         }
         catch (OfficeComException ex)
         {
+            outcome.Indeterminate = ex.Indeterminate;
             outcome.Warnings.Add($"replace failed: {ex.Code.ToWireName()}: {ex.Message}");
         }
 

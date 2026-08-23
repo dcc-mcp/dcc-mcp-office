@@ -13,6 +13,14 @@ public sealed class OfficeAppInfo
     public string Language { get; init; } = "";
 }
 
+/// <summary>Security settings read back from the live Office Application.</summary>
+public sealed class OfficeSecurityPosture
+{
+    public int AutomationSecurity { get; init; }
+    public bool DisplayAlertsDisabled { get; init; }
+    public bool? ExternalLinksAutoUpdateDisabled { get; init; }
+}
+
 /// <summary>Per-file outcome of a batch convert (proposal §15.1).</summary>
 public sealed class FileConvertOutcome
 {
@@ -24,6 +32,7 @@ public sealed class FileConvertOutcome
     public long Bytes { get; init; }
     public int PageCount { get; init; }
     public string Backend { get; init; } = "desktop_com";
+    public bool Indeterminate { get; init; }
     public List<string> Warnings { get; } = new();
 }
 
@@ -52,6 +61,7 @@ public sealed class ReplaceOutcome
     public string Path { get; init; } = "";
     public string Backend { get; init; } = "desktop_com";
     public bool DryRun { get; init; }
+    public bool Indeterminate { get; set; }
     public List<RuleOutcome> Rules { get; } = new();
     public List<string> ScopeCovered { get; } = new();
     public List<string> Warnings { get; } = new();

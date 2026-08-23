@@ -53,17 +53,26 @@ public static class OfficeErrorCodeExtensions
 /// </summary>
 public sealed class OfficeComException : Exception
 {
-    public OfficeComException(OfficeErrorCode code, string message)
+    public OfficeComException(OfficeErrorCode code, string message, bool indeterminate = false)
         : base(message)
     {
         Code = code;
+        Indeterminate = indeterminate;
     }
 
-    public OfficeComException(OfficeErrorCode code, string message, Exception inner)
+    public OfficeComException(
+        OfficeErrorCode code,
+        string message,
+        Exception inner,
+        bool indeterminate = false)
         : base(message, inner)
     {
         Code = code;
+        Indeterminate = indeterminate;
     }
 
     public OfficeErrorCode Code { get; }
+
+    /// <summary>The timed-out operation may have committed before recovery.</summary>
+    public bool Indeterminate { get; }
 }
