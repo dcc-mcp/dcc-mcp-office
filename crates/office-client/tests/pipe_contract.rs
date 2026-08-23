@@ -55,36 +55,18 @@ fn host_exe() -> Option<PathBuf> {
         .filter(|p| p.is_file())
 }
 
-/// Connects with retry: the host accepts one client at a time, and the
-/// server-side may still be draining the previous connection when we arrive
-/// (ERROR_PIPE_BUSY). Retrying until the instance frees is the honest client
-/// behaviour — the gateway does the same.
-fn connect_with_retry(
+fn connect_or_panic(
     client: &mut OfficeHostClient,
     child: &mut Child,
     pipe: &str,
     timeout: Duration,
-) -> bool {
-    let start = Instant::now();
-    while start.elapsed() < timeout {
-        match client.connect(pipe) {
-            Ok(_) => return true,
-            Err(dcc_mcp_office_client::ClientError::Io(e))
-                if matches!(
-                    e.raw_os_error(),
-                    Some(231 /* ERROR_PIPE_BUSY */) | Some(2 /* ERROR_FILE_NOT_FOUND */)
-                ) =>
-            {
-                std::thread::sleep(Duration::from_millis(200));
-            }
-            Err(error) => panic!("connect failed: {error}"),
-        }
+) {
+    if let Err(error) = client.connect_with_retry(pipe, timeout) {
         if let Ok(Some(status)) = child.try_wait() {
-            eprintln!("host exited early: {status}");
-            return false;
+            panic!("host exited before accepting a connection: {status}: {error}");
         }
+        panic!("host never accepted a connection: {error}");
     }
-    false
 }
 
 fn command(capability: &str, input: serde_json::Value) -> CommandParams {
@@ -112,9 +94,7 @@ fn office_host_full_contract() {
     let mut guard = HostGuard(child);
 
     let mut client = OfficeHostClient::new("powerpoint");
-    if !connect_with_retry(&mut client, &mut guard.0, PIPE, Duration::from_secs(30)) {
-        panic!("host never accepted a connection");
-    }
+    connect_or_panic(&mut client, &mut guard.0, PIPE, Duration::from_secs(30));
     let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
     assert_eq!(handshake.protocol_version, "office-rpc/1");
     assert!(handshake
@@ -334,9 +314,7 @@ fn spawn_and_connect(app: &str, pipe: &str) -> Option<(HostGuard, OfficeHostClie
         .expect("spawn dcc-office-host");
     let mut guard = HostGuard(child);
     let mut client = OfficeHostClient::new(app);
-    if !connect_with_retry(&mut client, &mut guard.0, pipe, Duration::from_secs(30)) {
-        panic!("host never accepted a connection");
-    }
+    connect_or_panic(&mut client, &mut guard.0, pipe, Duration::from_secs(30));
     let handshake = client.handshake("contract-test-0.1.0").expect("handshake");
     assert!(handshake
         .capability_manifest

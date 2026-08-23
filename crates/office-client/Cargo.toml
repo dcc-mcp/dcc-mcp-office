@@ -10,5 +10,8 @@ description = "Rust-side client for the office-host.exe sidecar (named pipe, off
 dcc-mcp-office-protocol = { path = "../office-protocol" }
 serde_json = { workspace = true }
 
+[target.'cfg(windows)'.dependencies]
+tokio = { version = "1.53.1", features = ["io-util", "net", "rt", "time"] }
+
 [dev-dependencies]
 dcc-mcp-office-protocol = { path = "../office-protocol" }
