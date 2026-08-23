@@ -89,6 +89,7 @@ public sealed class OfficeFreeRpcContractTests
         string output = Path.Combine(temp, "fixture.pptx");
         try
         {
+            Directory.CreateDirectory(temp);
             string request = Fixture("deck-compile.request.json")
                 .Replace(
                     JsonSerializer.Serialize("{{IR_JSON}}"),
@@ -97,11 +98,19 @@ public sealed class OfficeFreeRpcContractTests
                 .Replace(
                     JsonSerializer.Serialize("{{OUTPUT_PATH}}"),
                     JsonSerializer.Serialize(output),
+                    StringComparison.Ordinal)
+                .Replace(
+                    JsonSerializer.Serialize("{{WORKSPACE_ROOT}}"),
+                    JsonSerializer.Serialize(temp),
                     StringComparison.Ordinal);
-            using var router = new CommandRouter("powerpoint", enableDesktopCom: false);
+            using var router = new CommandRouter(
+                "powerpoint",
+                enableDesktopCom: false,
+                workspaceRoot: temp);
 
             JsonNode response = Parse(router.Dispatch(request));
 
+            Assert.True(response["result"] is not null, response.ToJsonString());
             Assert.Equal("openxml", response["result"]!["backend"]!.GetValue<string>());
             Assert.Equal(1, response["result"]!["changed"]!["slides"]!.GetValue<int>());
             Assert.True(File.Exists(output));
@@ -115,7 +124,7 @@ public sealed class OfficeFreeRpcContractTests
                 {
                     capability = "document.inspect",
                     input = new { path = output, backend = "openxml" },
-                    policy = new { },
+                    policy = new { workspace_root = temp },
                 },
             });
             JsonNode inspected = Parse(router.Dispatch(inspect));

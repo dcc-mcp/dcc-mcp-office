@@ -1,1 +1,1 @@
-{"jsonrpc":"2.0","id":4,"method":"office.command.execute","params":{"capability":"deck.compile","input":{"ir":"{{IR_JSON}}","output":"{{OUTPUT_PATH}}"},"policy":{}}}
+{"jsonrpc":"2.0","id":4,"method":"office.command.execute","params":{"capability":"deck.compile","input":{"ir":"{{IR_JSON}}","output":"{{OUTPUT_PATH}}"},"policy":{"workspace_root":"{{WORKSPACE_ROOT}}"}}}

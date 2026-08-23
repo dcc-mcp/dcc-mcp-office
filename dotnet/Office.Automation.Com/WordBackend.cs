@@ -38,12 +38,32 @@ public sealed class WordBackend : OfficeComBackend
 
     protected override string DocumentKind => "document";
 
-    protected override void ApplySecurityDefaults(dynamic app)
+    protected override OfficeSecurityPosture ApplySecurityDefaults(dynamic app)
     {
-        // §19: no alerts, macros disabled, external links never auto-update.
-        try { app.DisplayAlerts = WdAlertsNone; } catch { }
-        try { app.AutomationSecurity = 3; } catch { } // msoAutomationSecurityForceDisable
-        try { app.Options.UpdateLinksAtOpen = false; } catch { }
+        int displayAlerts = VerifySecuritySetting(
+            "Word.DisplayAlerts",
+            () => { app.DisplayAlerts = WdAlertsNone; },
+            () => Convert.ToInt32(app.DisplayAlerts),
+            WdAlertsNone,
+            OfficeErrorCode.OfficeBackendUnavailable);
+        int automationSecurity = VerifySecuritySetting(
+            "Word.AutomationSecurity",
+            () => { app.AutomationSecurity = 3; },
+            () => Convert.ToInt32(app.AutomationSecurity),
+            3,
+            OfficeErrorCode.OfficeMacroBlocked);
+        bool updateLinks = VerifySecuritySetting(
+            "Word.Options.UpdateLinksAtOpen",
+            () => { app.Options.UpdateLinksAtOpen = false; },
+            () => Convert.ToBoolean(app.Options.UpdateLinksAtOpen),
+            false,
+            OfficeErrorCode.OfficeExternalLinkBlocked);
+        return new OfficeSecurityPosture
+        {
+            AutomationSecurity = automationSecurity,
+            DisplayAlertsDisabled = displayAlerts == WdAlertsNone,
+            ExternalLinksAutoUpdateDisabled = !updateLinks,
+        };
     }
 
     protected override ComLease OpenReadOnly(string path) => OpenDocument(path, readOnly: true);
@@ -84,7 +104,7 @@ public sealed class WordBackend : OfficeComBackend
                 using var doc = OpenReadOnly(path);
                 ExportPdf(doc.Target!, outputPath);
                 CloseQuietly(doc.Target!);
-            });
+            }, mayWrite: true);
             ValidatePdfOutput(outputPath, path);
             return new FileConvertOutcome
             {
@@ -225,10 +245,11 @@ public sealed class WordBackend : OfficeComBackend
                     SaveEditable(d);
                 }
                 CloseQuietly(d);
-            });
+            }, mayWrite: apply);
         }
         catch (OfficeComException ex)
         {
+            outcome.Indeterminate = ex.Indeterminate;
             outcome.Warnings.Add($"replace failed: {ex.Code.ToWireName()}: {ex.Message}");
         }
 

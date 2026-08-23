@@ -52,6 +52,8 @@ pub enum ClientError {
     Rpc {
         code: Value,
         message: String,
+        /// Structured JSON-RPC error data, including indeterminate write state.
+        data: Value,
     },
     /// Protocol violations: version mismatch, missing response, bad state.
     Protocol(String),
@@ -70,7 +72,7 @@ impl fmt::Display for ClientError {
             ClientError::UnsupportedPlatform => write!(f, "named pipes require Windows"),
             ClientError::Io(e) => write!(f, "pipe I/O error: {e}"),
             ClientError::Serde(e) => write!(f, "serialization error: {e}"),
-            ClientError::Rpc { code, message } => write!(f, "rpc error {code}: {message}"),
+            ClientError::Rpc { code, message, .. } => write!(f, "rpc error {code}: {message}"),
             ClientError::Protocol(m) => write!(f, "protocol error: {m}"),
             ClientError::Disconnected => write!(f, "host closed the pipe"),
             ClientError::Timeout { operation, timeout } => {
@@ -81,6 +83,20 @@ impl fmt::Display for ClientError {
 }
 
 impl std::error::Error for ClientError {}
+
+impl ClientError {
+    fn from_rpc_error(error: &Value) -> Self {
+        Self::Rpc {
+            code: error.get("code").cloned().unwrap_or(Value::Null),
+            message: error
+                .get("message")
+                .and_then(Value::as_str)
+                .unwrap_or("rpc error")
+                .to_string(),
+            data: error.get("data").cloned().unwrap_or(Value::Null),
+        }
+    }
+}
 
 impl From<std::io::Error> for ClientError {
     fn from(e: std::io::Error) -> Self {
@@ -204,14 +220,7 @@ mod transport {
                         match message.get("id").and_then(Value::as_u64) {
                             Some(response_id) if response_id == id => {
                                 if let Some(error) = message.get("error") {
-                                    return Err(ClientError::Rpc {
-                                        code: error.get("code").cloned().unwrap_or(Value::Null),
-                                        message: error
-                                            .get("message")
-                                            .and_then(Value::as_str)
-                                            .unwrap_or("rpc error")
-                                            .to_string(),
-                                    });
+                                    return Err(ClientError::from_rpc_error(error));
                                 }
                                 return Ok(
                                     message.get("result").cloned().unwrap_or(Value::Null)
@@ -598,5 +607,22 @@ mod tests {
             c.default_pipe_name("S-1-5-21-42", 3),
             r"\\.\pipe\dcc-mcp-office-powerpoint-S-1-5-21-42-3"
         );
+    }
+
+    #[test]
+    fn rpc_error_preserves_indeterminate_recovery_data() {
+        let error = ClientError::from_rpc_error(&serde_json::json!({
+            "code": "OFFICE_RPC_TIMEOUT",
+            "message": "write may have completed",
+            "data": { "indeterminate": true }
+        }));
+
+        match error {
+            ClientError::Rpc { code, data, .. } => {
+                assert_eq!(code, "OFFICE_RPC_TIMEOUT");
+                assert_eq!(data["indeterminate"], true);
+            }
+            other => panic!("expected RPC error, got {other:?}"),
+        }
     }
 }

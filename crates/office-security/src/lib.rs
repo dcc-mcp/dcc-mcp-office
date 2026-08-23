@@ -60,23 +60,37 @@ pub struct SecurityPolicy {
 
 impl Default for SecurityPolicy {
     fn default() -> Self {
+        let canonical = &dcc_mcp_office_protocol::capability_catalog().security_policy;
         Self {
-            vba_application_run: PolicyAction::Deny,
-            macros: PolicyAction::Deny,
-            external_links_auto_update: PolicyAction::Deny,
-            ole_activex_activation: PolicyAction::Deny,
-            protected_view_bypass: PolicyAction::Deny,
-            arbitrary_execute_mso: PolicyAction::Deny,
-            print: PolicyAction::Confirm,
-            overwrite_original: PolicyAction::CheckpointAndConfirm,
-            send_email: PolicyAction::Confirm,
-            meeting_invite: PolicyAction::Confirm,
-            access_macros: PolicyAction::DenyOrConfirm,
-            project_publish: PolicyAction::Confirm,
-            workspace_only: true,
-            execute_mso_allowlist: BTreeMap::new(),
-            execute_mso_confirm: vec!["PrintPreviewAndPrint".to_string()],
+            vba_application_run: canonical_action(canonical, "vba_application_run"),
+            macros: canonical_action(canonical, "macros"),
+            external_links_auto_update: canonical_action(canonical, "external_links_auto_update"),
+            ole_activex_activation: canonical_action(canonical, "ole_activex_activation"),
+            protected_view_bypass: canonical_action(canonical, "protected_view_bypass"),
+            arbitrary_execute_mso: canonical_action(canonical, "arbitrary_execute_mso"),
+            print: canonical_action(canonical, "print"),
+            overwrite_original: canonical_action(canonical, "overwrite_original"),
+            send_email: canonical_action(canonical, "send_email"),
+            meeting_invite: canonical_action(canonical, "meeting_invite"),
+            access_macros: canonical_action(canonical, "access_macros"),
+            project_publish: canonical_action(canonical, "project_publish"),
+            workspace_only: canonical.workspace_only,
+            execute_mso_allowlist: canonical.execute_mso_allowlist.clone(),
+            execute_mso_confirm: canonical.execute_mso_confirm.clone(),
         }
+    }
+}
+
+fn canonical_action(
+    policy: &dcc_mcp_office_protocol::CatalogSecurityPolicy,
+    name: &str,
+) -> PolicyAction {
+    match policy.actions.get(name).map(String::as_str) {
+        Some("deny") => PolicyAction::Deny,
+        Some("confirm") => PolicyAction::Confirm,
+        Some("checkpoint_and_confirm") => PolicyAction::CheckpointAndConfirm,
+        Some("deny_or_confirm") => PolicyAction::DenyOrConfirm,
+        value => panic!("canonical security policy action {name} is invalid: {value:?}"),
     }
 }
 
@@ -107,6 +121,12 @@ mod tests {
         assert_eq!(p.external_links_auto_update, PolicyAction::Deny);
         assert_eq!(p.arbitrary_execute_mso, PolicyAction::Deny);
         assert!(p.workspace_only);
+        assert_eq!(
+            dcc_mcp_office_protocol::capability_catalog()
+                .security_policy
+                .actions["macros"],
+            "deny"
+        );
     }
 
     #[test]

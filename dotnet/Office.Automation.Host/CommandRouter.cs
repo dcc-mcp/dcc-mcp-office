@@ -29,19 +29,23 @@ public sealed class CommandRouter : IDisposable
     private static readonly CapabilityCatalog Catalog = CapabilityCatalog.Current;
 
     private readonly string _app;
+    private readonly string _workspaceRoot;
     private readonly StaDispatcher _sta = new();
     private readonly OfficeComBackend? _com;
     private readonly TemplateRegistry _templates = new();
     private readonly object _attachLock = new();
     private bool _comAttached;
 
-    public CommandRouter(string app) : this(app, enableDesktopCom: true)
+    public CommandRouter(string app)
+        : this(app, enableDesktopCom: true, workspaceRoot: Directory.GetCurrentDirectory())
     {
     }
 
-    internal CommandRouter(string app, bool enableDesktopCom)
+    internal CommandRouter(string app, bool enableDesktopCom, string? workspaceRoot = null)
     {
         _app = app;
+        _workspaceRoot = WorkspaceGuard.CanonicalizeRoot(
+            workspaceRoot ?? Directory.GetCurrentDirectory());
         _com = enableDesktopCom && ComBackendFactory.IsSupported(app)
             ? ComBackendFactory.Create(app, _sta)
             : null;
@@ -54,61 +58,30 @@ public sealed class CommandRouter : IDisposable
     /// <summary>Set by office.host.shutdown: the pipe loop exits after the current connection.</summary>
     public bool ShutdownRequested { get; private set; }
 
-    /// <summary>
-    /// §19 second-layer policy gate: anything the policy JSON tries to relax
-    /// on the deny-by-default list is refused before dispatch — the Rust
-    /// gateway mirrors these defaults in dcc-mcp-office-security.
-    /// </summary>
-    private static void EnforcePolicy(JsonElement parameters)
-    {
-        if (!parameters.TryGetProperty("policy", out var policy) || policy.ValueKind != JsonValueKind.Object)
-        {
-            return;
-        }
-        RequireDeny(policy, "vba_application_run", OfficeErrorCode.OfficeMacroBlocked);
-        RequireDeny(policy, "macros", OfficeErrorCode.OfficeMacroBlocked);
-        RequireDeny(policy, "ole_activex_activation", OfficeErrorCode.OfficeMacroBlocked);
-        RequireDeny(policy, "access_macros", OfficeErrorCode.OfficeMacroBlocked);
-        RequireDeny(policy, "external_links_auto_update", OfficeErrorCode.OfficeExternalLinkBlocked);
-        RequireDeny(policy, "protected_view_bypass", OfficeErrorCode.OfficeProtectedView);
-        RequireDeny(policy, "arbitrary_execute_mso", OfficeErrorCode.OfficeCapabilityUnsupported);
-        if (policy.TryGetProperty("execute_mso_allowlist", out var allowlist)
-            && allowlist.ValueKind == JsonValueKind.Object
-            && allowlist.EnumerateObject().Any())
-        {
-            throw new OfficeComException(OfficeErrorCode.OfficeCapabilityUnsupported,
-                "policy.execute_mso_allowlist must stay empty (ExecuteMso is deny-by-default in this host)");
-        }
-    }
-
-    private static void RequireDeny(JsonElement policy, string key, OfficeErrorCode code)
-    {
-        if (policy.TryGetProperty(key, out var value)
-            && value.ValueKind == JsonValueKind.String
-            && !string.Equals(value.GetString(), "deny", StringComparison.Ordinal))
-        {
-            throw new OfficeComException(code,
-                $"policy.{key} must stay 'deny' — deny-by-default is not negotiable at the COM boundary");
-        }
-    }
-
     /// <summary>Attaches the §27 criterion-10 audit trail to a command result.</summary>
-    private object AddAudit(object result, JsonElement parameters, long elapsedMs)
+    private object AddAudit(object result, CommandPolicy policy, long elapsedMs)
     {
         var node = JsonSerializer.SerializeToNode(result)!.AsObject();
-        var policy = parameters.TryGetProperty("policy", out var policyElement)
-            ? JsonSerializer.SerializeToNode(policyElement)
-            : null;
+        OfficeSecurityPosture? posture = _comAttached ? _com?.SecurityPosture : null;
         var audit = new JsonObject
         {
-            ["policy"] = policy ?? new JsonObject(),
+            ["policy"] = policy.EffectivePolicy.DeepClone(),
+            ["confirmation"] = policy.ConfirmationForAudit?.DeepClone(),
             ["security"] = new JsonObject
             {
-                ["automation_security"] = "force_disable",
+                ["automation_security"] = new JsonObject
+                {
+                    ["applicable"] = posture is not null,
+                    ["observed"] = posture?.AutomationSecurity,
+                    ["expected"] = posture is null ? null : 3,
+                    ["enforced"] = posture?.AutomationSecurity == 3,
+                },
+                ["display_alerts_disabled"] = posture?.DisplayAlertsDisabled,
                 ["execute_mso"] = "deny_all",
-                ["external_links"] = "never_update",
-                ["macros"] = "deny",
-                ["workspace_only"] = false, // gateway-enforced; the host has no workspace concept
+                ["external_links_auto_update_disabled"] =
+                    posture?.ExternalLinksAutoUpdateDisabled,
+                ["macros"] = posture is null ? "not_applicable" : "deny_observed",
+                ["workspace_only"] = true,
             },
             ["backend"] = node.TryGetPropertyValue("backend", out var backendNode)
                 ? backendNode?.DeepClone()
@@ -128,6 +101,7 @@ public sealed class CommandRouter : IDisposable
     {
         JsonElement id = JsonSerializer.SerializeToElement<object?>(null);
         string method;
+        CommandPolicy? commandPolicy = null;
         try
         {
             using var request = JsonDocument.Parse(requestJson);
@@ -149,26 +123,30 @@ public sealed class CommandRouter : IDisposable
                 throw new OfficeArgumentException("JSON-RPC params must be an object");
             }
 
-            // §19 two-layer policy: the gateway checks first, this host
-            // re-checks at the COM boundary and refuses any attempt to relax
-            // the deny-by-default items.
             if (method == "office.command.execute")
             {
-                EnforcePolicy(parameters);
+                Catalog.ValidateCommandParams(parameters);
+                commandPolicy = CommandPolicy.Evaluate(
+                    parameters,
+                    Catalog.SecurityPolicy,
+                    _workspaceRoot);
             }
 
             var stopwatch = Stopwatch.StartNew();
-            object result = Execute(method, parameters);
+            object result = Execute(method, parameters, commandPolicy);
             stopwatch.Stop();
 
             object finalResult = method == "office.command.execute"
-                ? AddAudit(result, parameters, stopwatch.ElapsedMilliseconds)
+                ? AddAudit(
+                    result,
+                    commandPolicy ?? throw new InvalidOperationException("command policy was not evaluated"),
+                    stopwatch.ElapsedMilliseconds)
                 : result;
             return JsonSerializer.Serialize(new { jsonrpc = "2.0", id, result = finalResult });
         }
         catch (OfficeComException ex)
         {
-            return Error(id, ex.Code, ex.Message);
+            return Error(id, ex.Code, ex.Message, ex.Indeterminate);
         }
         catch (OfficeArgumentException ex)
         {
@@ -185,24 +163,39 @@ public sealed class CommandRouter : IDisposable
         }
     }
 
-    private static string Error(JsonElement id, OfficeErrorCode code, string message) =>
-        JsonSerializer.Serialize(new
+    internal static string Error(
+        JsonElement id,
+        OfficeErrorCode code,
+        string message,
+        bool indeterminate = false)
+    {
+        var error = new JsonObject
         {
-            jsonrpc = "2.0",
-            id,
-            error = new { code = code.ToWireName(), message },
-        });
+            ["code"] = code.ToWireName(),
+            ["message"] = message,
+        };
+        if (indeterminate)
+        {
+            error["data"] = new JsonObject { ["indeterminate"] = true };
+        }
+        return JsonSerializer.Serialize(new { jsonrpc = "2.0", id, error });
+    }
 
     // ------------------------------------------------------------- methods
 
-    private object Execute(string method, JsonElement parameters) => method switch
-    {
-        "office.host.ping" => Ping(),
-        "office.host.handshake" => Handshake(parameters),
-        "office.host.shutdown" => Shutdown(),
-        "office.command.execute" => ExecuteCommand(parameters),
-        _ => throw new OfficeArgumentException($"unknown method: {method}"),
-    };
+    private object Execute(
+        string method,
+        JsonElement parameters,
+        CommandPolicy? commandPolicy) => method switch
+        {
+            "office.host.ping" => Ping(),
+            "office.host.handshake" => Handshake(parameters),
+            "office.host.shutdown" => Shutdown(),
+            "office.command.execute" => ExecuteCommand(
+                parameters,
+                commandPolicy ?? throw new InvalidOperationException("command policy is required")),
+            _ => throw new OfficeArgumentException($"unknown method: {method}"),
+        };
 
     /// <summary>
     /// Graceful sidecar stop: replies, then the pipe loop exits after this
@@ -246,7 +239,7 @@ public sealed class CommandRouter : IDisposable
         };
     }
 
-    private object ExecuteCommand(JsonElement parameters)
+    private object ExecuteCommand(JsonElement parameters, CommandPolicy policy)
     {
         string capability = parameters.TryGetProperty("capability", out var c)
             ? c.GetString() ?? ""
@@ -257,6 +250,31 @@ public sealed class CommandRouter : IDisposable
                 OfficeErrorCode.OfficeCapabilityUnsupported,
                 $"capability '{capability}' is not in the office-rpc catalog");
         Catalog.ValidateInput(definition, input);
+        if (parameters.TryGetProperty("document", out JsonElement document)
+            && document.ValueKind != JsonValueKind.Null)
+        {
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeCapabilityUnsupported,
+                "document.expected_revision is not implemented; guarded requests are refused instead of silently overwriting");
+        }
+        policy.ValidateWorkspace(definition, input);
+        if (definition.HandlerId == CapabilityHandler.SlideRender)
+        {
+            RefuseExistingRenderOutputs(input);
+        }
+        if (definition.HandlerId == CapabilityHandler.BatchReplaceText
+            && input.TryGetProperty("dry_run", out JsonElement dryRun)
+            && dryRun.ValueKind == JsonValueKind.False)
+        {
+            policy.RequireConfirmation(parameters, "overwrite_original");
+        }
+        if (definition.HandlerId == CapabilityHandler.BatchConvert
+            && input.TryGetProperty("overwrite", out JsonElement overwrite)
+            && overwrite.ValueKind == JsonValueKind.String
+            && overwrite.GetString() == "overwrite")
+        {
+            policy.RequireConfirmation(parameters, "overwrite_original");
+        }
         object result = definition.HandlerId switch
         {
             CapabilityHandler.DeckCompile => Compile(input),
@@ -303,29 +321,50 @@ public sealed class CommandRouter : IDisposable
         }
         warnings.AddRange(CheckLayoutsAgainstRegistry(ir));
 
-        Directory.CreateDirectory(Path.GetDirectoryName(Path.GetFullPath(output))!);
-        if (ir.TrimStart().StartsWith('{'))
+        if (File.Exists(output))
         {
-            // Inline IR JSON: land it in a temp file for the Open XML worker.
-            string irTemp = Path.Combine(Path.GetTempPath(), $"deck-ir-{Guid.NewGuid():N}.json");
-            File.WriteAllText(irTemp, ir);
-            try
-            {
-                PptxWriter.CompileDeck(irTemp, output);
-            }
-            finally
-            {
-                File.Delete(irTemp);
-            }
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeAccessDenied,
+                "deck.compile refuses an existing output because the capability has no overwrite mode");
         }
-        else
+
+        string operationId = Guid.NewGuid().ToString("N");
+        string outputDirectory = Path.GetDirectoryName(output)!;
+        Directory.CreateDirectory(outputDirectory);
+        string stagedOutput = Path.Combine(
+            outputDirectory,
+            $".{Path.GetFileNameWithoutExtension(output)}.dcc-stage-{operationId}.pptx");
+        PptxInspector.DeckInfo info;
+        try
         {
-            PptxWriter.CompileDeck(ir, output);
+            if (ir.TrimStart().StartsWith('{'))
+            {
+                // Keep transient IR inside the bound workspace as well.
+                string irTemp = Path.Combine(outputDirectory, $".dcc-ir-{operationId}.json");
+                File.WriteAllText(irTemp, ir);
+                try
+                {
+                    PptxWriter.CompileDeck(irTemp, stagedOutput);
+                }
+                finally
+                {
+                    File.Delete(irTemp);
+                }
+            }
+            else
+            {
+                PptxWriter.CompileDeck(ir, stagedOutput);
+            }
+            info = PptxInspector.Inspect(stagedOutput);
+            File.Move(stagedOutput, output, overwrite: false);
         }
-        var info = PptxInspector.Inspect(output);
+        finally
+        {
+            File.Delete(stagedOutput);
+        }
         return new
         {
-            operation_id = Guid.NewGuid().ToString("N"),
+            operation_id = operationId,
             changed = new { files = 1, slides = info.SlideCount },
             warnings,
             artefacts = new[] { Artifact(output, "pptx") },
@@ -468,11 +507,34 @@ public sealed class CommandRouter : IDisposable
         }
 
         string expected = ExpectedExtension(_app);
+        string operationId = Guid.NewGuid().ToString("N");
+        var reservedOutputs = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var outputPlan = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string path in paths.Where(path =>
+            Path.GetExtension(path).Equals(expected, StringComparison.OrdinalIgnoreCase)))
+        {
+            string outputPath = ReserveOutputPathForMode(
+                outputDir,
+                Path.GetFileNameWithoutExtension(path) + ".pdf",
+                overwrite,
+                reservedOutputs);
+            outputPlan.Add(path, outputPath);
+        }
+        WorkspaceGuard.ValidatePaths(outputPlan.Values, _workspaceRoot);
+
         var items = new JsonArray();
         var artefacts = new JsonArray();
+        if (overwrite == "overwrite")
+        {
+            foreach (string outputPath in outputPlan.Values.Where(File.Exists))
+            {
+                artefacts.Add(CreateCheckpoint(outputPath, operationId));
+            }
+        }
         var warnings = new JsonArray();
         var successful = new List<FileConvertOutcome>();
         int succeeded = 0;
+        bool indeterminate = false;
         foreach (var path in paths)
         {
             var ext = Path.GetExtension(path);
@@ -487,15 +549,13 @@ public sealed class CommandRouter : IDisposable
                 });
                 continue;
             }
-            string outputPath = OutputPathForMode(
-                outputDir,
-                Path.GetFileNameWithoutExtension(path) + ".pdf",
-                overwrite);
+            string outputPath = outputPlan[path];
             if (overwrite == "overwrite" && File.Exists(outputPath))
             {
                 File.Delete(outputPath);
             }
             var outcome = com.ConvertToPdf(path, outputPath);
+            indeterminate |= outcome.Indeterminate;
             if (outcome.Ok)
             {
                 succeeded++;
@@ -526,7 +586,7 @@ public sealed class CommandRouter : IDisposable
         }
         return new
         {
-            operation_id = Guid.NewGuid().ToString("N"),
+            operation_id = operationId,
             changed = new
             {
                 files = paths.Length,
@@ -539,13 +599,14 @@ public sealed class CommandRouter : IDisposable
             artefacts,
             validation,
             backend = "desktop_com",
-            indeterminate = false,
+            indeterminate,
         };
     }
 
     private object BatchReplaceText(JsonElement input)
     {
         var com = Com();
+        string operationId = Guid.NewGuid().ToString("N");
         var rules = new List<ReplaceRuleInput>();
         if (input.TryGetProperty("rules", out var rulesElement) && rulesElement.ValueKind == JsonValueKind.Array)
         {
@@ -578,8 +639,18 @@ public sealed class CommandRouter : IDisposable
 
         string expected = ExpectedExtension(_app);
         var items = new JsonArray();
+        var artefacts = new JsonArray();
+        if (!dryRun)
+        {
+            foreach (string path in paths.Where(path =>
+                Path.GetExtension(path).Equals(expected, StringComparison.OrdinalIgnoreCase)))
+            {
+                artefacts.Add(CreateCheckpoint(path, operationId));
+            }
+        }
         int totalMatched = 0;
         int totalReplaced = 0;
+        bool indeterminate = false;
         foreach (var path in paths)
         {
             var ext = Path.GetExtension(path);
@@ -593,13 +664,14 @@ public sealed class CommandRouter : IDisposable
                 continue;
             }
             var outcome = com.ReplaceText(path, rules, scope, dryRun);
+            indeterminate |= outcome.Indeterminate;
             totalMatched += outcome.TotalMatched;
             totalReplaced += outcome.TotalReplaced;
             items.Add(JsonSerializer.SerializeToNode(outcome)!);
         }
         return new
         {
-            operation_id = Guid.NewGuid().ToString("N"),
+            operation_id = operationId,
             changed = new
             {
                 files = paths.Length,
@@ -609,10 +681,10 @@ public sealed class CommandRouter : IDisposable
                 items,
             },
             warnings = Array.Empty<string>(),
-            artefacts = Array.Empty<object>(),
+            artefacts,
             validation = new { },
             backend = "desktop_com",
-            indeterminate = false,
+            indeterminate,
         };
     }
 
@@ -757,28 +829,72 @@ public sealed class CommandRouter : IDisposable
             $"no desktop COM backend for app '{app}'"),
     };
 
+    private static void RefuseExistingRenderOutputs(JsonElement input)
+    {
+        if (input.TryGetProperty("output_directory", out JsonElement directory)
+            && directory.ValueKind == JsonValueKind.String
+            && Directory.Exists(Path.GetFullPath(directory.GetString()!))
+            && Directory.EnumerateFiles(
+                Path.GetFullPath(directory.GetString()!),
+                "slide-*.png",
+                SearchOption.TopDirectoryOnly).Any())
+        {
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeAccessDenied,
+                "slide.render refuses existing slide-*.png outputs; choose an empty output directory");
+        }
+    }
+
     internal static string OutputPathForMode(string directory, string fileName, string overwrite)
     {
-        string candidate = Path.Combine(directory, fileName);
-        if (!File.Exists(candidate) || overwrite == "overwrite")
+        var reserved = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        return ReserveOutputPathForMode(directory, fileName, overwrite, reserved);
+    }
+
+    private static string ReserveOutputPathForMode(
+        string directory,
+        string fileName,
+        string overwrite,
+        ISet<string> reserved)
+    {
+        string candidate = Path.GetFullPath(Path.Combine(directory, fileName));
+        if (overwrite == "overwrite")
         {
+            if (!reserved.Add(candidate))
+            {
+                throw new OfficeArgumentException(
+                    $"multiple inputs resolve to the same overwrite output: {candidate}");
+            }
             return candidate;
         }
         if (overwrite == "fail")
         {
-            throw new OfficeArgumentException(
-                $"output already exists and overwrite is 'fail': {candidate}");
+            if (File.Exists(candidate))
+            {
+                throw new OfficeArgumentException(
+                    $"output already exists and overwrite is 'fail': {candidate}");
+            }
+            if (!reserved.Add(candidate))
+            {
+                throw new OfficeArgumentException(
+                    $"multiple inputs resolve to the same output: {candidate}");
+            }
+            return candidate;
         }
         if (overwrite != "versioned")
         {
             throw new OfficeArgumentException($"unknown overwrite mode '{overwrite}'");
         }
+        if (!File.Exists(candidate) && reserved.Add(candidate))
+        {
+            return candidate;
+        }
         string stem = Path.GetFileNameWithoutExtension(fileName);
         string ext = Path.GetExtension(fileName);
         for (int n = 2; ; n++)
         {
-            candidate = Path.Combine(directory, $"{stem}.v{n}{ext}");
-            if (!File.Exists(candidate))
+            candidate = Path.GetFullPath(Path.Combine(directory, $"{stem}.v{n}{ext}"));
+            if (!File.Exists(candidate) && reserved.Add(candidate))
             {
                 return candidate;
             }
@@ -797,8 +913,54 @@ public sealed class CommandRouter : IDisposable
         };
     }
 
-    private static string Sha256(string path) =>
-        Convert.ToHexString(SHA256.HashData(File.ReadAllBytes(path))).ToLowerInvariant();
+    /// <summary>Creates the mandatory byte-exact pre-image before an in-place write.</summary>
+    internal static JsonObject CreateCheckpoint(string path, string operationId)
+    {
+        string source = Path.GetFullPath(path);
+        string safeOperation = Regex.Replace(operationId, "[^A-Za-z0-9_-]", "");
+        if (safeOperation.Length == 0)
+        {
+            throw new OfficeArgumentException("operation id cannot name a checkpoint");
+        }
+        string checkpoint = Path.Combine(
+            Path.GetDirectoryName(source)!,
+            $"{Path.GetFileNameWithoutExtension(source)}.dcc-checkpoint-{safeOperation}{Path.GetExtension(source)}");
+        try
+        {
+            File.Copy(source, checkpoint, overwrite: false);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            throw new OfficeComException(
+                OfficeErrorCode.OfficeAccessDenied,
+                $"checkpoint creation failed before writing '{source}': {ex.Message}",
+                ex);
+        }
+        return Artifact(checkpoint, "checkpoint");
+    }
+
+    private static string Sha256(string path)
+    {
+        IOException? lastError = null;
+        for (int attempt = 0; attempt < 10; attempt++)
+        {
+            try
+            {
+                using var stream = new FileStream(
+                    path,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.ReadWrite | FileShare.Delete);
+                return Convert.ToHexString(SHA256.HashData(stream)).ToLowerInvariant();
+            }
+            catch (IOException ex)
+            {
+                lastError = ex;
+                Thread.Sleep(25);
+            }
+        }
+        throw new IOException($"could not hash artifact after bounded retries: {path}", lastError);
+    }
 
     /// <summary>
     /// Resolves input.inputs: plain paths plus simple wildcard patterns

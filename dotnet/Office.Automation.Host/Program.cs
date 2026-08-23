@@ -15,6 +15,7 @@ using Office.Automation.Runtime;
 ///   --app=<app> --self-test-com    Open XML + real COM probe (PDF convert,
 ///                                  replace-text dry-run/commit, slide previews)
 ///   --openxml-only                 disable desktop COM for deterministic runs
+///   --workspace-root=&lt;path&gt;       bind all file operations to this existing root
 ///   --version                      print host + protocol versions and exit
 ///
 /// Commands (office.command.execute capabilities):
@@ -40,6 +41,7 @@ public static class Program
         bool showVersion = false;
         bool openXmlOnly = false;
         string? pipeName = null;
+        string? workspaceRoot = null;
         foreach (var arg in args)
         {
             switch (arg)
@@ -68,6 +70,10 @@ public static class Program
                     {
                         pipeName = arg["--pipe-name=".Length..];
                     }
+                    else if (arg.StartsWith("--workspace-root=", StringComparison.Ordinal))
+                    {
+                        workspaceRoot = arg["--workspace-root=".Length..];
+                    }
                     break;
             }
         }
@@ -82,8 +88,17 @@ public static class Program
         if (app is null || !SupportedApps.Contains(app))
         {
             Console.Error.WriteLine(
-                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--openxml-only] [--self-test|--self-test-com]");
+                "usage: dcc-office-host --version | --app=<powerpoint|word|excel|outlook-classic|visio|project|access> [--pipe|--stdio] [--openxml-only] [--workspace-root=<path>] [--self-test|--self-test-com]");
             return 2;
+        }
+
+        bool desktopAutomationRequested = selfTestCom || (!selfTest && !openXmlOnly);
+        int sessionId = System.Diagnostics.Process.GetCurrentProcess().SessionId;
+        if (desktopAutomationRequested && !IsDesktopAutomationAllowed(sessionId))
+        {
+            Console.Error.WriteLine(
+                "desktop Office automation is forbidden in Session 0; use an interactive user session or --openxml-only");
+            return 3;
         }
 
         if (selfTest)
@@ -95,7 +110,10 @@ public static class Program
             return SelfTest(app, probeCom: true);
         }
 
-        using var router = new CommandRouter(app, enableDesktopCom: !openXmlOnly);
+        using var router = new CommandRouter(
+            app,
+            enableDesktopCom: !openXmlOnly,
+            workspaceRoot: workspaceRoot ?? Directory.GetCurrentDirectory());
         if (stdio)
         {
             return JsonRpcLoop(router);
@@ -116,6 +134,8 @@ public static class Program
         server.Run(cts.Token, () => router.ShutdownRequested);
         return 0;
     }
+
+    internal static bool IsDesktopAutomationAllowed(int sessionId) => sessionId != 0;
 
     private static int JsonRpcLoop(CommandRouter router)
     {

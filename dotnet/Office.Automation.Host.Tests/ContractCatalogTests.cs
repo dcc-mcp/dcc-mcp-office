@@ -11,7 +11,7 @@ public sealed class ContractCatalogTests
     public void CatalogOwnsManifestDispatchSchemasAndErrorCodes()
     {
         CapabilityCatalog catalog = CapabilityCatalog.Current;
-        Assert.Equal("office-capability-catalog/1.0", catalog.SchemaVersion);
+        Assert.Equal("office-capability-catalog/1.1", catalog.SchemaVersion);
         Assert.Equal("office-rpc/1", catalog.ProtocolVersion);
         Assert.Equal(5, catalog.Capabilities.Count);
         Assert.Equal(

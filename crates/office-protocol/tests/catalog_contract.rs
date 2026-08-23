@@ -7,8 +7,27 @@ use dcc_mcp_office_protocol::{capability_catalog, OfficeErrorCode, PROTOCOL_VERS
 #[test]
 fn catalog_is_the_complete_wire_contract() {
     let catalog = capability_catalog();
-    assert_eq!(catalog.schema_version, "office-capability-catalog/1.0");
+    assert_eq!(catalog.schema_version, "office-capability-catalog/1.1");
     assert_eq!(catalog.protocol_version, PROTOCOL_VERSION);
+    assert_eq!(catalog.security_policy.actions.len(), 12);
+    assert_eq!(
+        catalog.security_policy.actions["overwrite_original"],
+        "checkpoint_and_confirm"
+    );
+    assert!(catalog.security_policy.workspace_only);
+
+    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
+    let command_schema = repository
+        .join("manifests")
+        .join(&catalog.command_params_schema);
+    assert!(command_schema.is_file(), "{}", command_schema.display());
+    let command_schema_json: serde_json::Value = serde_json::from_str(
+        &fs::read_to_string(&command_schema)
+            .unwrap_or_else(|error| panic!("read {}: {error}", command_schema.display())),
+    )
+    .unwrap_or_else(|error| panic!("parse {}: {error}", command_schema.display()));
+    assert_eq!(command_schema_json["type"], "object");
+    assert_eq!(command_schema_json["additionalProperties"], false);
 
     let names: BTreeSet<_> = catalog
         .capabilities
@@ -56,7 +75,6 @@ fn catalog_is_the_complete_wire_contract() {
         );
     }
 
-    let repository = Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     for capability in &catalog.capabilities {
         assert!(
             capability

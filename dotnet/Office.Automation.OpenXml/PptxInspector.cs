@@ -34,7 +34,31 @@ public static class PptxInspector
 
     public static DeckInfo Inspect(string pptxPath)
     {
-        using var package = Package.Open(pptxPath, FileMode.Open, FileAccess.Read);
+        IOException? lastError = null;
+        for (int attempt = 0; attempt < 20; attempt++)
+        {
+            try
+            {
+                return InspectOnce(pptxPath);
+            }
+            catch (IOException ex)
+            {
+                lastError = ex;
+                Thread.Sleep(50);
+            }
+        }
+        throw new IOException(
+            $"could not inspect PPTX after bounded sharing-violation retries: {pptxPath}",
+            lastError);
+    }
+
+    private static DeckInfo InspectOnce(string pptxPath)
+    {
+        using var package = Package.Open(
+            pptxPath,
+            FileMode.Open,
+            FileAccess.Read,
+            FileShare.ReadWrite | FileShare.Delete);
         var presentationPart = package.GetPart(new Uri("/ppt/presentation.xml", UriKind.Relative));
         var presentation = XDocument.Load(presentationPart.GetStream()).Root!;
         var size = presentation.Element(P + "sldSz")!;

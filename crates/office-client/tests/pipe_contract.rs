@@ -14,14 +14,22 @@
 
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
+use std::sync::{Mutex, MutexGuard};
 use std::time::{Duration, Instant};
 
 use dcc_mcp_office_client::OfficeHostClient;
-use dcc_mcp_office_protocol::CommandParams;
+use dcc_mcp_office_protocol::{CommandParams, ConfirmationProof};
 use serde_json::json;
 
 const PIPE: &str = r"\\.\pipe\dcc-office-contract-test-powerpoint";
 const OPENXML_PIPE: &str = r"\\.\pipe\dcc-office-contract-test-openxml";
+static DESKTOP_OFFICE_LOCK: Mutex<()> = Mutex::new(());
+
+fn desktop_office_lock() -> MutexGuard<'static, ()> {
+    DESKTOP_OFFICE_LOCK
+        .lock()
+        .unwrap_or_else(std::sync::PoisonError::into_inner)
+}
 
 struct HostGuard(Child);
 
@@ -75,9 +83,23 @@ fn command(capability: &str, input: serde_json::Value) -> CommandParams {
     CommandParams {
         capability: capability.to_string(),
         document: None,
+        confirmation: None,
         input,
-        policy: json!({}),
+        policy: json!({
+            "workspace_root": std::env::temp_dir().to_string_lossy()
+        }),
     }
+}
+
+fn confirmed_command(capability: &str, input: serde_json::Value) -> CommandParams {
+    let mut params = command(capability, input);
+    params.confirmation = Some(ConfirmationProof {
+        action: "overwrite_original".into(),
+        confirmed: true,
+        confirmed_by: "human:contract-test".into(),
+        confirmed_at: "2026-08-23T14:00:00Z".into(),
+    });
+    params
 }
 
 #[test]
@@ -85,8 +107,15 @@ fn command(capability: &str, input: serde_json::Value) -> CommandParams {
 fn office_host_openxml_contract() {
     let exe = host_exe().expect("DCC_OFFICE_HOST_EXE must point to a built dcc-office-host.exe");
     let pipe_arg = format!("--pipe-name={OPENXML_PIPE}");
+    let workspace_arg = format!("--workspace-root={}", std::env::temp_dir().display());
     let child = Command::new(&exe)
-        .args(["--app=powerpoint", "--pipe", "--openxml-only", &pipe_arg])
+        .args([
+            "--app=powerpoint",
+            "--pipe",
+            "--openxml-only",
+            &pipe_arg,
+            &workspace_arg,
+        ])
         .stderr(Stdio::null())
         .spawn()
         .expect("spawn Office-free dcc-office-host");
@@ -143,6 +172,7 @@ fn office_host_openxml_contract() {
     let denied = CommandParams {
         capability: "batch.replace_text".to_string(),
         document: None,
+        confirmation: None,
         input: json!({}),
         policy: json!({ "macros": "confirm" }),
     };
@@ -161,11 +191,13 @@ fn office_host_openxml_contract() {
 #[test]
 #[ignore = "requires Microsoft PowerPoint desktop; run the explicit real-Office lane"]
 fn office_host_full_contract() {
+    let _desktop_office = desktop_office_lock();
     let exe = host_exe().expect("DCC_OFFICE_HOST_EXE must point to dcc-office-host.exe");
 
     let pipe_arg = format!("--pipe-name={PIPE}");
+    let workspace_arg = format!("--workspace-root={}", std::env::temp_dir().display());
     let child = Command::new(&exe)
-        .args(["--app=powerpoint", "--pipe", &pipe_arg])
+        .args(["--app=powerpoint", "--pipe", &pipe_arg, &workspace_arg])
         .stderr(Stdio::null())
         .spawn()
         .expect("spawn dcc-office-host");
@@ -217,7 +249,8 @@ fn office_host_full_contract() {
         .audit
         .as_ref()
         .expect("deck.compile result must carry an audit trail");
-    assert_eq!(audit["security"]["automation_security"], "force_disable");
+    assert_eq!(audit["security"]["automation_security"]["observed"], 3);
+    assert_eq!(audit["security"]["automation_security"]["enforced"], true);
     assert_eq!(audit["backend"], "openxml");
     assert_eq!(audit["host_version"], env!("CARGO_PKG_VERSION"));
     assert!(audit["duration_ms"].as_u64().unwrap_or(0) > 0 || audit["duration_ms"].is_null());
@@ -226,6 +259,7 @@ fn office_host_full_contract() {
     let policy = CommandParams {
         capability: "batch.replace_text".to_string(),
         document: None,
+        confirmation: None,
         input: json!({}),
         policy: json!({ "macros": "confirm" }),
     };
@@ -238,6 +272,7 @@ fn office_host_full_contract() {
     let policy = CommandParams {
         capability: "batch.replace_text".to_string(),
         document: None,
+        confirmation: None,
         input: json!({}),
         policy: json!({ "arbitrary_execute_mso": "confirm" }),
     };
@@ -278,20 +313,32 @@ fn office_host_full_contract() {
 
     // 3. batch.convert — high-fidelity PDF via COM (§27 criterion 3)
     let pdf_dir = temp.join("pdf");
+    std::fs::create_dir_all(&pdf_dir).expect("create PDF directory");
+    let pdf = pdf_dir.join("deck.pdf");
+    let previous_pdf = b"previous output";
+    std::fs::write(&pdf, previous_pdf).expect("seed existing PDF");
     let convert = client
-        .execute(&command(
+        .execute(&confirmed_command(
             "batch.convert",
             json!({
                 "inputs": [pptx.to_string_lossy()],
                 "target_format": "pdf",
                 "output_directory": pdf_dir.to_string_lossy(),
+                "overwrite": "overwrite",
             }),
         ))
         .expect("batch.convert");
     assert_eq!(convert.backend.as_deref(), Some("desktop_com"));
     assert_eq!(convert.changed["succeeded"], 1);
-    assert_eq!(convert.artefacts.len(), 1);
-    let pdf = pdf_dir.join("deck.pdf");
+    let checkpoint = convert
+        .artefacts
+        .iter()
+        .find(|artifact| artifact.kind == "checkpoint")
+        .expect("overwritten PDF checkpoint");
+    assert_eq!(
+        std::fs::read(&checkpoint.path).expect("read PDF checkpoint"),
+        previous_pdf
+    );
     assert!(pdf.exists(), "expected deck.pdf");
     let head = std::fs::read(&pdf).expect("read pdf");
     assert!(head.starts_with(b"%PDF"), "PDF magic mismatch");
@@ -312,7 +359,7 @@ fn office_host_full_contract() {
     assert_eq!(dry.changed["total_replaced"], 0);
 
     let commit = client
-        .execute(&command(
+        .execute(&confirmed_command(
             "batch.replace_text",
             json!({
                 "inputs": [pptx.to_string_lossy()],
@@ -323,6 +370,10 @@ fn office_host_full_contract() {
         ))
         .expect("replace commit");
     assert!(commit.changed["total_replaced"].as_u64().unwrap_or(0) >= 1);
+    assert!(commit
+        .artefacts
+        .iter()
+        .any(|artifact| artifact.kind == "checkpoint"));
 
     // 5. slide.render — per-slide PNGs + overflow report (§27 criterion 6)
     let preview_dir = temp.join("previews");
@@ -389,8 +440,14 @@ const SAMPLE_DECK_IR: &str = r#"{
 fn spawn_and_connect(app: &str, pipe: &str) -> (HostGuard, OfficeHostClient) {
     let exe = host_exe().expect("DCC_OFFICE_HOST_EXE must point to dcc-office-host.exe");
     let pipe_arg = format!("--pipe-name={pipe}");
+    let workspace_arg = format!("--workspace-root={}", std::env::temp_dir().display());
     let child = Command::new(&exe)
-        .args([format!("--app={app}"), "--pipe".to_string(), pipe_arg])
+        .args([
+            format!("--app={app}"),
+            "--pipe".to_string(),
+            pipe_arg,
+            workspace_arg,
+        ])
         .stderr(Stdio::null())
         .spawn()
         .expect("spawn dcc-office-host");
@@ -439,21 +496,34 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
 
     // batch.convert → PDF
     let pdf_dir = temp.join("pdf");
+    std::fs::create_dir_all(&pdf_dir).expect("create PDF directory");
+    let pdf = pdf_dir.join(format!(
+        "{}.pdf",
+        fixture.file_stem().unwrap().to_string_lossy()
+    ));
+    let previous_pdf = b"previous output";
+    std::fs::write(&pdf, previous_pdf).expect("seed existing PDF");
     let convert = client
-        .execute(&command(
+        .execute(&confirmed_command(
             "batch.convert",
             json!({
                 "inputs": [copy.to_string_lossy()],
                 "target_format": "pdf",
                 "output_directory": pdf_dir.to_string_lossy(),
+                "overwrite": "overwrite",
             }),
         ))
         .expect("batch.convert");
     assert_eq!(convert.changed["succeeded"], 1);
-    let pdf = pdf_dir.join(format!(
-        "{}.pdf",
-        fixture.file_stem().unwrap().to_string_lossy()
-    ));
+    let checkpoint = convert
+        .artefacts
+        .iter()
+        .find(|artifact| artifact.kind == "checkpoint")
+        .expect("overwritten PDF checkpoint");
+    assert_eq!(
+        std::fs::read(&checkpoint.path).expect("read PDF checkpoint"),
+        previous_pdf
+    );
     let head = std::fs::read(&pdf).expect("read pdf");
     assert!(head.starts_with(b"%PDF"), "PDF magic mismatch");
 
@@ -473,7 +543,7 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
     assert_eq!(dry.changed["total_replaced"], 0);
 
     let commit = client
-        .execute(&command(
+        .execute(&confirmed_command(
             "batch.replace_text",
             json!({
                 "inputs": [copy.to_string_lossy()],
@@ -484,6 +554,10 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
         ))
         .expect("replace commit");
     assert!(commit.changed["total_replaced"].as_u64().unwrap_or(0) >= 1);
+    assert!(commit
+        .artefacts
+        .iter()
+        .any(|artifact| artifact.kind == "checkpoint"));
 
     guard.shutdown(&mut client);
     drop(client);
@@ -496,6 +570,7 @@ fn exercise_com_legs(app: &str, pipe: &str, fixture: &std::path::Path, expect_ki
 #[test]
 #[ignore = "requires Microsoft Word desktop; run the explicit real-Office lane"]
 fn office_host_word_headers_contract() {
+    let _desktop_office = desktop_office_lock();
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/fixture-document.docx");
     assert!(fixture.exists(), "fixture missing: {}", fixture.display());
@@ -545,6 +620,7 @@ fn office_host_word_headers_contract() {
 #[test]
 #[ignore = "requires Microsoft Word desktop; run the explicit real-Office lane"]
 fn office_host_word_contract() {
+    let _desktop_office = desktop_office_lock();
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/fixture-document.docx");
     assert!(fixture.exists(), "fixture missing: {}", fixture.display());
@@ -559,6 +635,7 @@ fn office_host_word_contract() {
 #[test]
 #[ignore = "requires Microsoft Excel desktop; run the explicit real-Office lane"]
 fn office_host_excel_contract() {
+    let _desktop_office = desktop_office_lock();
     let fixture = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
         .join("../../tests/fixtures/fixture-workbook.xlsx");
     assert!(fixture.exists(), "fixture missing: {}", fixture.display());

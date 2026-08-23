@@ -53,8 +53,19 @@ pub struct OfficeCapabilityCatalog {
     pub schema_version: String,
     pub protocol_version: String,
     pub provider: String,
+    pub command_params_schema: String,
+    pub security_policy: CatalogSecurityPolicy,
     pub errors: Vec<CatalogError>,
     pub capabilities: Vec<CatalogCapability>,
+}
+
+/// Canonical default-deny policy shared by the Rust gateway and C# host.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct CatalogSecurityPolicy {
+    pub actions: std::collections::BTreeMap<String, String>,
+    pub workspace_only: bool,
+    pub execute_mso_allowlist: std::collections::BTreeMap<String, Vec<String>>,
+    pub execute_mso_confirm: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -179,10 +190,23 @@ pub struct CommandParams {
     pub capability: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub document: Option<DocumentRef>,
+    /// Evidence that a human approved one policy action. The host validates
+    /// the action and proof before any confirm-gated operation starts.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub confirmation: Option<ConfirmationProof>,
     #[serde(default = "default_input")]
     pub input: serde_json::Value,
     #[serde(default = "default_policy")]
     pub policy: serde_json::Value,
+}
+
+/// Structured, auditable human-confirmation evidence (proposal §19.1).
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ConfirmationProof {
+    pub action: String,
+    pub confirmed: bool,
+    pub confirmed_by: String,
+    pub confirmed_at: String,
 }
 
 fn default_input() -> serde_json::Value {
@@ -190,7 +214,37 @@ fn default_input() -> serde_json::Value {
 }
 
 fn default_policy() -> serde_json::Value {
-    serde_json::json!({ "checkpoint": true, "render_after": false })
+    let canonical = &capability_catalog().security_policy;
+    let mut policy = serde_json::Map::new();
+    for (name, action) in &canonical.actions {
+        policy.insert(name.clone(), serde_json::Value::String(action.clone()));
+    }
+    policy.insert(
+        "workspace_only".into(),
+        serde_json::Value::Bool(canonical.workspace_only),
+    );
+    policy.insert(
+        "execute_mso_allowlist".into(),
+        serde_json::to_value(&canonical.execute_mso_allowlist)
+            .expect("canonical ExecuteMso allowlist must serialize"),
+    );
+    policy.insert(
+        "execute_mso_confirm".into(),
+        serde_json::to_value(&canonical.execute_mso_confirm)
+            .expect("canonical ExecuteMso confirmations must serialize"),
+    );
+    policy.insert(
+        "checkpoint".into(),
+        serde_json::Value::Bool(
+            canonical
+                .actions
+                .get("overwrite_original")
+                .map(String::as_str)
+                == Some("checkpoint_and_confirm"),
+        ),
+    );
+    policy.insert("render_after".into(), serde_json::Value::Bool(false));
+    serde_json::Value::Object(policy)
 }
 
 /// Command result. indeterminate means the sidecar cannot prove whether the
@@ -440,6 +494,30 @@ mod tests {
         .unwrap();
         assert_eq!(p.policy["checkpoint"], true);
         assert_eq!(p.policy["render_after"], false);
+        assert_eq!(p.policy["macros"], "deny");
+        assert_eq!(p.policy["overwrite_original"], "checkpoint_and_confirm");
+        assert_eq!(p.policy["workspace_only"], true);
+    }
+
+    #[test]
+    fn command_params_carry_structured_confirmation_proof() {
+        let p: CommandParams = serde_json::from_str(
+            r#"{
+                "capability":"batch.replace_text",
+                "confirmation":{
+                    "action":"overwrite_original",
+                    "confirmed":true,
+                    "confirmed_by":"human:reviewer",
+                    "confirmed_at":"2026-08-23T14:00:00Z"
+                }
+            }"#,
+        )
+        .unwrap();
+
+        let confirmation = p.confirmation.expect("confirmation proof");
+        assert_eq!(confirmation.action, "overwrite_original");
+        assert!(confirmation.confirmed);
+        assert_eq!(confirmation.confirmed_by, "human:reviewer");
     }
 
     #[test]
@@ -511,12 +589,19 @@ mod tests {
             backend: Some("desktop_com".into()),
             indeterminate: false,
             audit: Some(serde_json::json!({
-                "security": { "automation_security": "force_disable" },
+                "security": {
+                    "automation_security": {
+                        "applicable": true,
+                        "observed": 3,
+                        "expected": 3,
+                        "enforced": true
+                    }
+                },
                 "duration_ms": 42,
             })),
         };
         let json = serde_json::to_string(&r).unwrap();
-        assert!(json.contains("force_disable"));
+        assert!(json.contains("\"enforced\":true"));
         assert!(json.contains("duration_ms"));
         let back: CommandResult = serde_json::from_str(&json).unwrap();
         assert_eq!(back.audit.unwrap()["duration_ms"], 42);

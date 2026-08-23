@@ -46,6 +46,17 @@ public sealed class ComReliabilityTests
     }
 
     [Fact]
+    public void ComFailureDuringAWriteIsMarkedIndeterminate()
+    {
+        var error = OfficeComBackend.MapComException(
+            new COMException("save failed", unchecked((int)0x80004005)),
+            "save document",
+            mayHaveWritten: true);
+
+        Assert.True(error.Indeterminate);
+    }
+
+    [Fact]
     public void ModalOwnershipRequiresTheDisabledMainWindow()
     {
         var disabledMain = new IntPtr(100);
@@ -110,6 +121,53 @@ public sealed class ComReliabilityTests
         }
     }
 
+    [Fact]
+    public void SoftTimedOutWriteIsMarkedIndeterminate()
+    {
+        using var sta = new StaDispatcher();
+        using var backend = new TimeoutProbeBackend(sta);
+
+        OfficeComException error = Assert.Throws<OfficeComException>(() =>
+            backend.RunTimedWork(mayWrite: true));
+
+        Assert.Equal(OfficeErrorCode.OfficeRpcTimeout, error.Code);
+        Assert.True(error.Indeterminate);
+    }
+
+    [Fact]
+    public void SoftTimedOutReadIsNotMarkedIndeterminate()
+    {
+        using var sta = new StaDispatcher();
+        using var backend = new TimeoutProbeBackend(sta);
+
+        OfficeComException error = Assert.Throws<OfficeComException>(() =>
+            backend.RunTimedWork(mayWrite: false));
+
+        Assert.False(error.Indeterminate);
+    }
+
+    [Fact]
+    public void SecuritySettingFailureAndReadbackMismatchFailClosed()
+    {
+        OfficeComException assignment = Assert.Throws<OfficeComException>(() =>
+            OfficeComBackend.VerifySecuritySetting(
+                "AutomationSecurity",
+                apply: () => throw new COMException("denied"),
+                observe: () => 3,
+                expected: 3,
+                OfficeErrorCode.OfficeMacroBlocked));
+        OfficeComException mismatch = Assert.Throws<OfficeComException>(() =>
+            OfficeComBackend.VerifySecuritySetting(
+                "AutomationSecurity",
+                apply: () => { },
+                observe: () => 1,
+                expected: 3,
+                OfficeErrorCode.OfficeMacroBlocked));
+
+        Assert.Equal(OfficeErrorCode.OfficeMacroBlocked, assignment.Code);
+        Assert.Equal(OfficeErrorCode.OfficeMacroBlocked, mismatch.Code);
+    }
+
     private static OfficeComException Classify(int hresult, string message)
     {
         return OfficeComBackend.MapComException(
@@ -131,5 +189,47 @@ public sealed class ComReliabilityTests
             compressor.Write(value);
         }
         return output.ToArray();
+    }
+
+    private sealed class TimeoutProbeBackend : OfficeComBackend
+    {
+        internal TimeoutProbeBackend(StaDispatcher sta)
+            : base(OfficeAppKind.PowerPoint, sta)
+        {
+        }
+
+        protected override string DocumentKind => "test";
+
+        internal void RunTimedWork(bool mayWrite) =>
+            RunRequest(
+                "test request",
+                () => Thread.Sleep(100),
+                TimeSpan.FromMilliseconds(10),
+                mayWrite);
+
+        public override FileConvertOutcome ConvertToPdf(string path, string outputPath) =>
+            throw new NotSupportedException();
+
+        public override InspectOutcome Inspect(string path) => throw new NotSupportedException();
+
+        public override ReplaceOutcome ReplaceText(
+            string path,
+            IReadOnlyList<ReplaceRuleInput> rules,
+            IReadOnlyList<string> scope,
+            bool dryRun) => throw new NotSupportedException();
+
+        protected override ComLease OpenReadOnly(string path) => throw new NotSupportedException();
+
+        protected override ComLease OpenEditable(string path) => throw new NotSupportedException();
+
+        protected override void SaveEditable(dynamic document) => throw new NotSupportedException();
+
+        protected override void ExportPdf(dynamic document, string outputPath) =>
+            throw new NotSupportedException();
+
+        protected override void CloseQuietly(dynamic document) => throw new NotSupportedException();
+
+        protected override OfficeSecurityPosture ApplySecurityDefaults(dynamic app) =>
+            throw new NotSupportedException();
     }
 }

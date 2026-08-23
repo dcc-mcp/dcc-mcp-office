@@ -16,6 +16,8 @@ internal sealed class CapabilityCatalog
         SchemaVersion = document.SchemaVersion;
         ProtocolVersion = document.ProtocolVersion;
         Provider = document.Provider;
+        CommandParamsSchema = document.CommandParamsSchema;
+        SecurityPolicy = document.SecurityPolicy;
         Errors = document.Errors;
         Capabilities = document.Capabilities;
         _schemas = schemas;
@@ -29,6 +31,10 @@ internal sealed class CapabilityCatalog
     internal string ProtocolVersion { get; }
 
     internal string Provider { get; }
+
+    internal string CommandParamsSchema { get; }
+
+    internal CatalogSecurityPolicy SecurityPolicy { get; }
 
     internal IReadOnlyList<CatalogErrorDefinition> Errors { get; }
 
@@ -63,6 +69,11 @@ internal sealed class CapabilityCatalog
     internal void ValidateInput(CapabilityDefinition capability, JsonElement input)
     {
         ValidateSchema(capability.InputSchema, input, "input");
+    }
+
+    internal void ValidateCommandParams(JsonElement parameters)
+    {
+        ValidateSchema(CommandParamsSchema, parameters, "params");
     }
 
     internal void ValidateOutput(CapabilityDefinition capability, JsonElement output)
@@ -100,6 +111,7 @@ internal sealed class CapabilityCatalog
                 capability.InputSchema,
                 capability.OutputSchema,
             })
+            .Append(document.CommandParamsSchema)
             .Distinct(StringComparer.Ordinal))
         {
             string resource = "Manifests." + schemaReference.Replace('/', '.');
@@ -114,7 +126,7 @@ internal sealed class CapabilityCatalog
 
     private static void ValidateDocument(CatalogDocument document)
     {
-        if (document.SchemaVersion != "office-capability-catalog/1.0")
+        if (document.SchemaVersion != "office-capability-catalog/1.1")
         {
             throw new InvalidDataException(
                 $"unsupported capability catalog version '{document.SchemaVersion}'");
@@ -123,6 +135,23 @@ internal sealed class CapabilityCatalog
         {
             throw new InvalidDataException(
                 $"catalog protocol '{document.ProtocolVersion}' does not match host '{HostBuildInfo.ProtocolVersion}'");
+        }
+
+        if (!document.SecurityPolicy.WorkspaceOnly)
+        {
+            throw new InvalidDataException("canonical security policy must confine access to the workspace");
+        }
+        if (document.SecurityPolicy.Actions.Count == 0
+            || document.SecurityPolicy.Actions.Values.Any(action => action is not (
+                "deny" or "confirm" or "checkpoint_and_confirm" or "deny_or_confirm")))
+        {
+            throw new InvalidDataException("canonical security policy contains an invalid action");
+        }
+        if (document.SecurityPolicy.Actions.GetValueOrDefault("overwrite_original")
+            != "checkpoint_and_confirm")
+        {
+            throw new InvalidDataException(
+                "canonical overwrite_original policy must require checkpoint and confirmation");
         }
 
         var errorCodes = document.Errors.Select(error => error.Code)
@@ -166,9 +195,23 @@ internal sealed class CapabilityCatalog
         public string SchemaVersion { get; init; } = "";
         public string ProtocolVersion { get; init; } = "";
         public string Provider { get; init; } = "";
+        public string CommandParamsSchema { get; init; } = "";
+        public CatalogSecurityPolicy SecurityPolicy { get; init; } = new();
         public List<CatalogErrorDefinition> Errors { get; init; } = [];
         public List<CapabilityDefinition> Capabilities { get; init; } = [];
     }
+}
+
+internal sealed class CatalogSecurityPolicy
+{
+    public Dictionary<string, string> Actions { get; init; } = new(StringComparer.Ordinal);
+
+    public bool WorkspaceOnly { get; init; }
+
+    public Dictionary<string, List<string>> ExecuteMsoAllowlist { get; init; } =
+        new(StringComparer.OrdinalIgnoreCase);
+
+    public List<string> ExecuteMsoConfirm { get; init; } = [];
 }
 
 internal sealed class CatalogErrorDefinition
