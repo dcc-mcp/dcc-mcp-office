@@ -55,6 +55,7 @@ pub enum OfficeErrorCode {
     OfficeAppBusy,
     OfficeModalDialog,
     OfficeProtectedView,
+    OfficeAccessDenied,
     OfficeDocumentNotFound,
     OfficeDocumentLocked,
     OfficeDocumentConflict,
@@ -69,6 +70,7 @@ pub enum OfficeErrorCode {
     OfficeGraphAuthRequired,
     OfficeUserConfirmationRequired,
     OfficePartialSuccess,
+    OfficeUnclassified,
 }
 
 impl OfficeErrorCode {
@@ -394,6 +396,15 @@ mod tests {
         assert_eq!(code, "\"OFFICE_DOCUMENT_CONFLICT\"");
         assert!(OfficeErrorCode::OfficeAppBusy.is_retryable());
         assert!(!OfficeErrorCode::OfficeDocumentConflict.is_retryable());
+    }
+
+    #[test]
+    fn unclassified_com_errors_are_terminal() {
+        let code: OfficeErrorCode = serde_json::from_str("\"OFFICE_UNCLASSIFIED\"").unwrap();
+
+        assert_eq!(code, OfficeErrorCode::OfficeUnclassified);
+        assert!(!code.is_retryable());
+        assert!(!OfficeErrorCode::OfficeAccessDenied.is_retryable());
     }
 
     #[test]

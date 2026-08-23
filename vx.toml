@@ -20,7 +20,7 @@ cache_duration = "7d"
 # C# sidecar build (Debug). CI and local both use the vx-managed SDK.
 build = "dotnet build dotnet/Office.Automation.Host/Office.Automation.Host.csproj -v minimal"
 # Office-free .NET regression suite for runtime/COM/host contracts.
-test-dotnet = "dotnet test dotnet/Office.Automation.Runtime.Tests/Office.Automation.Runtime.Tests.csproj -v minimal"
+test-dotnet = "dotnet test dotnet/Office.Automation.Runtime.Tests/Office.Automation.Runtime.Tests.csproj -v minimal && dotnet test dotnet/Office.Automation.Com.Tests/Office.Automation.Com.Tests.csproj -v minimal"
 # Host self-test: compile + inspect round-trip, no Office installation required.
 self-test = "dotnet run --project dotnet/Office.Automation.Host/Office.Automation.Host.csproj -- --app=powerpoint --self-test"
 # Release publish: single-file self-contained win-x64 binary (release asset).

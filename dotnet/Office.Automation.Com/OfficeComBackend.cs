@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.RegularExpressions;
+using Microsoft.Win32;
 using Office.Automation.Runtime;
 
 namespace Office.Automation.Com;
@@ -29,6 +29,25 @@ public enum OfficeAppKind
 /// </summary>
 public abstract class OfficeComBackend : IDisposable
 {
+    private static class ComHResult
+    {
+        public const uint RpcECallRejected = 0x80010001;
+        public const uint RpcEServerCallRetryLater = 0x8001010A;
+        public const uint RegDbEClassNotRegistered = 0x80040154;
+        public const uint StgEFileNotFound = 0x80030002;
+        public const uint StgEPathNotFound = 0x80030003;
+        public const uint StgEAccessDenied = 0x80030005;
+        public const uint StgEShareViolation = 0x80030020;
+        public const uint StgELockViolation = 0x80030021;
+        public const uint StgEInvalidHeader = 0x800300FB;
+        public const uint StgEDocFileCorrupt = 0x80030109;
+        public const uint Win32FileNotFound = 0x80070002;
+        public const uint Win32PathNotFound = 0x80070003;
+        public const uint Win32AccessDenied = 0x80070005;
+        public const uint Win32SharingViolation = 0x80070020;
+        public const uint Win32LockViolation = 0x80070021;
+    }
+
     /// <summary>Default per-request soft timeout.</summary>
     protected static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(120);
 
@@ -310,47 +329,29 @@ public abstract class OfficeComBackend : IDisposable
         _processId = null;
     }
 
-    protected static OfficeComException MapComException(COMException ex, string context)
+    protected internal static OfficeComException MapComException(COMException ex, string context)
     {
         uint hr = unchecked((uint)ex.HResult);
-        if (hr == 0x80010001 /* RPC_E_CALL_REJECTED */)
+        OfficeErrorCode code = hr switch
         {
-            return new OfficeComException(OfficeErrorCode.OfficeAppBusy,
-                $"{context}: {ex.Message}", ex);
-        }
-        string message = ex.Message;
-        if (message.Contains("busy", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeAppBusy, $"{context}: {message}", ex);
-        }
-        if (message.Contains("not installed", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("is not available", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeAppNotInstalled, $"{context}: {message}", ex);
-        }
-        if (message.Contains("protected view", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeProtectedView, $"{context}: {message}", ex);
-        }
-        if (message.Contains("locked", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeDocumentLocked, $"{context}: {message}", ex);
-        }
-        if (message.Contains("not found", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("does not exist", StringComparison.OrdinalIgnoreCase)
-            || message.Contains("could not be found", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeDocumentNotFound, $"{context}: {message}", ex);
-        }
-        if (message.Contains("corrupt", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeFileCorrupt, $"{context}: {message}", ex);
-        }
-        if (message.Contains("macro", StringComparison.OrdinalIgnoreCase))
-        {
-            return new OfficeComException(OfficeErrorCode.OfficeMacroBlocked, $"{context}: {message}", ex);
-        }
-        return new OfficeComException(OfficeErrorCode.OfficeBackendUnavailable, $"{context}: {message}", ex);
+            ComHResult.RpcECallRejected or
+            ComHResult.RpcEServerCallRetryLater => OfficeErrorCode.OfficeAppBusy,
+            ComHResult.RegDbEClassNotRegistered => OfficeErrorCode.OfficeAppNotInstalled,
+            ComHResult.StgEShareViolation or
+            ComHResult.StgELockViolation or
+            ComHResult.Win32SharingViolation or
+            ComHResult.Win32LockViolation => OfficeErrorCode.OfficeDocumentLocked,
+            ComHResult.StgEFileNotFound or
+            ComHResult.StgEPathNotFound or
+            ComHResult.Win32FileNotFound or
+            ComHResult.Win32PathNotFound => OfficeErrorCode.OfficeDocumentNotFound,
+            ComHResult.StgEAccessDenied or
+            ComHResult.Win32AccessDenied => OfficeErrorCode.OfficeAccessDenied,
+            ComHResult.StgEInvalidHeader or
+            ComHResult.StgEDocFileCorrupt => OfficeErrorCode.OfficeFileCorrupt,
+            _ => OfficeErrorCode.OfficeUnclassified,
+        };
+        return new OfficeComException(code, $"{context}: {ex.Message}", ex);
     }
 
     protected static OfficeComException DocumentNotFound(string path) =>
@@ -374,13 +375,9 @@ public abstract class OfficeComBackend : IDisposable
         }
     }
 
-    private static readonly Regex PageRegex =
-        new(@"/Type\s*/Page[^s]", RegexOptions.Compiled);
-
     protected static int CountPdfPages(string outputPath)
     {
-        string text = File.ReadAllText(outputPath, Encoding.Latin1);
-        return PageRegex.Matches(text).Count;
+        return PdfPageCounter.Count(outputPath);
     }
 
     /// <summary>Opens a document read-only; callers wrap the result in a using.</summary>
@@ -471,12 +468,25 @@ public abstract class OfficeComBackend : IDisposable
     {
         try
         {
-            foreach (var hive in new[] { Microsoft.Win32.Registry.LocalMachine, Microsoft.Win32.Registry.CurrentUser })
+            foreach (RegistryHive hive in new[] { RegistryHive.LocalMachine, RegistryHive.CurrentUser })
             {
-                using var key = hive.OpenSubKey(@"SOFTWARE\Microsoft\Office\16.0\Common\LanguageResources");
-                if (key?.GetValue("UILanguage") is int lcid && lcid != 0)
+                foreach (RegistryView view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
                 {
-                    return new System.Globalization.CultureInfo(lcid).Name;
+                    using RegistryKey baseKey = RegistryKey.OpenBaseKey(hive, view);
+                    using RegistryKey? officeKey = baseKey.OpenSubKey(@"SOFTWARE\Microsoft\Office");
+                    if (officeKey is null)
+                    {
+                        continue;
+                    }
+                    foreach (string versionKey in OrderOfficeVersionKeys(officeKey.GetSubKeyNames()))
+                    {
+                        using RegistryKey? languageKey = officeKey.OpenSubKey(
+                            $@"{versionKey}\Common\LanguageResources");
+                        if (languageKey?.GetValue("UILanguage") is int lcid && lcid != 0)
+                        {
+                            return new System.Globalization.CultureInfo(lcid).Name;
+                        }
+                    }
                 }
             }
         }
@@ -485,6 +495,12 @@ public abstract class OfficeComBackend : IDisposable
         }
         return null;
     }
+
+    internal static IEnumerable<string> OrderOfficeVersionKeys(IEnumerable<string> keys) =>
+        keys.Select(key => (Key: key, Parsed: Version.TryParse(key, out var version) ? version : null))
+            .Where(item => item.Parsed is not null)
+            .OrderByDescending(item => item.Parsed)
+            .Select(item => item.Key);
 
     private static string? SafeGet(Func<string?> getter)
     {
