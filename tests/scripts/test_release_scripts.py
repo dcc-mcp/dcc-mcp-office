@@ -1,7 +1,9 @@
 import hashlib
 import importlib.util
 import json
+import re
 import tempfile
+import tomllib
 import unittest
 import zipfile
 from pathlib import Path
@@ -31,6 +33,45 @@ class SourceDistributionTests(unittest.TestCase):
             documentation,
         )
         self.assertIn("Release tags are treated as immutable", documentation)
+
+
+class ReleasePleaseConfigTests(unittest.TestCase):
+    def test_release_please_updates_every_workspace_lock_entry(self):
+        workspace = tomllib.loads((ROOT / "Cargo.toml").read_text(encoding="utf-8"))
+        workspace_version = workspace["workspace"]["package"]["version"]
+        workspace_packages = {
+            tomllib.loads((ROOT / member / "Cargo.toml").read_text(encoding="utf-8"))[
+                "package"
+            ]["name"]
+            for member in workspace["workspace"]["members"]
+        }
+
+        lock = tomllib.loads((ROOT / "Cargo.lock").read_text(encoding="utf-8"))
+        locked_versions = {
+            package["name"]: package["version"]
+            for package in lock["package"]
+            if package["name"] in workspace_packages
+        }
+        self.assertEqual(set(locked_versions), workspace_packages)
+        self.assertEqual(set(locked_versions.values()), {workspace_version})
+
+        config = json.loads(
+            (ROOT / "release-please-config.json").read_text(encoding="utf-8")
+        )
+        lock_updaters = [
+            entry
+            for entry in config["packages"]["."]["extra-files"]
+            if entry["path"] == "Cargo.lock"
+        ]
+        self.assertEqual(len(lock_updaters), 1)
+        self.assertEqual(lock_updaters[0]["type"], "toml")
+        configured_packages = set(
+            re.findall(
+                r"@\.name\.value === '([^']+)'",
+                lock_updaters[0]["jsonpath"],
+            )
+        )
+        self.assertEqual(configured_packages, workspace_packages)
 
 
 class TemplateCatalogTests(unittest.TestCase):
