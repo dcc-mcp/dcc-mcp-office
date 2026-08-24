@@ -22,6 +22,11 @@
           "jsonpath": "$.workspace.dependencies['dcc-mcp-office-protocol'].version"
         },
         {
+          "type": "toml",
+          "path": "Cargo.lock",
+          "jsonpath": "$.package[?(@.name.value === 'dcc-mcp-office-client' || @.name.value === 'dcc-mcp-office-graph' || @.name.value === 'dcc-mcp-office-ir' || @.name.value === 'dcc-mcp-office-jobs' || @.name.value === 'dcc-mcp-office-mcp-server' || @.name.value === 'dcc-mcp-office-protocol' || @.name.value === 'dcc-mcp-office-security' || @.name.value === 'dcc-mcp-office-testkit' || @.name.value === 'dcc-mcp-office-tools')].version"
+        },
+        {
           "type": "generic",
           "path": "dotnet/Directory.Build.props"
         }
