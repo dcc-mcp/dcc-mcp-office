@@ -10,6 +10,12 @@ name: Release
 on:
   push:
     branches: [main]
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: Existing release tag whose assets should be republished
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -17,6 +23,7 @@ permissions:
 
 jobs:
   release-please:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
@@ -34,15 +41,35 @@ jobs:
 
   publish-release-assets:
     needs: release-please
-    if: needs.release-please.outputs.release_created == 'true'
+    if: >-
+      always() &&
+      (needs.release-please.outputs.release_created == 'true' ||
+       github.event_name == 'workflow_dispatch')
     runs-on: windows-latest
+    env:
+      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || needs.release-please.outputs.tag_name }}
     permissions:
       contents: write
       id-token: write
       attestations: write
       artifact-metadata: write
     steps:
+      - name: Validate target release tag
+        shell: pwsh
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v\d+\.\d+\.\d+(?:[-+][0-9A-Za-z.-]+)?$') {
+            throw "Invalid release tag: $env:RELEASE_TAG"
+          }
+
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && inputs.tag_name || github.sha }}
+
+      - name: Verify target GitHub release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: gh release view "$env:RELEASE_TAG" --repo dcc-mcp/dcc-mcp-office
 
       - name: Setup vx (.NET 8 LTS SDK from vx.toml)
         uses: loonghao/vx@vx-v0.9.28
@@ -67,10 +94,17 @@ jobs:
         run: '& "$env:RUNNER_TEMP\host\dcc-office-host.exe" --app=powerpoint --self-test-com'
 
       - name: Build release bundle
+        id: bundle
         shell: pwsh
         run: |
-          $version = "${{ needs.release-please.outputs.tag_name }}".TrimStart("v")
+          $version = ($env:RELEASE_TAG).TrimStart("v")
           python scripts/package_release.py --host-dir "$env:RUNNER_TEMP\host" --mcp-server "$env:GITHUB_WORKSPACE\target\release\dcc-mcp-office-mcp-server.exe" --output-dir "$env:RUNNER_TEMP\release" --version $version
+          $archive = "$env:RUNNER_TEMP\release\dcc-mcp-office-host-$version-win-x64.zip"
+          $sbom = "$env:RUNNER_TEMP\release\dcc-mcp-office-host-$version.spdx.json"
+          if (-not (Test-Path -LiteralPath $archive)) { throw "Release archive not found: $archive" }
+          if (-not (Test-Path -LiteralPath $sbom)) { throw "Release SBOM not found: $sbom" }
+          "archive=$archive" >> $env:GITHUB_OUTPUT
+          "sbom=$sbom" >> $env:GITHUB_OUTPUT
 
       - name: Verify release checksums
         shell: pwsh
@@ -90,15 +124,15 @@ jobs:
       - name: Attest package SBOM
         uses: actions/attest@v4
         with:
-          subject-path: ${{ runner.temp }}/release/dcc-mcp-office-host-*-win-x64.zip
-          sbom-path: ${{ runner.temp }}/release/dcc-mcp-office-host-*.spdx.json
+          subject-path: ${{ steps.bundle.outputs.archive }}
+          sbom-path: ${{ steps.bundle.outputs.sbom }}
 
       - name: Upload assets and checksums to the GitHub release
         shell: pwsh
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          $tag = "${{ needs.release-please.outputs.tag_name }}"
+          $tag = $env:RELEASE_TAG
           $assets = Get-ChildItem -LiteralPath "$env:RUNNER_TEMP\release" -File | ForEach-Object FullName
           gh release upload $tag $assets --clobber --repo dcc-mcp/dcc-mcp-office
           $body = gh release view $tag --json body --jq .body --repo dcc-mcp/dcc-mcp-office
