@@ -74,6 +74,32 @@ class ReleasePleaseConfigTests(unittest.TestCase):
         self.assertEqual(configured_packages, workspace_packages)
 
 
+class ReleaseWorkflowTests(unittest.TestCase):
+    def test_sbom_attestation_is_exact_and_existing_tags_can_be_republished(self):
+        workflow = (ROOT / ".github" / "workflows" / "release.yml").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("workflow_dispatch:", workflow)
+        self.assertIn("tag_name:", workflow)
+        self.assertIn("id: bundle", workflow)
+        self.assertIn(
+            "RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' "
+            "&& inputs.tag_name || needs.release-please.outputs.tag_name }}",
+            workflow,
+        )
+        self.assertIn(
+            "ref: ${{ github.event_name == 'workflow_dispatch' "
+            "&& inputs.tag_name || github.sha }}",
+            workflow,
+        )
+        self.assertIn('"archive=$archive" >> $env:GITHUB_OUTPUT', workflow)
+        self.assertIn('"sbom=$sbom" >> $env:GITHUB_OUTPUT', workflow)
+        self.assertIn("subject-path: ${{ steps.bundle.outputs.archive }}", workflow)
+        self.assertIn("sbom-path: ${{ steps.bundle.outputs.sbom }}", workflow)
+        self.assertNotRegex(workflow, r"sbom-path:[^\n]*\*")
+
+
 class TemplateCatalogTests(unittest.TestCase):
     def test_every_file_catalog_entry_resolves_to_a_matching_package(self):
         template_root = ROOT / "templates"
