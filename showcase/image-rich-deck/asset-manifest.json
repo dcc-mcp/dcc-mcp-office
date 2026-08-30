@@ -9,38 +9,74 @@
     {
       "path": "assets/editorial-office-hero.jpg",
       "prompt_summary": "Editorial collage of governed Office automation outputs, warm paper and cobalt glass, negative space at left.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     },
     {
       "path": "assets/governed-flow.jpg",
       "prompt_summary": "Cinematic structured-input transformation through a validation prism into three tactile editable artifacts.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     },
     {
       "path": "assets/creative-system.jpg",
       "prompt_summary": "Top-down tactile creative system with layout frames, type specimens, color chips and physical documents.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     },
     {
       "path": "assets/verified-output.jpg",
       "prompt_summary": "Premium still life of a presentation folio, open report, analytical grid and translucent verification seal.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     },
     {
       "path": "assets/document-evidence-banner.jpg",
       "prompt_summary": "Calm executive evidence scene with bound report, proof sheet, chart page and verification object.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     },
     {
       "path": "assets/data-landscape.jpg",
       "prompt_summary": "Abstract measured-capability landscape with three glass bars, a total ring and verification pulse.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     }
   ]
 }

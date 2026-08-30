@@ -15,11 +15,31 @@
         "tables": [
           {
             "name": "runtime_surface",
-            "headers": ["Application", "Live capabilities", "Execution modes", "Shipped operations"],
+            "headers": [
+              "Application",
+              "Live capabilities",
+              "Execution modes",
+              "Shipped operations"
+            ],
             "rows": [
-              ["PowerPoint", 5, "Open XML + desktop COM", "compile, inspect, convert, replace, render"],
-              ["Word", 3, "desktop COM", "inspect, convert, replace"],
-              ["Excel", 3, "desktop COM", "inspect, convert, replace"]
+              [
+                "PowerPoint",
+                5,
+                "Open XML + desktop COM",
+                "compile, inspect, convert, replace, render"
+              ],
+              [
+                "Word",
+                3,
+                "desktop COM",
+                "inspect, convert, replace"
+              ],
+              [
+                "Excel",
+                3,
+                "desktop COM",
+                "inspect, convert, replace"
+              ]
             ]
           }
         ]
@@ -29,11 +49,27 @@
         "tables": [
           {
             "name": "workflow_packs",
-            "headers": ["Skill", "Primary output", "Safety or validation contract"],
+            "headers": [
+              "Skill",
+              "Primary output",
+              "Safety or validation contract"
+            ],
             "rows": [
-              ["office-batch-to-pdf", "PDF batch", "native export plus openability checks"],
-              ["office-global-text-replace", "updated Office files", "dry-run, confirmation and checkpoint"],
-              ["office-generate-production-dashboard", "editable XLSX", "Workbook IR plus formulas and chart"]
+              [
+                "office-batch-to-pdf",
+                "PDF batch",
+                "native export plus openability checks"
+              ],
+              [
+                "office-global-text-replace",
+                "updated Office files",
+                "dry-run, confirmation and checkpoint"
+              ],
+              [
+                "office-generate-production-dashboard",
+                "editable XLSX",
+                "Workbook IR plus formulas and chart"
+              ]
             ]
           }
         ]
@@ -50,5 +86,7 @@
       }
     ]
   },
-  "outputs": ["xlsx"]
+  "outputs": [
+    "xlsx"
+  ]
 }

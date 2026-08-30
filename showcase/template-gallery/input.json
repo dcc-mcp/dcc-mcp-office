@@ -18,12 +18,17 @@
         "semantic_layout": "title_cover",
         "title": "One story.\nThree brand directions.",
         "images": [
-          {"id": "Editorial Office hero", "uri": "assets/editorial-office-hero.jpg"}
+          {
+            "id": "Editorial Office hero",
+            "uri": "assets/editorial-office-hero.jpg"
+          }
         ],
         "content_blocks": [
           {
             "type": "text",
-            "paragraphs": ["One semantic story, compiled through three project-owned visual systems."]
+            "paragraphs": [
+              "One semantic story, compiled through three project-owned visual systems."
+            ]
           }
         ],
         "speaker_notes": "A controlled comparison: only the template package changes."
@@ -77,7 +82,9 @@
         "content_blocks": [
           {
             "type": "text",
-            "paragraphs": ["A practical agent feedback loop today; preference learning tomorrow."]
+            "paragraphs": [
+              "A practical agent feedback loop today; preference learning tomorrow."
+            ]
           }
         ],
         "speaker_notes": "Deterministic gates come before learned aesthetic preference."
@@ -89,6 +96,12 @@
       "source_editable": true
     }
   },
-  "validation": ["no_text_overflow", "no_out_of_bounds"],
-  "outputs": ["pptx", "slide-previews"]
+  "validation": [
+    "no_text_overflow",
+    "no_out_of_bounds"
+  ],
+  "outputs": [
+    "pptx",
+    "slide-previews"
+  ]
 }

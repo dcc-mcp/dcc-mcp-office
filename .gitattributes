@@ -1,0 +1,9 @@
+showcase/**/*.json text eol=lf
+showcase/**/*.md text eol=lf
+showcase/**/*.png binary
+showcase/**/*.jpg binary
+showcase/**/*.pdf binary
+showcase/**/*.pptx binary
+showcase/**/*.docx binary
+showcase/**/*.xlsx binary
+docs/images/*.webp binary

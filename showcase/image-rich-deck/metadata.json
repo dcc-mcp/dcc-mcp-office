@@ -47,8 +47,8 @@
     "python scripts/validate_showcases.py"
   ],
   "sha256": {
-    "input.json": "a83c747f32ca3ca6045e61135a259ed2b3f4f04b751353eaa308cc50fcf14a67",
-    "asset-manifest.json": "22a7b6fc87769d21a06b9d659e067f1fb1402ab246900e08381ac983ce4f35c6",
+    "input.json": "f22c8a37dd1083ce2aad739d6ea9e7267b29d27b9f20fcbd2d9a410f6546f397",
+    "asset-manifest.json": "b7d31f06408d9d956c20490b6764ccb63cf7f002a2ab5719513e0ee933841532",
     "assets/creative-system.jpg": "1bcfe8bb4948abe980250348468d9124cf680f65cc03dc1927100c9791a12abc",
     "assets/data-landscape.jpg": "e94b9337f78525d206f05c93917ee12f8ff2b78980cd110d62474870a0acfc48",
     "assets/document-evidence-banner.jpg": "6c77181c302aba3da9f8946fc257892c41bb5db58cc49b817a2206d9d2acc967",
@@ -62,6 +62,6 @@
     "slides/slide-004.png": "d5b991b3121616160912998f40f3de61f6078169108f5681b39ad9ee1f667121",
     "slides/slide-005.png": "c0ab6da7433510292c4e08378d5d6529e4990ba57ae5d534c8482aa7759f8a51",
     "preview.png": "d33246bdae5901ea00c49cbaef196faf54cba0c576abde7e4ba3a9a2f86c6b07",
-    "transcript.json": "9176a333f9498465987d4943cdca8b86c2c4d02f1408f22936a0e5d03ba16c9e"
+    "transcript.json": "989a3fbbd0e0b948663fe31f65e127bfc1e3583b99966b94916273691a6e9374"
   }
 }
