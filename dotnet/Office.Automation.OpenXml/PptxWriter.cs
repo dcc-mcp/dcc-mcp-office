@@ -35,6 +35,7 @@ public static class PptxWriter
     private const string CtNotesMaster = "application/vnd.openxmlformats-officedocument.presentationml.notesMaster+xml";
     private const string CtTheme = "application/vnd.openxmlformats-officedocument.theme+xml";
     private const string CtPng = "image/png";
+    private const string CtJpeg = "image/jpeg";
     private const string RtImage = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/image";
 
     private const long EmuPerInch = 914400;
@@ -154,7 +155,11 @@ public static class PptxWriter
                     if (!mediaParts.TryGetValue(full, out var mediaPart) && File.Exists(full))
                     {
                         mediaCounter++;
-                        mediaPart = CreatePart(package, $"/ppt/media/image{mediaCounter}.png", CtPng);
+                        (string extension, string contentType) = ImagePartFormat(full);
+                        mediaPart = CreatePart(
+                            package,
+                            $"/ppt/media/image{mediaCounter}{extension}",
+                            contentType);
                         using (var source = File.OpenRead(full))
                         using (var target = mediaPart.GetStream())
                         {
@@ -206,6 +211,15 @@ public static class PptxWriter
         var fromCwd = Path.GetFullPath(uri);
         return File.Exists(fromCwd) ? fromCwd : direct;
     }
+
+    private static (string Extension, string ContentType) ImagePartFormat(string path) =>
+        Path.GetExtension(path).ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" => (".jpg", CtJpeg),
+            ".png" => (".png", CtPng),
+            string extension => throw new InvalidDataException(
+                $"presentation image '{path}' uses unsupported format '{extension}'; expected PNG or JPEG"),
+        };
 
     // -- part XML builders --------------------------------------------------
 
@@ -294,7 +308,7 @@ public static class PptxWriter
         switch (layout)
         {
             case "title_cover":
-                TitleCover(shapes, title, deckTitle, logoRelId, blocks);
+                TitleCover(shapes, title, deckTitle, logoRelId, blocks, images, imageRelIds);
                 break;
             case "section_cover":
                 SectionCover(shapes, title, blocks);
@@ -349,21 +363,41 @@ public static class PptxWriter
     {
         if (title.Length > 0)
         {
-            shapes.Add(TextBox(6, Emu(0.9), Emu(0.55), Emu(11.5), Emu(0.75), title, 28, C_TEXT, true));
-            shapes.Add(Rect(7, Emu(0.9), Emu(1.42), Emu(0.9), Emu(0.05), C_ACCENT));
+            double titleSize = title.Length > 52 ? 31 : 36;
+            shapes.Add(TextBox(6, Emu(0.9), Emu(0.34), Emu(11.5), Emu(1.08), title, titleSize, C_TEXT, true, displayFont: true));
+            shapes.Add(Rect(7, Emu(0.9), Emu(1.48), Emu(0.72), Emu(0.06), C_ACCENT));
+            shapes.Add(Rect(8, Emu(1.72), Emu(1.48), Emu(10.68), Emu(0.015), C_GHOST));
         }
     }
 
-    private static void TitleCover(List<XElement> shapes, string title, string deckTitle, string? logoRelId, JsonElement blocks)
+    private static void TitleCover(
+        List<XElement> shapes,
+        string title,
+        string deckTitle,
+        string? logoRelId,
+        JsonElement blocks,
+        JsonElement images,
+        Dictionary<string, string> imageRelIds)
     {
-        shapes.Add(Rect(3, 0, 0, Emu(13.333), Emu(7.5), C_BG));
-        shapes.Add(GhostCircle(Emu(10.15), Emu(4.85), Emu(3.05), Emu(2.5)));
+        string? hero = FirstImageUri(images);
+        if (hero is not null && imageRelIds.TryGetValue(hero, out string? heroRelId))
+        {
+            shapes.Add(Pic(3, heroRelId, 0, 0, Emu(13.333), Emu(7.5), title));
+            shapes.Add(Rect(4, 0, 0, Emu(6.15), Emu(7.5), C_BG));
+        }
+        else
+        {
+            shapes.Add(Rect(3, 0, 0, Emu(13.333), Emu(7.5), C_BG));
+            shapes.Add(GhostCircle(Emu(9.7), Emu(-0.65), Emu(4.4), Emu(4.4)));
+            shapes.Add(GhostCircle(Emu(10.6), Emu(4.85), Emu(3.4), Emu(3.4)));
+        }
+        shapes.Add(Rect(10, Emu(0.78), Emu(1.15), Emu(0.1), Emu(4.95), C_ACCENT));
         if (logoRelId is not null)
         {
-            shapes.Add(Pic(4, logoRelId, Emu(5.92), Emu(0.75), Emu(1.067), Emu(0.6), "DCC-MCP logo"));
+            shapes.Add(Pic(11, logoRelId, Emu(1.0), Emu(0.62), Emu(0.8), Emu(0.45), "DCC-MCP logo"));
         }
-        shapes.Add(TextBox(5, Emu(1.5), Emu(2.9), Emu(10.3), Emu(1.4), title, 54, C_TEXT, true, "ctr"));
-        shapes.Add(Rect(6, Emu(6.22), Emu(4.35), Emu(0.9), Emu(0.055), C_ACCENT));
+        shapes.Add(TextBox(12, Emu(1.02), Emu(1.42), Emu(4.85), Emu(0.38), "GOVERNED OFFICE AUTOMATION", 12, C_ACCENT, true));
+        shapes.Add(TextBox(13, Emu(1.0), Emu(2.0), Emu(4.95), Emu(2.18), title, 50, C_TEXT, true, displayFont: true));
         if (blocks.ValueKind != JsonValueKind.Undefined)
         {
             foreach (var block in blocks.EnumerateArray())
@@ -371,11 +405,11 @@ public static class PptxWriter
                 if (block.TryGetProperty("type", out var type) && type.GetString() == "text")
                 {
                     var paras = block.GetProperty("paragraphs").EnumerateArray().Select(p => p.GetString() ?? "").ToList();
-                    shapes.Add(TextBox(7, Emu(1.5), Emu(4.65), Emu(10.3), Emu(1.0), string.Join("\n", paras), 18, C_MUTED, false, "ctr"));
+                    shapes.Add(TextBox(14, Emu(1.02), Emu(4.42), Emu(4.72), Emu(1.1), string.Join("\n", paras), 18, C_MUTED, false));
                 }
             }
         }
-        shapes.Add(TextBox(8, Emu(1.5), Emu(6.85), Emu(10.3), Emu(0.35), deckTitle + " · dcc-mcp", 11, C_MUTED, false, "ctr"));
+        shapes.Add(TextBox(15, Emu(1.02), Emu(6.68), Emu(4.8), Emu(0.35), deckTitle + "  /  dcc-mcp", 10.5, C_MUTED, false));
     }
 
     private static void SectionCover(List<XElement> shapes, string title, JsonElement blocks)
@@ -395,7 +429,7 @@ public static class PptxWriter
             shapes.Add(TextBox(4, Emu(0.7), Emu(0.7), Emu(5.0), Emu(4.2), number, 200, C_GHOST, true));
         }
         shapes.Add(Rect(5, Emu(0.9), Emu(3.05), Emu(0.18), Emu(1.2), C_ACCENT_2));
-        shapes.Add(TextBox(6, Emu(1.3), Emu(3.0), Emu(11.0), Emu(1.4), clean, 44, C_TEXT, true));
+        shapes.Add(TextBox(6, Emu(1.3), Emu(3.0), Emu(11.0), Emu(1.4), clean, 44, C_TEXT, true, displayFont: true));
         if (blocks.ValueKind != JsonValueKind.Undefined)
         {
             foreach (var block in blocks.EnumerateArray())
@@ -461,12 +495,16 @@ public static class PptxWriter
             double left = 0.9 + col * 6.0;
             var items = texts[col];
             string color = col == 0 ? C_ACCENT : C_ACCENT_2;
-            var head = RoundRect(240 + col * 20, Emu(left), Emu(1.78), Emu(5.6), Emu(0.62), color, 0.16);
-            FillShapeText(head, items.Count > 0 ? items[0] : "", 16, C_TEXT, true, "ctr");
-            shapes.Add(head);
-            var body = RoundRect(241 + col * 20, Emu(left), Emu(2.52), Emu(5.6), Emu(4.1), C_PANEL, 0.05);
-            FillShapeText(body, string.Join("\n", items.Skip(1).Select(i => "✓  " + i)), 14.5, C_TEXT, false, "l");
-            shapes.Add(body);
+            shapes.Add(Rect(240 + col * 20, Emu(left), Emu(1.82), Emu(5.6), Emu(4.78), col == 0 ? C_BG_SOFT : C_PANEL));
+            shapes.Add(TextBox(241 + col * 20, Emu(left + 0.38), Emu(2.05), Emu(0.95), Emu(0.62), $"0{col + 1}", 28, color, true, displayFont: true));
+            shapes.Add(TextBox(242 + col * 20, Emu(left + 1.36), Emu(2.08), Emu(3.8), Emu(0.58), items.Count > 0 ? items[0] : "", 24, C_TEXT, true, displayFont: true));
+            double top = 3.05;
+            for (int i = 1; i < items.Count; i++)
+            {
+                shapes.Add(Oval(243 + col * 20 + i * 2, Emu(left + 0.42), Emu(top + 0.17), Emu(0.14), Emu(0.14), color));
+                shapes.Add(TextBox(244 + col * 20 + i * 2, Emu(left + 0.76), Emu(top), Emu(4.35), Emu(0.75), items[i], 17, C_TEXT, false));
+                top += 0.9;
+            }
         }
     }
 
@@ -489,19 +527,23 @@ public static class PptxWriter
     private static void KpiDashboard(List<XElement> shapes, JsonElement blocks)
     {
         var items = FirstBulletItems(blocks);
-        for (int i = 0; i < Math.Min(9, items.Count); i++)
+        for (int i = 0; i < Math.Min(6, items.Count); i++)
         {
             int row = i / 3;
             int col = i % 3;
-            double left = 0.9 + col * 3.9;
-            double top = 1.78 + row * 2.1;
-            var card = RoundRect(400 + i, Emu(left), Emu(top), Emu(3.6), Emu(1.85), C_PANEL, 0.07);
-            shapes.Add(card);
-            shapes.Add(Rect(430 + i, Emu(left + 0.4), Emu(top), Emu(0.55), Emu(0.055), C_ACCENT_2));
+            double left = 0.9 + col * 3.85;
+            double top = 1.82 + row * 2.3;
             var parts = items[i].Split('|', 2);
             string value = parts[0].Trim();
             string label = parts.Length > 1 ? parts[1].Trim() : "";
-            FillShapeText(card, value + "\n" + label, 26, parts.Length > 1 ? C_ACCENT_2 : C_TEXT, parts.Length == 1, "ctr");
+            string color = i % 2 == 0 ? C_ACCENT : C_ACCENT_2;
+            shapes.Add(Rect(400 + i * 4, Emu(left), Emu(top), Emu(0.1), Emu(1.72), color));
+            shapes.Add(TextBox(401 + i * 4, Emu(left + 0.3), Emu(top - 0.02), Emu(2.9), Emu(0.92), value, 46, C_TEXT, true, displayFont: true));
+            shapes.Add(TextBox(402 + i * 4, Emu(left + 0.32), Emu(top + 0.94), Emu(2.95), Emu(0.7), label, 16, C_MUTED, false));
+            if (col < 2)
+            {
+                shapes.Add(Rect(403 + i * 4, Emu(left + 3.48), Emu(top + 0.12), Emu(0.015), Emu(1.42), C_GHOST));
+            }
         }
     }
 
@@ -551,17 +593,26 @@ public static class PptxWriter
         int id = 700;
         if (imagePath is not null && imageRelIds.TryGetValue(imagePath, out var relId))
         {
-            shapes.Add(Pic(id++, relId, Emu(0.9), Emu(1.78), Emu(5.9), Emu(4.7), title));
+            shapes.Add(Pic(id++, relId, Emu(0.9), Emu(1.78), Emu(7.15), Emu(4.82), title));
         }
         else if (imagePath is not null)
         {
-            shapes.Add(TextBox(id++, Emu(0.9), Emu(1.78), Emu(5.9), Emu(0.5), "missing_asset: " + imagePath, 11, C_MUTED, false));
+            shapes.Add(TextBox(id++, Emu(0.9), Emu(1.78), Emu(7.15), Emu(0.5), "missing_asset: " + imagePath, 11, C_MUTED, false));
         }
         if (bullets.Count > 0)
         {
-            var panel = RoundRect(id, Emu(7.05), Emu(1.78), Emu(5.35), Emu(4.7), C_PANEL, 0.05);
-            FillShapeText(panel, string.Join("\n", bullets.Select(i => "●  " + i)), 14.5, C_TEXT, false, "l");
-            shapes.Add(panel);
+            double top = 1.92;
+            for (int i = 0; i < Math.Min(4, bullets.Count); i++)
+            {
+                string color = i % 2 == 0 ? C_ACCENT : C_ACCENT_2;
+                shapes.Add(TextBox(id++, Emu(8.4), Emu(top), Emu(0.66), Emu(0.48), $"0{i + 1}", 18, color, true, displayFont: true));
+                shapes.Add(TextBox(id++, Emu(9.18), Emu(top - 0.02), Emu(3.15), Emu(0.9), bullets[i], 16, C_TEXT, false));
+                if (i < Math.Min(4, bullets.Count) - 1)
+                {
+                    shapes.Add(Rect(id++, Emu(8.4), Emu(top + 0.94), Emu(3.92), Emu(0.015), C_GHOST));
+                }
+                top += 1.12;
+            }
         }
     }
 
@@ -585,6 +636,13 @@ public static class PptxWriter
         {
             return;
         }
+        if (cards.Count == 3)
+        {
+            AddImageTile(shapes, 800, cards[0], imageRelIds, 0.9, 1.78, 7.35, 4.88);
+            AddImageTile(shapes, 810, cards[1], imageRelIds, 8.55, 1.78, 3.85, 2.28);
+            AddImageTile(shapes, 820, cards[2], imageRelIds, 8.55, 4.32, 3.85, 2.34);
+            return;
+        }
         int cols = cards.Count >= 8 ? 4 : 2;
         double gap = 0.25;
         double cardW = (11.5 - gap * (cols - 1)) / cols;
@@ -594,19 +652,39 @@ public static class PptxWriter
         {
             int row = i / cols;
             int col = i % cols;
-            double left = 0.9 + col * (cardW + gap);
-            double top = 1.78 + row * (cardH + gap);
-            shapes.Add(RoundRect(800 + i, Emu(left), Emu(top), Emu(cardW), Emu(cardH), C_PANEL, 0.08));
-            if (imageRelIds.TryGetValue(cards[i].Uri, out var relId))
-            {
-                shapes.Add(Pic(850 + i, relId, Emu(left + 0.1), Emu(top + 0.06), Emu(cardW - 0.2), Emu(cardH - 0.4), cards[i].Id));
-            }
-            else
-            {
-                shapes.Add(TextBox(850 + i, Emu(left + 0.1), Emu(top + 0.3), Emu(cardW - 0.2), Emu(0.4), "missing_asset: " + cards[i].Uri, 11, C_MUTED, false, "ctr"));
-            }
-            shapes.Add(TextBox(860 + i, Emu(left), Emu(top + cardH - 0.34), Emu(cardW), Emu(0.3), cards[i].Id, 11, C_MUTED, false, "ctr"));
+            AddImageTile(
+                shapes,
+                800 + i * 10,
+                cards[i],
+                imageRelIds,
+                0.9 + col * (cardW + gap),
+                1.78 + row * (cardH + gap),
+                cardW,
+                cardH);
         }
+    }
+
+    private static void AddImageTile(
+        List<XElement> shapes,
+        int id,
+        (string Id, string Uri) card,
+        Dictionary<string, string> imageRelIds,
+        double left,
+        double top,
+        double width,
+        double height)
+    {
+        shapes.Add(Rect(id, Emu(left), Emu(top), Emu(width), Emu(height), C_PANEL));
+        if (imageRelIds.TryGetValue(card.Uri, out var relId))
+        {
+            shapes.Add(Pic(id + 1, relId, Emu(left), Emu(top), Emu(width), Emu(height), card.Id));
+        }
+        else
+        {
+            shapes.Add(TextBox(id + 1, Emu(left + 0.12), Emu(top + 0.3), Emu(width - 0.24), Emu(0.4), "missing_asset: " + card.Uri, 11, C_MUTED, false, "ctr"));
+        }
+        shapes.Add(Rect(id + 2, Emu(left + 0.18), Emu(top + height - 0.48), Emu(Math.Min(2.75, width - 0.36)), Emu(0.3), C_BG_SOFT));
+        shapes.Add(TextBox(id + 3, Emu(left + 0.3), Emu(top + height - 0.43), Emu(Math.Min(2.5, width - 0.55)), Emu(0.24), card.Id, 10.5, C_TEXT, true));
     }
 
     private static void Closing(List<XElement> shapes, string title, JsonElement blocks, string? logoRelId)
@@ -615,9 +693,10 @@ public static class PptxWriter
         shapes.Add(GhostCircle(Emu(0.35), Emu(0.35), Emu(2.9), Emu(2.9)));
         if (logoRelId is not null)
         {
-            shapes.Add(Pic(4, logoRelId, Emu(5.92), Emu(2.15), Emu(1.422), Emu(0.8), "DCC-MCP logo"));
+            shapes.Add(Pic(4, logoRelId, Emu(11.05), Emu(0.58), Emu(1.12), Emu(0.63), "DCC-MCP logo"));
         }
-        shapes.Add(TextBox(5, Emu(1.5), Emu(3.35), Emu(10.3), Emu(1.2), title.Length > 0 ? title : "Thanks", 46, C_TEXT, true, "ctr"));
+        shapes.Add(Rect(10, Emu(0.85), Emu(1.45), Emu(0.12), Emu(4.65), C_ACCENT));
+        shapes.Add(TextBox(5, Emu(1.25), Emu(2.55), Emu(10.75), Emu(1.5), title.Length > 0 ? title : "Thanks", 52, C_TEXT, true, displayFont: true));
         if (blocks.ValueKind != JsonValueKind.Undefined)
         {
             foreach (var block in blocks.EnumerateArray())
@@ -625,7 +704,7 @@ public static class PptxWriter
                 if (block.TryGetProperty("type", out var type) && type.GetString() == "text")
                 {
                     var paras = block.GetProperty("paragraphs").EnumerateArray().Select(p => p.GetString() ?? "").ToList();
-                    shapes.Add(TextBox(6, Emu(1.5), Emu(4.75), Emu(10.3), Emu(0.7), string.Join("\n", paras), 16, C_MUTED, false, "ctr"));
+                    shapes.Add(TextBox(6, Emu(1.28), Emu(4.38), Emu(8.8), Emu(0.85), string.Join("\n", paras), 19, C_MUTED, false));
                 }
             }
         }
@@ -650,6 +729,23 @@ public static class PptxWriter
 
     private static List<string> FirstBulletItems(JsonElement blocks) =>
         BulletBlocks(blocks).FirstOrDefault() ?? new List<string>();
+
+    private static string? FirstImageUri(JsonElement images)
+    {
+        if (images.ValueKind == JsonValueKind.Undefined)
+        {
+            return null;
+        }
+        foreach (JsonElement image in images.EnumerateArray())
+        {
+            if (image.TryGetProperty("uri", out JsonElement uri)
+                && !string.IsNullOrWhiteSpace(uri.GetString()))
+            {
+                return uri.GetString();
+            }
+        }
+        return null;
+    }
 
     private static XElement RoundRect(int id, long x, long y, long cx, long cy, string fill, double radius)
     {
@@ -723,7 +819,14 @@ public static class PptxWriter
         return new XElement(P + "pic", nvPicPr, blipFill, spPr);
     }
 
-    private static void FillShapeText(XElement shape, string text, double sizePt, string colorHex, bool bold, string align)
+    private static void FillShapeText(
+        XElement shape,
+        string text,
+        double sizePt,
+        string colorHex,
+        bool bold,
+        string align,
+        bool displayFont = false)
     {
         var txBody = shape.Element(P + "txBody");
         if (txBody is null)
@@ -745,9 +848,9 @@ public static class PptxWriter
                     new XAttribute("sz", (int)(sizePt * 100)),
                     bold ? new XAttribute("b", "1") : null,
                     new XElement(A + "solidFill", new XElement(A + "srgbClr", new XAttribute("val", colorHex))),
-                    new XElement(A + "latin", new XAttribute("typeface", "Segoe UI")),
+                    new XElement(A + "latin", new XAttribute("typeface", displayFont ? F_DISPLAY : F_BODY)),
                     new XElement(A + "ea", new XAttribute("typeface", "Microsoft YaHei")),
-                    new XElement(A + "cs", new XAttribute("typeface", "Segoe UI"))),
+                    new XElement(A + "cs", new XAttribute("typeface", displayFont ? F_DISPLAY : F_BODY))),
                 new XElement(A + "t", line));
             para.Add(run);
             txBody.Add(para);
@@ -761,6 +864,8 @@ public static class PptxWriter
     private const string C_TEXT = "E8ECF2";
     private const string C_MUTED = "9AA7BC";
     private const string C_GHOST = "223047";
+    private const string F_DISPLAY = "DCC-MCP Display";
+    private const string F_BODY = "DCC-MCP Body";
 
     private static XElement NotesSlideXml(
         string notes,
@@ -806,7 +911,12 @@ public static class PptxWriter
         }
         foreach (XElement latin in slide.Descendants(A + "latin").Concat(slide.Descendants(A + "cs")))
         {
-            latin.SetAttributeValue("typeface", style.LatinFont);
+            string? role = latin.Attribute("typeface")?.Value;
+            latin.SetAttributeValue(
+                "typeface",
+                string.Equals(role, F_DISPLAY, StringComparison.Ordinal)
+                    ? style.LatinDisplayFont
+                    : style.LatinFont);
         }
         foreach (XElement eastAsian in slide.Descendants(A + "ea"))
         {
@@ -850,12 +960,24 @@ public static class PptxWriter
         return new XElement(P + "sp", NonVisualProps(id, null, "Oval", textBox: false), spPr, Style(), EmptyTxBody());
     }
 
-    private static XElement TextBox(int id, long x, long y, long cx, long cy, string text, double sizePt, string colorHex, bool bold, string align = "l")
+    private static XElement TextBox(
+        int id,
+        long x,
+        long y,
+        long cx,
+        long cy,
+        string text,
+        double sizePt,
+        string colorHex,
+        bool bold,
+        string align = "l",
+        bool displayFont = false)
     {
         var spPr = new XElement(P + "spPr",
             new XElement(A + "xfrm", new XElement(A + "off", new XAttribute("x", x), new XAttribute("y", y)), new XElement(A + "ext", new XAttribute("cx", cx), new XAttribute("cy", cy))),
             new XElement(A + "prstGeom", new XAttribute("prst", "rect"), new XElement(A + "avLst")),
-            new XElement(A + "noFill"));
+            new XElement(A + "noFill"),
+            new XElement(A + "ln", new XElement(A + "noFill")));
         var txBody = new XElement(P + "txBody",
             new XElement(A + "bodyPr", new XAttribute("wrap", "square")),
             new XElement(A + "lstStyle"));
@@ -869,9 +991,9 @@ public static class PptxWriter
                     new XAttribute("sz", (int)(sizePt * 100)),
                     bold ? new XAttribute("b", "1") : null,
                     new XElement(A + "solidFill", new XElement(A + "srgbClr", new XAttribute("val", colorHex))),
-                    new XElement(A + "latin", new XAttribute("typeface", "Segoe UI")),
+                    new XElement(A + "latin", new XAttribute("typeface", displayFont ? F_DISPLAY : F_BODY)),
                     new XElement(A + "ea", new XAttribute("typeface", "Microsoft YaHei")),
-                    new XElement(A + "cs", new XAttribute("typeface", "Segoe UI"))),
+                    new XElement(A + "cs", new XAttribute("typeface", displayFont ? F_DISPLAY : F_BODY))),
                 new XElement(A + "t", line));
             para.Add(run);
             txBody.Add(para);
@@ -929,12 +1051,12 @@ public static class PptxWriter
         new XElement(A + "lstStyle"),
         new XElement(A + "p"));
 
-    /// <summary>Required p:style block every sp in a slide carries.</summary>
+    /// <summary>Neutral p:style block; geometry owns its fill/line/effect explicitly.</summary>
     private static XElement Style() =>
         new XElement(P + "style",
-            new XElement(A + "lnRef", new XAttribute("idx", "1"), new XElement(A + "schemeClr", new XAttribute("val", "accent1"))),
-            new XElement(A + "fillRef", new XAttribute("idx", "3"), new XElement(A + "schemeClr", new XAttribute("val", "accent1"))),
-            new XElement(A + "effectRef", new XAttribute("idx", "2"), new XElement(A + "schemeClr", new XAttribute("val", "accent1"))),
+            new XElement(A + "lnRef", new XAttribute("idx", "0"), new XElement(A + "schemeClr", new XAttribute("val", "accent1"))),
+            new XElement(A + "fillRef", new XAttribute("idx", "0"), new XElement(A + "schemeClr", new XAttribute("val", "accent1"))),
+            new XElement(A + "effectRef", new XAttribute("idx", "0"), new XElement(A + "schemeClr", new XAttribute("val", "accent1"))),
             new XElement(A + "fontRef", new XAttribute("idx", "minor"), new XElement(A + "schemeClr", new XAttribute("val", "lt1"))));
 
     private static XElement[] StyleLevels(int sizeCentipoints) =>

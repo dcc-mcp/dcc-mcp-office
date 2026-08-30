@@ -1,0 +1,14 @@
+{
+  "schema_version": "dcc-mcp-showcase-assets/1.0",
+  "generator": "OpenAI ImageGen",
+  "mode": "new_generation",
+  "referenced_images": [],
+  "assets": [
+    {
+      "path": "assets/editorial-office-hero.jpg",
+      "prompt_summary": "Editorial collage of governed Office automation outputs, warm paper and cobalt glass, negative space at left.",
+      "source_dimensions": [1672, 941],
+      "showcase_dimensions": [1280, 720]
+    }
+  ]
+}

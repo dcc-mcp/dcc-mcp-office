@@ -1,0 +1,52 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Executive Word brief",
+  "summary": "A polished editable DOCX is inspected and exported by the real Word sidecar, then every native PDF page is rendered for review.",
+  "capabilities": [
+    "document.inspect",
+    "batch.convert"
+  ],
+  "inputs": [
+    "content.json",
+    "asset-manifest.json",
+    "assets/document-evidence-banner.jpg"
+  ],
+  "artifacts": [
+    "dcc-mcp-office-executive-brief.docx",
+    "pdf/dcc-mcp-office-executive-brief.pdf",
+    "pages/page-1.png",
+    "pages/page-2.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:49:52Z",
+  "verification": [
+    "Word inspection reported document kind document.",
+    "Word exported a non-empty PDF through the governed batch.convert capability.",
+    "Poppler rendered all 2 native PDF pages for visual review."
+  ],
+  "reproduce": [
+    "python scripts/build_showcase_docx.py",
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "content.json": "8c49e407baf75a9e5907c09f1bb89e8583fa429b24cb51a1ad3546eed17b3464",
+    "asset-manifest.json": "5545ca3bd87dcea23c6a82884ebaddf6d684833e3d125f67bae4bab532e5ac6f",
+    "assets/document-evidence-banner.jpg": "6c77181c302aba3da9f8946fc257892c41bb5db58cc49b817a2206d9d2acc967",
+    "dcc-mcp-office-executive-brief.docx": "a3504a6f007b15b5e2b92bbb6fd5ce121a1873911fc4008ab5182ae766b5be35",
+    "pdf/dcc-mcp-office-executive-brief.pdf": "4e911eee0404c164eb9d32b481f0ac84a7ee92dd7cc7d598905dee2ca04181ab",
+    "pages/page-1.png": "cd9a65dafd1794cda7dc1e365e2c53e595d9f748abca1056b6a108ac928100b3",
+    "pages/page-2.png": "20750f9f7815ad98dac91bdd39c72d12c25f0307c2b9f5d691f910a57bb0b53a",
+    "preview.png": "b204306626ec494543b06fe4583443fa0df82ca3e9e08b77e76c5707dc8044ab",
+    "transcript.json": "f489af4acecf27190ab8d751c8b276b4034e43d3a2efb3e413ebc770167b5cb5"
+  }
+}

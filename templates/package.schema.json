@@ -58,6 +58,7 @@
           "additionalProperties": false,
           "properties": {
             "latin": {"type": "string", "minLength": 1},
+            "display_latin": {"type": "string", "minLength": 1},
             "east_asian": {"type": "string", "minLength": 1}
           }
         }

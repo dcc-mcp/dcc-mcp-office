@@ -1,0 +1,102 @@
+{
+  "schema_version": "office-ir/1.0",
+  "kind": "presentation",
+  "document_id": "showcase:image-rich-office-story",
+  "metadata": {
+    "title": "DCC-MCP Office Visual Story",
+    "author": "DCC-MCP",
+    "language": "en-US"
+  },
+  "template": {
+    "uri": "brand://dcc-mcp/momentum-cobalt",
+    "version": "1.1.0"
+  },
+  "resources": [],
+  "document": {
+    "slides": [
+      {
+        "semantic_layout": "title_cover",
+        "title": "Office automation,\nmade visible.",
+        "images": [
+          {"id": "Editorial Office hero", "uri": "assets/editorial-office-hero.jpg"}
+        ],
+        "content_blocks": [
+          {
+            "type": "text",
+            "paragraphs": ["Original editorial assets, semantic layouts and native PowerPoint verification."]
+          }
+        ],
+        "speaker_notes": "All imagery in this deck was generated specifically for the public showcase."
+      },
+      {
+        "semantic_layout": "image_left_text_right",
+        "title": "A governed pipeline turns intent into proof",
+        "images": [
+          {"id": "Governed transformation", "uri": "assets/governed-flow.jpg"}
+        ],
+        "content_blocks": [
+          {"type": "image", "resource": "assets/governed-flow.jpg"},
+          {
+            "type": "bullets",
+            "items": [
+              "One versioned Presentation IR enters the pipeline",
+              "A registered brand package resolves every semantic layout",
+              "The Office host enforces policy before native execution",
+              "Editable artifacts, previews and checksums leave together"
+            ]
+          }
+        ],
+        "speaker_notes": "The image is a source asset, not a flattened screenshot of the slide."
+      },
+      {
+        "semantic_layout": "image_left_text_right",
+        "title": "The agent composes with a real visual system",
+        "images": [
+          {"id": "Creative system", "uri": "assets/creative-system.jpg"}
+        ],
+        "content_blocks": [
+          {"type": "image", "resource": "assets/creative-system.jpg"},
+          {
+            "type": "bullets",
+            "items": [
+              "Color and typography stay in versioned brand packages",
+              "Layout intent stays semantic instead of coordinate-heavy",
+              "Generated assets are reusable inputs with their own hashes",
+              "PowerPoint remains the final fidelity judge"
+            ]
+          }
+        ],
+        "speaker_notes": "This slide demonstrates the image-left/text-right renderer."
+      },
+      {
+        "semantic_layout": "image_grid",
+        "title": "Different artifacts, one evidence standard",
+        "images": [
+          {"id": "Verified output", "uri": "assets/verified-output.jpg"},
+          {"id": "Executive evidence", "uri": "assets/document-evidence-banner.jpg"},
+          {"id": "Measured capability", "uri": "assets/data-landscape.jpg"}
+        ],
+        "content_blocks": [],
+        "speaker_notes": "The grid embeds three independent source images as editable slide media."
+      },
+      {
+        "semantic_layout": "closing",
+        "title": "Design boldly.\nVerify natively.",
+        "content_blocks": [
+          {
+            "type": "text",
+            "paragraphs": ["A practical visual feedback loop for an Office agent that can prove its work."]
+          }
+        ],
+        "speaker_notes": "Close."
+      }
+    ],
+    "export_policy": {
+      "pdf": false,
+      "slide_previews": true,
+      "source_editable": true
+    }
+  },
+  "validation": ["no_text_overflow", "no_out_of_bounds"],
+  "outputs": ["pptx", "slide-previews"]
+}

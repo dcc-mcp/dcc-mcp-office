@@ -1,0 +1,53 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Production capability dashboard",
+  "summary": "Workbook IR becomes an editable XLSX with a capability ledger and chart, then Excel exports a native PDF preview.",
+  "capabilities": [
+    "office-generate-production-dashboard",
+    "batch.convert"
+  ],
+  "inputs": [
+    "input.json",
+    "asset-manifest.json",
+    "assets/data-landscape.jpg"
+  ],
+  "artifacts": [
+    "showcase-dcc-mcp-office-runtime-dashboard.xlsx",
+    "pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf",
+    "pages/page-1.png",
+    "pages/page-2.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "openxml",
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:56:07Z",
+  "verification": [
+    "The generator returned success with two worksheets and six data rows.",
+    "Excel exported a non-empty PDF through batch.convert.",
+    "All 2 PDF pages were rendered with Poppler for visual review."
+  ],
+  "reproduce": [
+    "python skills/office-generate-production-dashboard/scripts/generate_dashboard.py --input showcase/production-dashboard/input.json --out showcase/production-dashboard",
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "input.json": "996bcb604768875129d7428c06da9570343c42fb394cec150c24bbe1e6ada13d",
+    "asset-manifest.json": "76e555399090146e63e85c8a5a4f4f8f616b95ff305f098e41a2bf8668c4ec80",
+    "assets/data-landscape.jpg": "e94b9337f78525d206f05c93917ee12f8ff2b78980cd110d62474870a0acfc48",
+    "showcase-dcc-mcp-office-runtime-dashboard.xlsx": "4a256c81e71b1f785b1903a5b07b387d31b000bb30fe60ace8084fc4669e983c",
+    "pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf": "80152824247964af36cb1704515207a25ba5883109aa7e2341d0ec7ce90643f6",
+    "pages/page-1.png": "b170998876572e46871c1a032ace9dd0d52b7c01e6e42947e968ad74e0d6e910",
+    "pages/page-2.png": "c84363ae13cea3c0a5c5cd3475ab04ba36ed3edcbf28a8848ae69060d8085c4f",
+    "preview.png": "205dc3620ab02c496ab450408daedfa27b8242f20e487f8868b59d4d0b74850b",
+    "transcript.json": "3c555dc93206f3161162db72234aa5b08b6ec5483e21b8e33bf6a6839dfd809f"
+  }
+}

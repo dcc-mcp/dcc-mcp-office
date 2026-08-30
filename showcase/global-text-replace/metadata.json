@@ -1,0 +1,84 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Safe global text replacement",
+  "summary": "One rule is dry-run, confirmation-gated, checkpointed and committed across PowerPoint, Word and Excel copies.",
+  "capabilities": [
+    "batch.replace_text",
+    "slide.render"
+  ],
+  "inputs": [
+    "before/document.docx",
+    "before/presentation.pptx",
+    "before/workbook.xlsx"
+  ],
+  "artifacts": [
+    "after/document.docx",
+    "after/presentation.pptx",
+    "after/workbook.xlsx",
+    "checkpoints/excel-preimage.xlsx",
+    "checkpoints/powerpoint-preimage.pptx",
+    "checkpoints/word-preimage.docx",
+    "slides/after/slide-001.png",
+    "slides/after/slide-002.png",
+    "slides/after/slide-003.png",
+    "slides/after/slide-004.png",
+    "slides/after/slide-005.png",
+    "slides/after/slide-006.png",
+    "slides/after/slide-007.png",
+    "slides/before/slide-001.png",
+    "slides/before/slide-002.png",
+    "slides/before/slide-003.png",
+    "slides/before/slide-004.png",
+    "slides/before/slide-005.png",
+    "slides/before/slide-006.png",
+    "slides/before/slide-007.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:10:36Z",
+  "verification": [
+    "Dry-run found the 2025年度 marker in PowerPoint, Word and Excel without modifying files.",
+    "Each unconfirmed commit was refused with OFFICE_USER_CONFIRMATION_REQUIRED.",
+    "Each confirmed commit produced a byte-exact checkpoint before write.",
+    "A second dry-run found no old marker and found the new 2026年度 marker."
+  ],
+  "reproduce": [
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "before/document.docx": "52d5461d53eb955c98268cc51e78844243b16609f8b55e324f4a85a11f3f1f32",
+    "before/presentation.pptx": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679",
+    "before/workbook.xlsx": "d18460565b57fa480eb54b9851594c08ba0a426c861b67c0b2f336b88b76c92f",
+    "after/document.docx": "7784b6c25b1d34eac69f0098bd73c5c770127778558b6eb4b8a228eea5d6e3b4",
+    "after/presentation.pptx": "9792e99a3ad0a79f5680caf01961d532d2b8496f38596422067784c113514bd9",
+    "after/workbook.xlsx": "82bb54cbfcdf4549424b2541d9411a6870788761e4226c01908682c67e5cfc4c",
+    "checkpoints/excel-preimage.xlsx": "d18460565b57fa480eb54b9851594c08ba0a426c861b67c0b2f336b88b76c92f",
+    "checkpoints/powerpoint-preimage.pptx": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679",
+    "checkpoints/word-preimage.docx": "52d5461d53eb955c98268cc51e78844243b16609f8b55e324f4a85a11f3f1f32",
+    "slides/after/slide-001.png": "feaa9dde8f61b6a1d48a794c5ce712e723de83e333c6f1178b827ec6e7ce2d7b",
+    "slides/after/slide-002.png": "933d4b71087b84b62c96061872014f76777146d4054fb063ada51f246baa1e75",
+    "slides/after/slide-003.png": "ac5287622529cad599e9bf06475352ce9dd369c4cf428ab7b84ddc5e4bcc74d7",
+    "slides/after/slide-004.png": "61c7e3410fdd53ff3e170de933a1ded2bd1637b423bf38553c8e877c2cf2b88d",
+    "slides/after/slide-005.png": "1a2a1e4ae3bac5f34a90690bc6432741b685a76109ffabb87fcc9f671465d879",
+    "slides/after/slide-006.png": "63368b810e374520c1ee4f85ff4904735c96fc59e531934da32481cb0e594a5b",
+    "slides/after/slide-007.png": "08b1e52cdaffee5a9183019ec55f9fe6e7bf269d184f23882f03d6df2ab91a0a",
+    "slides/before/slide-001.png": "feaa9dde8f61b6a1d48a794c5ce712e723de83e333c6f1178b827ec6e7ce2d7b",
+    "slides/before/slide-002.png": "933d4b71087b84b62c96061872014f76777146d4054fb063ada51f246baa1e75",
+    "slides/before/slide-003.png": "ac5287622529cad599e9bf06475352ce9dd369c4cf428ab7b84ddc5e4bcc74d7",
+    "slides/before/slide-004.png": "61c7e3410fdd53ff3e170de933a1ded2bd1637b423bf38553c8e877c2cf2b88d",
+    "slides/before/slide-005.png": "1a2a1e4ae3bac5f34a90690bc6432741b685a76109ffabb87fcc9f671465d879",
+    "slides/before/slide-006.png": "7a4aac5a3f7a10e59d9d956e2f6d19d18645a3c4da7992a4dd8ee20987401aaf",
+    "slides/before/slide-007.png": "08b1e52cdaffee5a9183019ec55f9fe6e7bf269d184f23882f03d6df2ab91a0a",
+    "preview.png": "14133dd65db177740f7ffe0fe92ec4a0c2cb3928c61f27a4f1cd28e006a16393",
+    "transcript.json": "ecd08b081e4fd8fdcd41bf2503cef013748bd7b1b454a053eee17fe7c56f086a"
+  }
+}

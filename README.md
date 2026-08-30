@@ -23,6 +23,26 @@ These status vocabularies describe different dimensions. See the
 [delivery vocabulary crosswalk](./docs/README.md#delivery-vocabulary) before
 comparing proposal phases, repository milestones, or tool priorities.
 
+## Executable showcase gallery
+
+![dcc-mcp-office turns governed structured inputs into editable PowerPoint, Word and Excel artifacts plus verified PDF evidence](./docs/images/office-suite-showcase.webp)
+
+Seven checked-in cases demonstrate the current PowerPoint, Word and Excel
+stack with editable source files, native Office renders, sanitized
+`office-rpc/1` transcripts and SHA-256 manifests. They are captured from the
+repository's real Open XML and desktop COM paths—not from a substitute renderer.
+
+| Presentation systems | Documents and data |
+|---|---|
+| [![One presentation story rendered through three project-owned brand templates](./showcase/template-gallery/preview.png)](./showcase/template-gallery/) | [![A polished Word brief exported through native Word](./showcase/word-executive-brief/preview.png)](./showcase/word-executive-brief/) |
+| [![Original modern visual assets composed into semantic slide layouts](./showcase/image-rich-deck/preview.png)](./showcase/image-rich-deck/) | [![An editable Excel capability dashboard rendered through native Excel](./showcase/production-dashboard/preview.png)](./showcase/production-dashboard/) |
+
+Explore the [complete showcase gallery](./showcase/README.md), including the
+template-first deck pipeline, mixed-Office PDF batch, confirmation-gated global
+replacement workflow and their reproducible verification evidence. Graph,
+Office.js and the later application adapters remain outside this gallery's
+current evidence boundary.
+
 ## Layout
 
 ```text

@@ -1,0 +1,54 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Mixed Office batch to PDF",
+  "summary": "PowerPoint, Word and Excel artifacts are exported by isolated native COM sidecars into one validated PDF batch.",
+  "capabilities": [
+    "batch.convert"
+  ],
+  "inputs": [
+    "inputs/office-brief.docx",
+    "inputs/office-dashboard.xlsx",
+    "inputs/office-suite.pptx"
+  ],
+  "artifacts": [
+    "artifacts/office-brief.pdf",
+    "artifacts/office-dashboard.pdf",
+    "artifacts/office-suite.pdf",
+    "pages/office-brief.png",
+    "pages/office-dashboard.png",
+    "pages/office-suite.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:18:16Z",
+  "verification": [
+    "Three application-specific sidecars completed one PDF export each.",
+    "Every output passed openable, non-empty and reasonable-page-count validation.",
+    "Poppler rendered the first page of every PDF for visual review."
+  ],
+  "reproduce": [
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "inputs/office-brief.docx": "52d5461d53eb955c98268cc51e78844243b16609f8b55e324f4a85a11f3f1f32",
+    "inputs/office-dashboard.xlsx": "d78635b2082e2c6daf456330df6145984de13a21c63a35dd963bc9a2c2ded708",
+    "inputs/office-suite.pptx": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679",
+    "artifacts/office-brief.pdf": "ce000bc941ce9db13da9c8afd08f317b09c7c245b6159f8dbce6e64ca7eee61b",
+    "artifacts/office-dashboard.pdf": "499d1b05c13c72ae65c82450ea28a3ea6a1e544385ae34fe99304ff260299d51",
+    "artifacts/office-suite.pdf": "fcfbfaa927673f4a15736e9e625a5c18fc810fc921290b96c43aca686e802815",
+    "pages/office-brief.png": "f088dfb41898e8d6848ad61259d86d28f350676709326a8a617d00f2d71832ff",
+    "pages/office-dashboard.png": "df4f5f04abc136050650d5e3eb901da358602751e6bf23b6438e32ebcce93422",
+    "pages/office-suite.png": "4464c02bc38e8af6df9bc60c4e21645a07957af07382a7178d1c40a5177d8e1b",
+    "preview.png": "7d115c340482b5f9384d22958ad286a69e0121bc7f1618b025f87f6e2f13c5ed",
+    "transcript.json": "2182a9e784939dd5945021a5421b9d85bdb74c34abbb294d0f9a9779e64a4d69"
+  }
+}

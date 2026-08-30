@@ -1,0 +1,5058 @@
+{
+  "generator": {
+    "success": true,
+    "message": "dashboard 'showcase:dcc-mcp-office-runtime-dashboard' generated",
+    "context": {
+      "artifact": "<workspace>/showcase/production-dashboard/showcase-dcc-mcp-office-runtime-dashboard.xlsx",
+      "summary": {
+        "sheets": [
+          {
+            "name": "Runtime Surface",
+            "tables": 1,
+            "rows": 3
+          },
+          {
+            "name": "Workflow Packs",
+            "tables": 1,
+            "rows": 3
+          }
+        ],
+        "rows": 6
+      }
+    }
+  },
+  "handshake": {
+    "protocol_version": "office-rpc/1",
+    "host_id": "office-host:excel:session-1",
+    "capability_manifest": {
+      "provider": "dcc-mcp-office",
+      "provider_version": "0.2.3",
+      "protocol_version": "office-rpc/1",
+      "application": null,
+      "execution_modes": [
+        "desktop_com"
+      ],
+      "capabilities": {
+        "batch.convert": "0.1.0",
+        "batch.replace_text": "0.1.0",
+        "document.inspect": "0.1.0"
+      },
+      "template_packages": {
+        "brand://dcc-mcp/default": {
+          "version": "1.0.0",
+          "kind": "presentation",
+          "source_kind": "embedded",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/executive-violet": {
+          "version": "1.1.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/momentum-cobalt": {
+          "version": "1.1.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/studio-light": {
+          "version": "1.1.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        }
+      },
+      "limits": {
+        "max_parallel_writes": 1,
+        "requires_user_session": true
+      }
+    }
+  },
+  "convert": {
+    "submission": {
+      "operation_id": "job:c3269f15ab0c442e88404e4a53f75840",
+      "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+      "phase": "queued",
+      "changed": {
+        "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+        "capability": "batch.convert",
+        "phase": "queued"
+      },
+      "warnings": [],
+      "artefacts": [],
+      "validation": {
+        "accepted": true
+      },
+      "backend": "job",
+      "indeterminate": false,
+      "audit": {
+        "policy": {
+          "vba_application_run": "deny",
+          "macros": "deny",
+          "external_links_auto_update": "deny",
+          "ole_activex_activation": "deny",
+          "protected_view_bypass": "deny",
+          "arbitrary_execute_mso": "deny",
+          "print": "confirm",
+          "overwrite_original": "checkpoint_and_confirm",
+          "send_email": "confirm",
+          "meeting_invite": "confirm",
+          "access_macros": "deny_or_confirm",
+          "project_publish": "confirm",
+          "workspace_only": true,
+          "workspace_root": "<workspace>",
+          "execute_mso_allowlist": {},
+          "execute_mso_confirm": [
+            "PrintPreviewAndPrint"
+          ],
+          "checkpoint": true,
+          "render_after": false
+        },
+        "confirmation": null,
+        "security": {
+          "automation_security": {
+            "applicable": false,
+            "observed": null,
+            "expected": null,
+            "enforced": false
+          },
+          "display_alerts_disabled": null,
+          "execute_mso": "deny_all",
+          "external_links_auto_update_disabled": null,
+          "macros": "not_applicable",
+          "workspace_only": true
+        },
+        "backend": "job",
+        "host_version": "0.2.3",
+        "application": null,
+        "duration_ms": 9
+      }
+    },
+    "job": {
+      "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+      "capability": "batch.convert",
+      "phase": "succeeded",
+      "stage": "succeeded",
+      "completed": 1,
+      "total": 1,
+      "cancel_requested": false,
+      "created_at": "2026-08-30T14:55:51.5460149+00:00",
+      "updated_at": "2026-08-30T14:56:06.9888192+00:00",
+      "result": {
+        "operation_id": "3d6bc61e545541f99cc1c9de7da6cc44",
+        "changed": {
+          "files": 1,
+          "processed": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "cancelled": false,
+          "target_format": "pdf",
+          "items": [
+            {
+              "InputPath": "<workspace>/showcase/production-dashboard/showcase-dcc-mcp-office-runtime-dashboard.xlsx",
+              "OutputPath": "<workspace>/showcase/production-dashboard/pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf",
+              "Ok": true,
+              "ErrorCode": null,
+              "Error": null,
+              "Bytes": 242509,
+              "PageCount": 2,
+              "Backend": "desktop_com",
+              "Indeterminate": false,
+              "Warnings": []
+            }
+          ]
+        },
+        "warnings": [],
+        "artefacts": [
+          {
+            "artifact_id": "0eb49e71288c4f76bee004a2ac7b2341",
+            "kind": "pdf",
+            "path": "<workspace>/showcase/production-dashboard/pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf",
+            "sha256": "80152824247964af36cb1704515207a25ba5883109aa7e2341d0ec7ce90643f6"
+          }
+        ],
+        "validation": {
+          "output_openable": true,
+          "non_empty": true,
+          "page_count_reasonable": true
+        },
+        "backend": "desktop_com",
+        "indeterminate": false,
+        "audit": {
+          "policy": {
+            "vba_application_run": "deny",
+            "macros": "deny",
+            "external_links_auto_update": "deny",
+            "ole_activex_activation": "deny",
+            "protected_view_bypass": "deny",
+            "arbitrary_execute_mso": "deny",
+            "print": "confirm",
+            "overwrite_original": "checkpoint_and_confirm",
+            "send_email": "confirm",
+            "meeting_invite": "confirm",
+            "access_macros": "deny_or_confirm",
+            "project_publish": "confirm",
+            "workspace_only": true,
+            "workspace_root": "<workspace>",
+            "execute_mso_allowlist": {},
+            "execute_mso_confirm": [
+              "PrintPreviewAndPrint"
+            ],
+            "checkpoint": true,
+            "render_after": false
+          },
+          "confirmation": null,
+          "security": {
+            "automation_security": {
+              "applicable": true,
+              "observed": 3,
+              "expected": 3,
+              "enforced": true
+            },
+            "display_alerts_disabled": true,
+            "execute_mso": "deny_all",
+            "external_links_auto_update_disabled": true,
+            "macros": "deny_observed",
+            "workspace_only": true
+          },
+          "backend": "desktop_com",
+          "host_version": "0.2.3",
+          "application": {
+            "Name": "excel",
+            "Version": "16.0",
+            "Bitness": "x64",
+            "Language": ""
+          },
+          "duration_ms": 15394
+        }
+      },
+      "error": null
+    }
+  },
+  "rpc": [
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "office.host.handshake",
+        "params": {
+          "gateway_version": "showcase-capture",
+          "protocol_versions": [
+            "office-rpc/1"
+          ],
+          "requested_app": "excel"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocol_version": "office-rpc/1",
+          "host_id": "office-host:excel:session-1",
+          "capability_manifest": {
+            "provider": "dcc-mcp-office",
+            "provider_version": "0.2.3",
+            "protocol_version": "office-rpc/1",
+            "application": null,
+            "execution_modes": [
+              "desktop_com"
+            ],
+            "capabilities": {
+              "batch.convert": "0.1.0",
+              "batch.replace_text": "0.1.0",
+              "document.inspect": "0.1.0"
+            },
+            "template_packages": {
+              "brand://dcc-mcp/default": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "embedded",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/executive-violet": {
+                "version": "1.1.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/momentum-cobalt": {
+                "version": "1.1.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/studio-light": {
+                "version": "1.1.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              }
+            },
+            "limits": {
+              "max_parallel_writes": 1,
+              "requires_user_session": true
+            }
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "office.command.execute",
+        "params": {
+          "capability": "batch.convert",
+          "input": {
+            "inputs": [
+              "<workspace>/showcase/production-dashboard/showcase-dcc-mcp-office-runtime-dashboard.xlsx"
+            ],
+            "output_directory": "<workspace>/showcase/production-dashboard/pdf",
+            "target_format": "pdf",
+            "overwrite": "fail"
+          },
+          "policy": {
+            "workspace_root": "<workspace>"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "operation_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "phase": "queued",
+          "changed": {
+            "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "capability": "batch.convert",
+            "phase": "queued"
+          },
+          "warnings": [],
+          "artefacts": [],
+          "validation": {
+            "accepted": true
+          },
+          "backend": "job",
+          "indeterminate": false,
+          "audit": {
+            "policy": {
+              "vba_application_run": "deny",
+              "macros": "deny",
+              "external_links_auto_update": "deny",
+              "ole_activex_activation": "deny",
+              "protected_view_bypass": "deny",
+              "arbitrary_execute_mso": "deny",
+              "print": "confirm",
+              "overwrite_original": "checkpoint_and_confirm",
+              "send_email": "confirm",
+              "meeting_invite": "confirm",
+              "access_macros": "deny_or_confirm",
+              "project_publish": "confirm",
+              "workspace_only": true,
+              "workspace_root": "<workspace>",
+              "execute_mso_allowlist": {},
+              "execute_mso_confirm": [
+                "PrintPreviewAndPrint"
+              ],
+              "checkpoint": true,
+              "render_after": false
+            },
+            "confirmation": null,
+            "security": {
+              "automation_security": {
+                "applicable": false,
+                "observed": null,
+                "expected": null,
+                "enforced": false
+              },
+              "display_alerts_disabled": null,
+              "execute_mso": "deny_all",
+              "external_links_auto_update_disabled": null,
+              "macros": "not_applicable",
+              "workspace_only": true
+            },
+            "backend": "job",
+            "host_version": "0.2.3",
+            "application": null,
+            "duration_ms": 9
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5493266+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.progress",
+          "params": {
+            "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "stage": "queued",
+            "completed": 0,
+            "total": 1
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.application.busy",
+          "params": {
+            "event": "office.application.busy",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:excel:session-1",
+            "application": "excel",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:55:51.5732038+00:00",
+            "correlation_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "selection": null,
+            "context": {
+              "busy": true,
+              "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.progress",
+          "params": {
+            "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "stage": "running",
+            "completed": 0,
+            "total": 1
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 16,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 16,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 17,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 17,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 19,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 19,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 22,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 22,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 23,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 23,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 24,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 24,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 25,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 25,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 26,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 26,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 27,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 27,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 28,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 28,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 29,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 29,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 30,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 30,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 31,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 31,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 32,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 32,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 33,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 33,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 34,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 34,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 35,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 35,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 36,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 36,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 37,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 37,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 38,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 38,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 39,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 39,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 40,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 40,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 41,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 41,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 42,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 42,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 43,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 43,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 44,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 44,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 45,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 45,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 46,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 46,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 47,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 47,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 48,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 48,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 49,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 49,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 50,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 50,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 51,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 51,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 52,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 52,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 53,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 53,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 54,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 54,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 55,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 55,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 56,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 56,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 57,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 57,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 58,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 58,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 59,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 59,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 60,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 60,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 61,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 61,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 62,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 62,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 63,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 63,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 64,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 64,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 65,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 65,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 66,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 66,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.application.started",
+          "params": {
+            "event": "office.application.started",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:excel:session-1",
+            "application": "excel",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:55:57.7337601+00:00",
+            "correlation_id": "host:desktop-attach",
+            "selection": null,
+            "context": {
+              "com_attach_state": "attached"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 67,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 67,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 68,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 68,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 69,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 69,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 70,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 70,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 71,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 71,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 72,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 72,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 73,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 73,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 74,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 74,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 75,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 75,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 76,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 76,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 77,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 77,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 78,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 78,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 79,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 79,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 80,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 80,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 81,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 81,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 82,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 82,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 83,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 83,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 84,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 84,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 85,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 85,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 86,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 86,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 87,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 87,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 88,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 88,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 89,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 89,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 90,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 90,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 91,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 91,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 92,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 92,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 93,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 93,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 94,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 94,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 95,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 95,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 96,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 96,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 97,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 97,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 98,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 98,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 99,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 99,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 100,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 100,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 101,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 101,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 102,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 102,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 103,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 103,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 104,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 104,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 105,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 105,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 106,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 106,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 107,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 107,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 108,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 108,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 109,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 109,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 110,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 110,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 111,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 111,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 112,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 112,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 113,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 113,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 114,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 114,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 115,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 115,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 116,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 116,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 117,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 117,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 118,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 118,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 119,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 119,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 120,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 120,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 121,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 121,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 122,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 122,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 123,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 123,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 124,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 124,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 125,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 125,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 126,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 126,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 127,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 127,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 128,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 128,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 129,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 129,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 130,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 130,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 131,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 131,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 132,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 132,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 133,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 133,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 134,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 134,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 135,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 135,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 136,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 136,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 137,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 137,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 138,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 138,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 139,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 139,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 140,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 140,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 141,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 141,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 142,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 142,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 143,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 143,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 144,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 144,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 145,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 145,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 146,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 146,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 147,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 147,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 148,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 148,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 149,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 149,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 150,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 150,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 151,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 151,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 152,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 152,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 153,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 153,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 154,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 154,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 155,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 155,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:55:51.5805657+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 156,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 156,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "converting",
+          "completed": 1,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:56:06.9717903+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 157,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 157,
+        "result": {
+          "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+          "capability": "batch.convert",
+          "phase": "succeeded",
+          "stage": "succeeded",
+          "completed": 1,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:55:51.5460149+00:00",
+          "updated_at": "2026-08-30T14:56:06.9888192+00:00",
+          "result": {
+            "operation_id": "3d6bc61e545541f99cc1c9de7da6cc44",
+            "changed": {
+              "files": 1,
+              "processed": 1,
+              "succeeded": 1,
+              "failed": 0,
+              "cancelled": false,
+              "target_format": "pdf",
+              "items": [
+                {
+                  "InputPath": "<workspace>/showcase/production-dashboard/showcase-dcc-mcp-office-runtime-dashboard.xlsx",
+                  "OutputPath": "<workspace>/showcase/production-dashboard/pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf",
+                  "Ok": true,
+                  "ErrorCode": null,
+                  "Error": null,
+                  "Bytes": 242509,
+                  "PageCount": 2,
+                  "Backend": "desktop_com",
+                  "Indeterminate": false,
+                  "Warnings": []
+                }
+              ]
+            },
+            "warnings": [],
+            "artefacts": [
+              {
+                "artifact_id": "0eb49e71288c4f76bee004a2ac7b2341",
+                "kind": "pdf",
+                "path": "<workspace>/showcase/production-dashboard/pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf",
+                "sha256": "80152824247964af36cb1704515207a25ba5883109aa7e2341d0ec7ce90643f6"
+              }
+            ],
+            "validation": {
+              "output_openable": true,
+              "non_empty": true,
+              "page_count_reasonable": true
+            },
+            "backend": "desktop_com",
+            "indeterminate": false,
+            "audit": {
+              "policy": {
+                "vba_application_run": "deny",
+                "macros": "deny",
+                "external_links_auto_update": "deny",
+                "ole_activex_activation": "deny",
+                "protected_view_bypass": "deny",
+                "arbitrary_execute_mso": "deny",
+                "print": "confirm",
+                "overwrite_original": "checkpoint_and_confirm",
+                "send_email": "confirm",
+                "meeting_invite": "confirm",
+                "access_macros": "deny_or_confirm",
+                "project_publish": "confirm",
+                "workspace_only": true,
+                "workspace_root": "<workspace>",
+                "execute_mso_allowlist": {},
+                "execute_mso_confirm": [
+                  "PrintPreviewAndPrint"
+                ],
+                "checkpoint": true,
+                "render_after": false
+              },
+              "confirmation": null,
+              "security": {
+                "automation_security": {
+                  "applicable": true,
+                  "observed": 3,
+                  "expected": 3,
+                  "enforced": true
+                },
+                "display_alerts_disabled": true,
+                "execute_mso": "deny_all",
+                "external_links_auto_update_disabled": true,
+                "macros": "deny_observed",
+                "workspace_only": true
+              },
+              "backend": "desktop_com",
+              "host_version": "0.2.3",
+              "application": {
+                "Name": "excel",
+                "Version": "16.0",
+                "Bitness": "x64",
+                "Language": ""
+              },
+              "duration_ms": 15394
+            }
+          },
+          "error": null
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.document.saved",
+          "params": {
+            "event": "office.document.saved",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:excel:session-1",
+            "application": "excel",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:56:06.9684541+00:00",
+            "correlation_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "selection": null,
+            "context": {
+              "input_path": "<workspace>/showcase/production-dashboard/showcase-dcc-mcp-office-runtime-dashboard.xlsx",
+              "output_path": "<workspace>/showcase/production-dashboard/pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.progress",
+          "params": {
+            "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "stage": "converting",
+            "completed": 1,
+            "total": 1
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 158,
+        "method": "office.host.shutdown",
+        "params": {}
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 158,
+        "result": {
+          "ok": true
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.completed",
+          "params": {
+            "event": "office.job.completed",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:excel:session-1",
+            "application": "excel",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:56:07.0130123+00:00",
+            "correlation_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "selection": null,
+            "context": {
+              "job_id": "job:c3269f15ab0c442e88404e4a53f75840",
+              "capability": "batch.convert",
+              "phase": "succeeded",
+              "completed": 1,
+              "total": 1
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.application.busy",
+          "params": {
+            "event": "office.application.busy",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:excel:session-1",
+            "application": "excel",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:56:07.0373884+00:00",
+            "correlation_id": "job:c3269f15ab0c442e88404e4a53f75840",
+            "selection": null,
+            "context": {
+              "busy": false,
+              "job_id": "job:c3269f15ab0c442e88404e4a53f75840"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

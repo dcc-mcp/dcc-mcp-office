@@ -1,0 +1,14 @@
+{
+  "schema_version": "dcc-mcp-showcase-assets/1.0",
+  "generator": "OpenAI ImageGen",
+  "mode": "new_generation",
+  "referenced_images": [],
+  "assets": [
+    {
+      "path": "assets/data-landscape.jpg",
+      "prompt_summary": "Abstract measured-capability landscape with three glass bars, a total ring and verification pulse.",
+      "source_dimensions": [1672, 941],
+      "showcase_dimensions": [1280, 720]
+    }
+  ]
+}

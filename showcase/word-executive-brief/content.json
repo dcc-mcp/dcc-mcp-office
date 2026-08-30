@@ -1,0 +1,77 @@
+{
+  "kicker": "EXECUTIVE BRIEF · REAL OFFICE EVIDENCE",
+  "title": "Office Automation\nReadiness Brief",
+  "subtitle": "A decision-ready view of the governed PowerPoint, Word and Excel runtime shipped by dcc-mcp-office.",
+  "metadata": {
+    "prepared_for": "Creative production engineering",
+    "status": "Verified showcase",
+    "evidence_date": "2026-08-30"
+  },
+  "decision": {
+    "label": "DECISION IN ONE MINUTE",
+    "title": "Adopt the shared Office core for governed desktop automation.",
+    "body": "The current runtime already covers editable deck generation, native document inspection, safe cross-file text replacement and validated PDF delivery. Every write remains confirmation-gated, checkpointed and independently verifiable."
+  },
+  "capabilities": [
+    {
+      "application": "PowerPoint",
+      "count": "5",
+      "mode": "Open XML + desktop COM",
+      "proof": "Compile branded decks, inspect files, render slides, replace text and export PDF."
+    },
+    {
+      "application": "Word",
+      "count": "3",
+      "mode": "Desktop COM",
+      "proof": "Inspect documents, replace body/header/footer text and export PDF."
+    },
+    {
+      "application": "Excel",
+      "count": "3",
+      "mode": "Desktop COM",
+      "proof": "Inspect workbooks, replace cell text and export native PDF."
+    }
+  ],
+  "workflow": [
+    {
+      "step": "01",
+      "name": "Discover",
+      "body": "Handshake with the application-specific sidecar and accept only its advertised office-rpc/1 capabilities."
+    },
+    {
+      "step": "02",
+      "name": "Plan",
+      "body": "Keep reusable JSON or document input separate from generated artifacts and choose the narrowest valid backend."
+    },
+    {
+      "step": "03",
+      "name": "Preview",
+      "body": "Run non-destructive inspection or dry-run first, then surface the exact files, matches and risk posture."
+    },
+    {
+      "step": "04",
+      "name": "Confirm",
+      "body": "Require explicit confirmation for destructive writes and capture a byte-exact checkpoint before mutation."
+    },
+    {
+      "step": "05",
+      "name": "Verify",
+      "body": "Re-open outputs, validate postconditions, render previews and record a sanitized audit transcript with checksums."
+    }
+  ],
+  "safeguards": [
+    {
+      "title": "Deny by default",
+      "body": "Macros, VBA, external links and arbitrary ExecuteMso paths are never silently relaxed."
+    },
+    {
+      "title": "Application isolation",
+      "body": "PowerPoint, Word and Excel run behind separate per-application sidecars and COM lifecycles."
+    },
+    {
+      "title": "Evidence over claims",
+      "body": "The gallery ships editable Office files, native exports, rendered previews, RPC transcripts and SHA-256 manifests."
+    }
+  ],
+  "boundary": "Current evidence covers PowerPoint, Word and Excel desktop automation. Microsoft Graph and Office.js remain Phase 3; Visio, Project and Access remain future scope and are not represented as shipped capabilities."
+}

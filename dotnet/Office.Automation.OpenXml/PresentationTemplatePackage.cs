@@ -270,6 +270,7 @@ public sealed class PresentationTemplatePackage
             Color(colors, "muted", defaults.Muted),
             Color(colors, "ghost", defaults.Ghost),
             OptionalString(fonts, "latin", defaults.LatinFont),
+            OptionalString(fonts, "display_latin", defaults.LatinDisplayFont),
             OptionalString(fonts, "east_asian", defaults.EastAsianFont));
     }
 
@@ -419,6 +420,7 @@ public sealed record PresentationTemplateStyle(
     string Muted,
     string Ghost,
     string LatinFont,
+    string LatinDisplayFont,
     string EastAsianFont)
 {
     public static PresentationTemplateStyle Default { get; } = new(
@@ -430,6 +432,7 @@ public sealed record PresentationTemplateStyle(
         "E8ECF2",
         "9AA7BC",
         "223047",
-        "Segoe UI",
+        "Aptos",
+        "Aptos Display",
         "Microsoft YaHei");
 }

@@ -1,0 +1,54 @@
+{
+  "schema_version": "office-ir/1.0",
+  "kind": "workbook",
+  "document_id": "showcase:dcc-mcp-office-runtime-dashboard",
+  "metadata": {
+    "title": "DCC-MCP Office Runtime Dashboard",
+    "author": "DCC-MCP",
+    "language": "en-US",
+    "visual_asset": "assets/data-landscape.jpg"
+  },
+  "document": {
+    "worksheets": [
+      {
+        "name": "Runtime Surface",
+        "tables": [
+          {
+            "name": "runtime_surface",
+            "headers": ["Application", "Live capabilities", "Execution modes", "Shipped operations"],
+            "rows": [
+              ["PowerPoint", 5, "Open XML + desktop COM", "compile, inspect, convert, replace, render"],
+              ["Word", 3, "desktop COM", "inspect, convert, replace"],
+              ["Excel", 3, "desktop COM", "inspect, convert, replace"]
+            ]
+          }
+        ]
+      },
+      {
+        "name": "Workflow Packs",
+        "tables": [
+          {
+            "name": "workflow_packs",
+            "headers": ["Skill", "Primary output", "Safety or validation contract"],
+            "rows": [
+              ["office-batch-to-pdf", "PDF batch", "native export plus openability checks"],
+              ["office-global-text-replace", "updated Office files", "dry-run, confirmation and checkpoint"],
+              ["office-generate-production-dashboard", "editable XLSX", "Workbook IR plus formulas and chart"]
+            ]
+          }
+        ]
+      }
+    ],
+    "charts": [
+      {
+        "sheet": "Runtime Surface",
+        "type": "bar",
+        "title": "Live task-level capabilities by application",
+        "categories": "A2:A4",
+        "values": "B2:B4",
+        "anchor": "F10"
+      }
+    ]
+  },
+  "outputs": ["xlsx"]
+}

@@ -1,0 +1,94 @@
+{
+  "schema_version": "office-ir/1.0",
+  "kind": "presentation",
+  "document_id": "showcase:brand-template-gallery",
+  "metadata": {
+    "title": "DCC-MCP Office Brand Template Gallery",
+    "author": "DCC-MCP",
+    "language": "en-US"
+  },
+  "template": {
+    "uri": "brand://dcc-mcp/studio-light",
+    "version": "1.1.0"
+  },
+  "resources": [],
+  "document": {
+    "slides": [
+      {
+        "semantic_layout": "title_cover",
+        "title": "One story.\nThree brand directions.",
+        "images": [
+          {"id": "Editorial Office hero", "uri": "assets/editorial-office-hero.jpg"}
+        ],
+        "content_blocks": [
+          {
+            "type": "text",
+            "paragraphs": ["One semantic story, compiled through three project-owned visual systems."]
+          }
+        ],
+        "speaker_notes": "A controlled comparison: only the template package changes."
+      },
+      {
+        "semantic_layout": "kpi_dashboard",
+        "title": "One runtime already carries eleven verified capabilities",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "3 | desktop apps",
+              "11 | live task capabilities",
+              "3 | brand packages",
+              "7 | semantic layouts exercised",
+              "0 | tolerated overflow",
+              "1 | versioned protocol"
+            ]
+          }
+        ],
+        "speaker_notes": "Numbers are drawn from the same verified showcase capture."
+      },
+      {
+        "semantic_layout": "comparison",
+        "title": "Brand choice changes expression, not the contract",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "Stable contract",
+              "Presentation IR stays unchanged",
+              "Layouts remain semantic",
+              "Outputs stay fully editable"
+            ]
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "Brand variation",
+              "Colors and type are package-owned",
+              "Registry versions every choice",
+              "PowerPoint verifies the result"
+            ]
+          }
+        ],
+        "speaker_notes": "Brand packages are validated before they are advertised."
+      },
+      {
+        "semantic_layout": "closing",
+        "title": "Generate. Render. Score.\nThen refine.",
+        "content_blocks": [
+          {
+            "type": "text",
+            "paragraphs": ["A practical agent feedback loop today; preference learning tomorrow."]
+          }
+        ],
+        "speaker_notes": "Deterministic gates come before learned aesthetic preference."
+      }
+    ],
+    "export_policy": {
+      "pdf": false,
+      "slide_previews": true,
+      "source_editable": true
+    }
+  },
+  "validation": ["no_text_overflow", "no_out_of_bounds"],
+  "outputs": ["pptx", "slide-previews"]
+}

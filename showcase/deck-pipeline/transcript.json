@@ -1,0 +1,1037 @@
+{
+  "handshake": {
+    "protocol_version": "office-rpc/1",
+    "host_id": "office-host:powerpoint:session-1",
+    "capability_manifest": {
+      "provider": "dcc-mcp-office",
+      "provider_version": "0.2.3",
+      "protocol_version": "office-rpc/1",
+      "application": null,
+      "execution_modes": [
+        "openxml"
+      ],
+      "capabilities": {
+        "deck.compile": "0.1.0",
+        "document.inspect": "0.1.0"
+      },
+      "template_packages": {
+        "brand://dcc-mcp/default": {
+          "version": "1.0.0",
+          "kind": "presentation",
+          "source_kind": "embedded",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/executive-violet": {
+          "version": "1.0.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/momentum-cobalt": {
+          "version": "1.0.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/studio-light": {
+          "version": "1.0.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        }
+      },
+      "limits": {
+        "max_parallel_writes": 1,
+        "requires_user_session": true
+      }
+    }
+  },
+  "compile": {
+    "operation_id": "82ced32012414ce98cce00ab6fc1fe1b",
+    "changed": {
+      "files": 1,
+      "slides": 7
+    },
+    "warnings": [],
+    "artefacts": [
+      {
+        "artifact_id": "ba77f96f03834ef5a20ac0f9b5a37230",
+        "kind": "pptx",
+        "path": "<workspace>/showcase/deck-pipeline/dcc-mcp-office-suite.pptx",
+        "sha256": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679"
+      }
+    ],
+    "validation": {
+      "output_openable": true,
+      "non_empty": true,
+      "slide_count_reasonable": true
+    },
+    "backend": "openxml",
+    "indeterminate": false,
+    "audit": {
+      "policy": {
+        "vba_application_run": "deny",
+        "macros": "deny",
+        "external_links_auto_update": "deny",
+        "ole_activex_activation": "deny",
+        "protected_view_bypass": "deny",
+        "arbitrary_execute_mso": "deny",
+        "print": "confirm",
+        "overwrite_original": "checkpoint_and_confirm",
+        "send_email": "confirm",
+        "meeting_invite": "confirm",
+        "access_macros": "deny_or_confirm",
+        "project_publish": "confirm",
+        "workspace_only": true,
+        "workspace_root": "<workspace>",
+        "execute_mso_allowlist": {},
+        "execute_mso_confirm": [
+          "PrintPreviewAndPrint"
+        ],
+        "checkpoint": true,
+        "render_after": false
+      },
+      "confirmation": null,
+      "security": {
+        "automation_security": {
+          "applicable": false,
+          "observed": null,
+          "expected": null,
+          "enforced": false
+        },
+        "display_alerts_disabled": null,
+        "execute_mso": "deny_all",
+        "external_links_auto_update_disabled": null,
+        "macros": "not_applicable",
+        "workspace_only": true
+      },
+      "backend": "openxml",
+      "host_version": "0.2.3",
+      "application": null,
+      "duration_ms": 266
+    }
+  },
+  "inspect": {
+    "operation_id": "27a5c6545dc74d4b8a581b26043690d8",
+    "changed": {
+      "summary": {
+        "slide_count": 7,
+        "title": null,
+        "slides": [
+          {
+            "index": 1,
+            "shapes": 6,
+            "pictures": 1,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          },
+          {
+            "index": 2,
+            "shapes": 20,
+            "pictures": 0,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          },
+          {
+            "index": 3,
+            "shapes": 12,
+            "pictures": 0,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          },
+          {
+            "index": 4,
+            "shapes": 6,
+            "pictures": 0,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          },
+          {
+            "index": 5,
+            "shapes": 13,
+            "pictures": 0,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          },
+          {
+            "index": 6,
+            "shapes": 13,
+            "pictures": 0,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          },
+          {
+            "index": 7,
+            "shapes": 4,
+            "pictures": 1,
+            "pictures_without_alt": 0,
+            "has_notes": true
+          }
+        ]
+      }
+    },
+    "warnings": [],
+    "artefacts": [],
+    "validation": {},
+    "backend": "openxml",
+    "indeterminate": false,
+    "audit": {
+      "policy": {
+        "vba_application_run": "deny",
+        "macros": "deny",
+        "external_links_auto_update": "deny",
+        "ole_activex_activation": "deny",
+        "protected_view_bypass": "deny",
+        "arbitrary_execute_mso": "deny",
+        "print": "confirm",
+        "overwrite_original": "checkpoint_and_confirm",
+        "send_email": "confirm",
+        "meeting_invite": "confirm",
+        "access_macros": "deny_or_confirm",
+        "project_publish": "confirm",
+        "workspace_only": true,
+        "workspace_root": "<workspace>",
+        "execute_mso_allowlist": {},
+        "execute_mso_confirm": [
+          "PrintPreviewAndPrint"
+        ],
+        "checkpoint": true,
+        "render_after": false
+      },
+      "confirmation": null,
+      "security": {
+        "automation_security": {
+          "applicable": false,
+          "observed": null,
+          "expected": null,
+          "enforced": false
+        },
+        "display_alerts_disabled": null,
+        "execute_mso": "deny_all",
+        "external_links_auto_update_disabled": null,
+        "macros": "not_applicable",
+        "workspace_only": true
+      },
+      "backend": "openxml",
+      "host_version": "0.2.3",
+      "application": null,
+      "duration_ms": 96
+    }
+  },
+  "render": {
+    "operation_id": "06364beb743442aba93f77d36c2ba2c5",
+    "changed": {
+      "previews": 7,
+      "ok": 7,
+      "failed": 0,
+      "width": 1280,
+      "height": 720,
+      "overflow": [
+        {
+          "slide": 2,
+          "shape_id": 406,
+          "name": "RoundRect 406",
+          "kind": "shape",
+          "left": 64.80000305175781,
+          "top": 430.55999755859375,
+          "right": 324.00001525878906,
+          "bottom": 563.7599945068359
+        },
+        {
+          "slide": 2,
+          "shape_id": 407,
+          "name": "RoundRect 407",
+          "kind": "shape",
+          "left": 345.6000061035156,
+          "top": 430.55999755859375,
+          "right": 604.8000183105469,
+          "bottom": 563.7599945068359
+        },
+        {
+          "slide": 2,
+          "shape_id": 408,
+          "name": "RoundRect 408",
+          "kind": "shape",
+          "left": 626.4000244140625,
+          "top": 430.55999755859375,
+          "right": 885.6000366210938,
+          "bottom": 563.7599945068359
+        }
+      ]
+    },
+    "warnings": [],
+    "artefacts": [
+      {
+        "artifact_id": "263069df99914a729fca50ca5b23c865",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-001.png",
+        "sha256": "feaa9dde8f61b6a1d48a794c5ce712e723de83e333c6f1178b827ec6e7ce2d7b"
+      },
+      {
+        "artifact_id": "5fbf8dab2b194e5daa98639b4e9d4856",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-002.png",
+        "sha256": "933d4b71087b84b62c96061872014f76777146d4054fb063ada51f246baa1e75"
+      },
+      {
+        "artifact_id": "af1de3244ccc4ca4a94de747c93f87ca",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-003.png",
+        "sha256": "ac5287622529cad599e9bf06475352ce9dd369c4cf428ab7b84ddc5e4bcc74d7"
+      },
+      {
+        "artifact_id": "fce75de44fe34250a50079382e096a10",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-004.png",
+        "sha256": "61c7e3410fdd53ff3e170de933a1ded2bd1637b423bf38553c8e877c2cf2b88d"
+      },
+      {
+        "artifact_id": "c534a70dc0394e9d96daf9c84133e74b",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-005.png",
+        "sha256": "1a2a1e4ae3bac5f34a90690bc6432741b685a76109ffabb87fcc9f671465d879"
+      },
+      {
+        "artifact_id": "f63417bc162d4aeda23bfe8eaef054c7",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-006.png",
+        "sha256": "7a4aac5a3f7a10e59d9d956e2f6d19d18645a3c4da7992a4dd8ee20987401aaf"
+      },
+      {
+        "artifact_id": "953f9e8f3cbf4e6cb5653b6bc47d3a94",
+        "kind": "png",
+        "path": "<workspace>/showcase/deck-pipeline/slides/slide-007.png",
+        "sha256": "08b1e52cdaffee5a9183019ec55f9fe6e7bf269d184f23882f03d6df2ab91a0a"
+      }
+    ],
+    "validation": {},
+    "backend": "desktop_com",
+    "indeterminate": false,
+    "audit": {
+      "policy": {
+        "vba_application_run": "deny",
+        "macros": "deny",
+        "external_links_auto_update": "deny",
+        "ole_activex_activation": "deny",
+        "protected_view_bypass": "deny",
+        "arbitrary_execute_mso": "deny",
+        "print": "confirm",
+        "overwrite_original": "checkpoint_and_confirm",
+        "send_email": "confirm",
+        "meeting_invite": "confirm",
+        "access_macros": "deny_or_confirm",
+        "project_publish": "confirm",
+        "workspace_only": true,
+        "workspace_root": "<workspace>",
+        "execute_mso_allowlist": {},
+        "execute_mso_confirm": [
+          "PrintPreviewAndPrint"
+        ],
+        "checkpoint": true,
+        "render_after": false
+      },
+      "confirmation": null,
+      "security": {
+        "automation_security": {
+          "applicable": true,
+          "observed": 3,
+          "expected": 3,
+          "enforced": true
+        },
+        "display_alerts_disabled": true,
+        "execute_mso": "deny_all",
+        "external_links_auto_update_disabled": null,
+        "macros": "deny_observed",
+        "workspace_only": true
+      },
+      "backend": "desktop_com",
+      "host_version": "0.2.3",
+      "application": {
+        "Name": "powerpoint",
+        "Version": "16.0",
+        "Bitness": "x64",
+        "Language": ""
+      },
+      "duration_ms": 19545
+    }
+  },
+  "rpc": [
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "office.host.handshake",
+        "params": {
+          "gateway_version": "showcase-capture",
+          "protocol_versions": [
+            "office-rpc/1"
+          ],
+          "requested_app": "powerpoint"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocol_version": "office-rpc/1",
+          "host_id": "office-host:powerpoint:session-1",
+          "capability_manifest": {
+            "provider": "dcc-mcp-office",
+            "provider_version": "0.2.3",
+            "protocol_version": "office-rpc/1",
+            "application": null,
+            "execution_modes": [
+              "openxml"
+            ],
+            "capabilities": {
+              "deck.compile": "0.1.0",
+              "document.inspect": "0.1.0"
+            },
+            "template_packages": {
+              "brand://dcc-mcp/default": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "embedded",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/executive-violet": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/momentum-cobalt": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/studio-light": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              }
+            },
+            "limits": {
+              "max_parallel_writes": 1,
+              "requires_user_session": true
+            }
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "office.command.execute",
+        "params": {
+          "capability": "deck.compile",
+          "input": {
+            "ir": "<workspace>/showcase/deck-pipeline/input.json",
+            "output": "<workspace>/showcase/deck-pipeline/dcc-mcp-office-suite.pptx",
+            "template": "brand://dcc-mcp/studio-light"
+          },
+          "policy": {
+            "workspace_root": "<workspace>"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "operation_id": "82ced32012414ce98cce00ab6fc1fe1b",
+          "changed": {
+            "files": 1,
+            "slides": 7
+          },
+          "warnings": [],
+          "artefacts": [
+            {
+              "artifact_id": "ba77f96f03834ef5a20ac0f9b5a37230",
+              "kind": "pptx",
+              "path": "<workspace>/showcase/deck-pipeline/dcc-mcp-office-suite.pptx",
+              "sha256": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679"
+            }
+          ],
+          "validation": {
+            "output_openable": true,
+            "non_empty": true,
+            "slide_count_reasonable": true
+          },
+          "backend": "openxml",
+          "indeterminate": false,
+          "audit": {
+            "policy": {
+              "vba_application_run": "deny",
+              "macros": "deny",
+              "external_links_auto_update": "deny",
+              "ole_activex_activation": "deny",
+              "protected_view_bypass": "deny",
+              "arbitrary_execute_mso": "deny",
+              "print": "confirm",
+              "overwrite_original": "checkpoint_and_confirm",
+              "send_email": "confirm",
+              "meeting_invite": "confirm",
+              "access_macros": "deny_or_confirm",
+              "project_publish": "confirm",
+              "workspace_only": true,
+              "workspace_root": "<workspace>",
+              "execute_mso_allowlist": {},
+              "execute_mso_confirm": [
+                "PrintPreviewAndPrint"
+              ],
+              "checkpoint": true,
+              "render_after": false
+            },
+            "confirmation": null,
+            "security": {
+              "automation_security": {
+                "applicable": false,
+                "observed": null,
+                "expected": null,
+                "enforced": false
+              },
+              "display_alerts_disabled": null,
+              "execute_mso": "deny_all",
+              "external_links_auto_update_disabled": null,
+              "macros": "not_applicable",
+              "workspace_only": true
+            },
+            "backend": "openxml",
+            "host_version": "0.2.3",
+            "application": null,
+            "duration_ms": 266
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "office.command.execute",
+        "params": {
+          "capability": "document.inspect",
+          "input": {
+            "path": "<workspace>/showcase/deck-pipeline/dcc-mcp-office-suite.pptx",
+            "backend": "openxml"
+          },
+          "policy": {
+            "workspace_root": "<workspace>"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": {
+          "operation_id": "27a5c6545dc74d4b8a581b26043690d8",
+          "changed": {
+            "summary": {
+              "slide_count": 7,
+              "title": null,
+              "slides": [
+                {
+                  "index": 1,
+                  "shapes": 6,
+                  "pictures": 1,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                },
+                {
+                  "index": 2,
+                  "shapes": 20,
+                  "pictures": 0,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                },
+                {
+                  "index": 3,
+                  "shapes": 12,
+                  "pictures": 0,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                },
+                {
+                  "index": 4,
+                  "shapes": 6,
+                  "pictures": 0,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                },
+                {
+                  "index": 5,
+                  "shapes": 13,
+                  "pictures": 0,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                },
+                {
+                  "index": 6,
+                  "shapes": 13,
+                  "pictures": 0,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                },
+                {
+                  "index": 7,
+                  "shapes": 4,
+                  "pictures": 1,
+                  "pictures_without_alt": 0,
+                  "has_notes": true
+                }
+              ]
+            }
+          },
+          "warnings": [],
+          "artefacts": [],
+          "validation": {},
+          "backend": "openxml",
+          "indeterminate": false,
+          "audit": {
+            "policy": {
+              "vba_application_run": "deny",
+              "macros": "deny",
+              "external_links_auto_update": "deny",
+              "ole_activex_activation": "deny",
+              "protected_view_bypass": "deny",
+              "arbitrary_execute_mso": "deny",
+              "print": "confirm",
+              "overwrite_original": "checkpoint_and_confirm",
+              "send_email": "confirm",
+              "meeting_invite": "confirm",
+              "access_macros": "deny_or_confirm",
+              "project_publish": "confirm",
+              "workspace_only": true,
+              "workspace_root": "<workspace>",
+              "execute_mso_allowlist": {},
+              "execute_mso_confirm": [
+                "PrintPreviewAndPrint"
+              ],
+              "checkpoint": true,
+              "render_after": false
+            },
+            "confirmation": null,
+            "security": {
+              "automation_security": {
+                "applicable": false,
+                "observed": null,
+                "expected": null,
+                "enforced": false
+              },
+              "display_alerts_disabled": null,
+              "execute_mso": "deny_all",
+              "external_links_auto_update_disabled": null,
+              "macros": "not_applicable",
+              "workspace_only": true
+            },
+            "backend": "openxml",
+            "host_version": "0.2.3",
+            "application": null,
+            "duration_ms": 96
+          }
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.document.saved",
+          "params": {
+            "event": "office.document.saved",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:powerpoint:session-1",
+            "application": "powerpoint",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:06:12.5606595+00:00",
+            "correlation_id": "82ced32012414ce98cce00ab6fc1fe1b",
+            "selection": null,
+            "context": {
+              "path": "<workspace>/showcase/deck-pipeline/dcc-mcp-office-suite.pptx"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "office.host.handshake",
+        "params": {
+          "gateway_version": "showcase-capture",
+          "protocol_versions": [
+            "office-rpc/1"
+          ],
+          "requested_app": "powerpoint"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocol_version": "office-rpc/1",
+          "host_id": "office-host:powerpoint:session-1",
+          "capability_manifest": {
+            "provider": "dcc-mcp-office",
+            "provider_version": "0.2.3",
+            "protocol_version": "office-rpc/1",
+            "application": null,
+            "execution_modes": [
+              "openxml",
+              "desktop_com"
+            ],
+            "capabilities": {
+              "batch.convert": "0.1.0",
+              "batch.replace_text": "0.1.0",
+              "deck.compile": "0.1.0",
+              "document.inspect": "0.1.0",
+              "slide.render": "0.1.0"
+            },
+            "template_packages": {
+              "brand://dcc-mcp/default": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "embedded",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/executive-violet": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/momentum-cobalt": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/studio-light": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              }
+            },
+            "limits": {
+              "max_parallel_writes": 1,
+              "requires_user_session": true
+            }
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "office.command.execute",
+        "params": {
+          "capability": "slide.render",
+          "input": {
+            "path": "<workspace>/showcase/deck-pipeline/dcc-mcp-office-suite.pptx",
+            "output_directory": "<workspace>/showcase/deck-pipeline/slides",
+            "width": 1280,
+            "height": 720
+          },
+          "policy": {
+            "workspace_root": "<workspace>"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "operation_id": "06364beb743442aba93f77d36c2ba2c5",
+          "changed": {
+            "previews": 7,
+            "ok": 7,
+            "failed": 0,
+            "width": 1280,
+            "height": 720,
+            "overflow": [
+              {
+                "slide": 2,
+                "shape_id": 406,
+                "name": "RoundRect 406",
+                "kind": "shape",
+                "left": 64.80000305175781,
+                "top": 430.55999755859375,
+                "right": 324.00001525878906,
+                "bottom": 563.7599945068359
+              },
+              {
+                "slide": 2,
+                "shape_id": 407,
+                "name": "RoundRect 407",
+                "kind": "shape",
+                "left": 345.6000061035156,
+                "top": 430.55999755859375,
+                "right": 604.8000183105469,
+                "bottom": 563.7599945068359
+              },
+              {
+                "slide": 2,
+                "shape_id": 408,
+                "name": "RoundRect 408",
+                "kind": "shape",
+                "left": 626.4000244140625,
+                "top": 430.55999755859375,
+                "right": 885.6000366210938,
+                "bottom": 563.7599945068359
+              }
+            ]
+          },
+          "warnings": [],
+          "artefacts": [
+            {
+              "artifact_id": "263069df99914a729fca50ca5b23c865",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-001.png",
+              "sha256": "feaa9dde8f61b6a1d48a794c5ce712e723de83e333c6f1178b827ec6e7ce2d7b"
+            },
+            {
+              "artifact_id": "5fbf8dab2b194e5daa98639b4e9d4856",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-002.png",
+              "sha256": "933d4b71087b84b62c96061872014f76777146d4054fb063ada51f246baa1e75"
+            },
+            {
+              "artifact_id": "af1de3244ccc4ca4a94de747c93f87ca",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-003.png",
+              "sha256": "ac5287622529cad599e9bf06475352ce9dd369c4cf428ab7b84ddc5e4bcc74d7"
+            },
+            {
+              "artifact_id": "fce75de44fe34250a50079382e096a10",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-004.png",
+              "sha256": "61c7e3410fdd53ff3e170de933a1ded2bd1637b423bf38553c8e877c2cf2b88d"
+            },
+            {
+              "artifact_id": "c534a70dc0394e9d96daf9c84133e74b",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-005.png",
+              "sha256": "1a2a1e4ae3bac5f34a90690bc6432741b685a76109ffabb87fcc9f671465d879"
+            },
+            {
+              "artifact_id": "f63417bc162d4aeda23bfe8eaef054c7",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-006.png",
+              "sha256": "7a4aac5a3f7a10e59d9d956e2f6d19d18645a3c4da7992a4dd8ee20987401aaf"
+            },
+            {
+              "artifact_id": "953f9e8f3cbf4e6cb5653b6bc47d3a94",
+              "kind": "png",
+              "path": "<workspace>/showcase/deck-pipeline/slides/slide-007.png",
+              "sha256": "08b1e52cdaffee5a9183019ec55f9fe6e7bf269d184f23882f03d6df2ab91a0a"
+            }
+          ],
+          "validation": {},
+          "backend": "desktop_com",
+          "indeterminate": false,
+          "audit": {
+            "policy": {
+              "vba_application_run": "deny",
+              "macros": "deny",
+              "external_links_auto_update": "deny",
+              "ole_activex_activation": "deny",
+              "protected_view_bypass": "deny",
+              "arbitrary_execute_mso": "deny",
+              "print": "confirm",
+              "overwrite_original": "checkpoint_and_confirm",
+              "send_email": "confirm",
+              "meeting_invite": "confirm",
+              "access_macros": "deny_or_confirm",
+              "project_publish": "confirm",
+              "workspace_only": true,
+              "workspace_root": "<workspace>",
+              "execute_mso_allowlist": {},
+              "execute_mso_confirm": [
+                "PrintPreviewAndPrint"
+              ],
+              "checkpoint": true,
+              "render_after": false
+            },
+            "confirmation": null,
+            "security": {
+              "automation_security": {
+                "applicable": true,
+                "observed": 3,
+                "expected": 3,
+                "enforced": true
+              },
+              "display_alerts_disabled": true,
+              "execute_mso": "deny_all",
+              "external_links_auto_update_disabled": null,
+              "macros": "deny_observed",
+              "workspace_only": true
+            },
+            "backend": "desktop_com",
+            "host_version": "0.2.3",
+            "application": {
+              "Name": "powerpoint",
+              "Version": "16.0",
+              "Bitness": "x64",
+              "Language": ""
+            },
+            "duration_ms": 19545
+          }
+        }
+      },
+      "notifications": []
+    }
+  ]
+}

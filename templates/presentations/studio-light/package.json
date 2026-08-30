@@ -2,7 +2,7 @@
   "$schema": "../../package.schema.json",
   "schema_version": "office-template-package/1.0",
   "uri": "brand://dcc-mcp/studio-light",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "kind": "presentation",
   "extends": "brand://dcc-mcp/default",
   "brand_name": "DCC-MCP Studio",
@@ -32,6 +32,7 @@
     },
     "fonts": {
       "latin": "Aptos",
+      "display_latin": "Aptos Display",
       "east_asian": "Microsoft YaHei"
     }
   }
