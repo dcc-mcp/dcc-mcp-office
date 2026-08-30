@@ -1,0 +1,1730 @@
+{
+  "builder": {
+    "artifact": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx",
+    "pages_expected": 2
+  },
+  "handshake": {
+    "protocol_version": "office-rpc/1",
+    "host_id": "office-host:word:session-1",
+    "capability_manifest": {
+      "provider": "dcc-mcp-office",
+      "provider_version": "0.2.3",
+      "protocol_version": "office-rpc/1",
+      "application": null,
+      "execution_modes": [
+        "desktop_com"
+      ],
+      "capabilities": {
+        "batch.convert": "0.1.0",
+        "batch.replace_text": "0.1.0",
+        "document.inspect": "0.1.0"
+      },
+      "template_packages": {
+        "brand://dcc-mcp/default": {
+          "version": "1.0.0",
+          "kind": "presentation",
+          "source_kind": "embedded",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/executive-violet": {
+          "version": "1.1.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/momentum-cobalt": {
+          "version": "1.1.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        },
+        "brand://dcc-mcp/studio-light": {
+          "version": "1.1.0",
+          "kind": "presentation",
+          "source_kind": "file",
+          "layouts": [
+            "bullets",
+            "closing",
+            "comparison",
+            "image_grid",
+            "image_left_text_right",
+            "kpi_dashboard",
+            "section_cover",
+            "technical_architecture",
+            "timeline",
+            "title_cover",
+            "two_columns"
+          ]
+        }
+      },
+      "limits": {
+        "max_parallel_writes": 1,
+        "requires_user_session": true
+      }
+    }
+  },
+  "inspect": {
+    "operation_id": "06935db8e2b24c5eb7d59ba5d8412cb2",
+    "changed": {
+      "summary": {
+        "path": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx",
+        "kind": "document",
+        "title": "Office Automation\nReadiness Brief",
+        "paragraphs": 64,
+        "words": 332,
+        "pages": 2,
+        "tables": 5,
+        "sections": 1,
+        "has_header": false,
+        "has_footer": false
+      }
+    },
+    "warnings": [],
+    "artefacts": [],
+    "validation": {},
+    "backend": "desktop_com",
+    "indeterminate": false,
+    "audit": {
+      "policy": {
+        "vba_application_run": "deny",
+        "macros": "deny",
+        "external_links_auto_update": "deny",
+        "ole_activex_activation": "deny",
+        "protected_view_bypass": "deny",
+        "arbitrary_execute_mso": "deny",
+        "print": "confirm",
+        "overwrite_original": "checkpoint_and_confirm",
+        "send_email": "confirm",
+        "meeting_invite": "confirm",
+        "access_macros": "deny_or_confirm",
+        "project_publish": "confirm",
+        "workspace_only": true,
+        "workspace_root": "<workspace>",
+        "execute_mso_allowlist": {},
+        "execute_mso_confirm": [
+          "PrintPreviewAndPrint"
+        ],
+        "checkpoint": true,
+        "render_after": false
+      },
+      "confirmation": null,
+      "security": {
+        "automation_security": {
+          "applicable": true,
+          "observed": 3,
+          "expected": 3,
+          "enforced": true
+        },
+        "display_alerts_disabled": true,
+        "execute_mso": "deny_all",
+        "external_links_auto_update_disabled": true,
+        "macros": "deny_observed",
+        "workspace_only": true
+      },
+      "backend": "desktop_com",
+      "host_version": "0.2.3",
+      "application": {
+        "Name": "word",
+        "Version": "16.0",
+        "Bitness": "x64",
+        "Language": ""
+      },
+      "duration_ms": 10593
+    }
+  },
+  "convert": {
+    "submission": {
+      "operation_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+      "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+      "phase": "queued",
+      "changed": {
+        "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+        "capability": "batch.convert",
+        "phase": "queued"
+      },
+      "warnings": [],
+      "artefacts": [],
+      "validation": {
+        "accepted": true
+      },
+      "backend": "job",
+      "indeterminate": false,
+      "audit": {
+        "policy": {
+          "vba_application_run": "deny",
+          "macros": "deny",
+          "external_links_auto_update": "deny",
+          "ole_activex_activation": "deny",
+          "protected_view_bypass": "deny",
+          "arbitrary_execute_mso": "deny",
+          "print": "confirm",
+          "overwrite_original": "checkpoint_and_confirm",
+          "send_email": "confirm",
+          "meeting_invite": "confirm",
+          "access_macros": "deny_or_confirm",
+          "project_publish": "confirm",
+          "workspace_only": true,
+          "workspace_root": "<workspace>",
+          "execute_mso_allowlist": {},
+          "execute_mso_confirm": [
+            "PrintPreviewAndPrint"
+          ],
+          "checkpoint": true,
+          "render_after": false
+        },
+        "confirmation": null,
+        "security": {
+          "automation_security": {
+            "applicable": true,
+            "observed": 3,
+            "expected": 3,
+            "enforced": true
+          },
+          "display_alerts_disabled": true,
+          "execute_mso": "deny_all",
+          "external_links_auto_update_disabled": true,
+          "macros": "deny_observed",
+          "workspace_only": true
+        },
+        "backend": "job",
+        "host_version": "0.2.3",
+        "application": {
+          "Name": "word",
+          "Version": "16.0",
+          "Bitness": "x64",
+          "Language": ""
+        },
+        "duration_ms": 15
+      }
+    },
+    "job": {
+      "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+      "capability": "batch.convert",
+      "phase": "succeeded",
+      "stage": "succeeded",
+      "completed": 1,
+      "total": 1,
+      "cancel_requested": false,
+      "created_at": "2026-08-30T14:49:48.6777922+00:00",
+      "updated_at": "2026-08-30T14:49:51.5990916+00:00",
+      "result": {
+        "operation_id": "fe97ccceaab549f1a7cd82bc79506490",
+        "changed": {
+          "files": 1,
+          "processed": 1,
+          "succeeded": 1,
+          "failed": 0,
+          "cancelled": false,
+          "target_format": "pdf",
+          "items": [
+            {
+              "InputPath": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx",
+              "OutputPath": "<workspace>/showcase/word-executive-brief/pdf/dcc-mcp-office-executive-brief.pdf",
+              "Ok": true,
+              "ErrorCode": null,
+              "Error": null,
+              "Bytes": 187078,
+              "PageCount": 2,
+              "Backend": "desktop_com",
+              "Indeterminate": false,
+              "Warnings": []
+            }
+          ]
+        },
+        "warnings": [],
+        "artefacts": [
+          {
+            "artifact_id": "9c3e000c52554c0e9877b1e5fbfb927c",
+            "kind": "pdf",
+            "path": "<workspace>/showcase/word-executive-brief/pdf/dcc-mcp-office-executive-brief.pdf",
+            "sha256": "4e911eee0404c164eb9d32b481f0ac84a7ee92dd7cc7d598905dee2ca04181ab"
+          }
+        ],
+        "validation": {
+          "output_openable": true,
+          "non_empty": true,
+          "page_count_reasonable": true
+        },
+        "backend": "desktop_com",
+        "indeterminate": false,
+        "audit": {
+          "policy": {
+            "vba_application_run": "deny",
+            "macros": "deny",
+            "external_links_auto_update": "deny",
+            "ole_activex_activation": "deny",
+            "protected_view_bypass": "deny",
+            "arbitrary_execute_mso": "deny",
+            "print": "confirm",
+            "overwrite_original": "checkpoint_and_confirm",
+            "send_email": "confirm",
+            "meeting_invite": "confirm",
+            "access_macros": "deny_or_confirm",
+            "project_publish": "confirm",
+            "workspace_only": true,
+            "workspace_root": "<workspace>",
+            "execute_mso_allowlist": {},
+            "execute_mso_confirm": [
+              "PrintPreviewAndPrint"
+            ],
+            "checkpoint": true,
+            "render_after": false
+          },
+          "confirmation": null,
+          "security": {
+            "automation_security": {
+              "applicable": true,
+              "observed": 3,
+              "expected": 3,
+              "enforced": true
+            },
+            "display_alerts_disabled": true,
+            "execute_mso": "deny_all",
+            "external_links_auto_update_disabled": true,
+            "macros": "deny_observed",
+            "workspace_only": true
+          },
+          "backend": "desktop_com",
+          "host_version": "0.2.3",
+          "application": {
+            "Name": "word",
+            "Version": "16.0",
+            "Bitness": "x64",
+            "Language": ""
+          },
+          "duration_ms": 2817
+        }
+      },
+      "error": null
+    }
+  },
+  "rpc": [
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "office.host.handshake",
+        "params": {
+          "gateway_version": "showcase-capture",
+          "protocol_versions": [
+            "office-rpc/1"
+          ],
+          "requested_app": "word"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "result": {
+          "protocol_version": "office-rpc/1",
+          "host_id": "office-host:word:session-1",
+          "capability_manifest": {
+            "provider": "dcc-mcp-office",
+            "provider_version": "0.2.3",
+            "protocol_version": "office-rpc/1",
+            "application": null,
+            "execution_modes": [
+              "desktop_com"
+            ],
+            "capabilities": {
+              "batch.convert": "0.1.0",
+              "batch.replace_text": "0.1.0",
+              "document.inspect": "0.1.0"
+            },
+            "template_packages": {
+              "brand://dcc-mcp/default": {
+                "version": "1.0.0",
+                "kind": "presentation",
+                "source_kind": "embedded",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/executive-violet": {
+                "version": "1.1.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/momentum-cobalt": {
+                "version": "1.1.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              },
+              "brand://dcc-mcp/studio-light": {
+                "version": "1.1.0",
+                "kind": "presentation",
+                "source_kind": "file",
+                "layouts": [
+                  "bullets",
+                  "closing",
+                  "comparison",
+                  "image_grid",
+                  "image_left_text_right",
+                  "kpi_dashboard",
+                  "section_cover",
+                  "technical_architecture",
+                  "timeline",
+                  "title_cover",
+                  "two_columns"
+                ]
+              }
+            },
+            "limits": {
+              "max_parallel_writes": 1,
+              "requires_user_session": true
+            }
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "method": "office.command.execute",
+        "params": {
+          "capability": "document.inspect",
+          "input": {
+            "path": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx"
+          },
+          "policy": {
+            "workspace_root": "<workspace>"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 2,
+        "result": {
+          "operation_id": "06935db8e2b24c5eb7d59ba5d8412cb2",
+          "changed": {
+            "summary": {
+              "path": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx",
+              "kind": "document",
+              "title": "Office Automation\nReadiness Brief",
+              "paragraphs": 64,
+              "words": 332,
+              "pages": 2,
+              "tables": 5,
+              "sections": 1,
+              "has_header": false,
+              "has_footer": false
+            }
+          },
+          "warnings": [],
+          "artefacts": [],
+          "validation": {},
+          "backend": "desktop_com",
+          "indeterminate": false,
+          "audit": {
+            "policy": {
+              "vba_application_run": "deny",
+              "macros": "deny",
+              "external_links_auto_update": "deny",
+              "ole_activex_activation": "deny",
+              "protected_view_bypass": "deny",
+              "arbitrary_execute_mso": "deny",
+              "print": "confirm",
+              "overwrite_original": "checkpoint_and_confirm",
+              "send_email": "confirm",
+              "meeting_invite": "confirm",
+              "access_macros": "deny_or_confirm",
+              "project_publish": "confirm",
+              "workspace_only": true,
+              "workspace_root": "<workspace>",
+              "execute_mso_allowlist": {},
+              "execute_mso_confirm": [
+                "PrintPreviewAndPrint"
+              ],
+              "checkpoint": true,
+              "render_after": false
+            },
+            "confirmation": null,
+            "security": {
+              "automation_security": {
+                "applicable": true,
+                "observed": 3,
+                "expected": 3,
+                "enforced": true
+              },
+              "display_alerts_disabled": true,
+              "execute_mso": "deny_all",
+              "external_links_auto_update_disabled": true,
+              "macros": "deny_observed",
+              "workspace_only": true
+            },
+            "backend": "desktop_com",
+            "host_version": "0.2.3",
+            "application": {
+              "Name": "word",
+              "Version": "16.0",
+              "Bitness": "x64",
+              "Language": ""
+            },
+            "duration_ms": 10593
+          }
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "method": "office.command.execute",
+        "params": {
+          "capability": "batch.convert",
+          "input": {
+            "inputs": [
+              "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx"
+            ],
+            "output_directory": "<workspace>/showcase/word-executive-brief/pdf",
+            "target_format": "pdf",
+            "overwrite": "fail",
+            "validation": [
+              "output_openable",
+              "non_empty",
+              "page_count_reasonable"
+            ]
+          },
+          "policy": {
+            "workspace_root": "<workspace>"
+          }
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 3,
+        "result": {
+          "operation_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "phase": "queued",
+          "changed": {
+            "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "capability": "batch.convert",
+            "phase": "queued"
+          },
+          "warnings": [],
+          "artefacts": [],
+          "validation": {
+            "accepted": true
+          },
+          "backend": "job",
+          "indeterminate": false,
+          "audit": {
+            "policy": {
+              "vba_application_run": "deny",
+              "macros": "deny",
+              "external_links_auto_update": "deny",
+              "ole_activex_activation": "deny",
+              "protected_view_bypass": "deny",
+              "arbitrary_execute_mso": "deny",
+              "print": "confirm",
+              "overwrite_original": "checkpoint_and_confirm",
+              "send_email": "confirm",
+              "meeting_invite": "confirm",
+              "access_macros": "deny_or_confirm",
+              "project_publish": "confirm",
+              "workspace_only": true,
+              "workspace_root": "<workspace>",
+              "execute_mso_allowlist": {},
+              "execute_mso_confirm": [
+                "PrintPreviewAndPrint"
+              ],
+              "checkpoint": true,
+              "render_after": false
+            },
+            "confirmation": null,
+            "security": {
+              "automation_security": {
+                "applicable": true,
+                "observed": 3,
+                "expected": 3,
+                "enforced": true
+              },
+              "display_alerts_disabled": true,
+              "execute_mso": "deny_all",
+              "external_links_auto_update_disabled": true,
+              "macros": "deny_observed",
+              "workspace_only": true
+            },
+            "backend": "job",
+            "host_version": "0.2.3",
+            "application": {
+              "Name": "word",
+              "Version": "16.0",
+              "Bitness": "x64",
+              "Language": ""
+            },
+            "duration_ms": 15
+          }
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.application.started",
+          "params": {
+            "event": "office.application.started",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:word:session-1",
+            "application": "word",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:49:45.4309603+00:00",
+            "correlation_id": "host:desktop-attach",
+            "selection": null,
+            "context": {
+              "com_attach_state": "attached"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.document.opened",
+          "params": {
+            "event": "office.document.opened",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:word:session-1",
+            "application": "word",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:49:48.5988905+00:00",
+            "correlation_id": "06935db8e2b24c5eb7d59ba5d8412cb2",
+            "selection": null,
+            "context": {
+              "path": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.document.before_close",
+          "params": {
+            "event": "office.document.before_close",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:word:session-1",
+            "application": "word",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:49:48.6333671+00:00",
+            "correlation_id": "06935db8e2b24c5eb7d59ba5d8412cb2",
+            "selection": null,
+            "context": {
+              "path": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 4,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.6907803+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.progress",
+          "params": {
+            "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "stage": "queued",
+            "completed": 0,
+            "total": 1
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 5,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 6,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.application.busy",
+          "params": {
+            "event": "office.application.busy",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:word:session-1",
+            "application": "word",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:49:48.7485430+00:00",
+            "correlation_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "selection": null,
+            "context": {
+              "busy": true,
+              "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.progress",
+          "params": {
+            "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "stage": "running",
+            "completed": 0,
+            "total": 1
+          }
+        }
+      ]
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 7,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 8,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 9,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 10,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 11,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 12,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 13,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 14,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 15,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 16,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 16,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 17,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 17,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 18,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 19,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 19,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 20,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 21,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 22,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 22,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 23,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 23,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 24,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 24,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 25,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 25,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 26,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 26,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 27,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 27,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 28,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 28,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 29,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 29,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 30,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 30,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 31,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 31,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 32,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 32,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "running",
+          "stage": "running",
+          "completed": 0,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:48.7543281+00:00",
+          "result": null,
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 33,
+        "method": "office.job.get",
+        "params": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab"
+        }
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 33,
+        "result": {
+          "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+          "capability": "batch.convert",
+          "phase": "succeeded",
+          "stage": "succeeded",
+          "completed": 1,
+          "total": 1,
+          "cancel_requested": false,
+          "created_at": "2026-08-30T14:49:48.6777922+00:00",
+          "updated_at": "2026-08-30T14:49:51.5990916+00:00",
+          "result": {
+            "operation_id": "fe97ccceaab549f1a7cd82bc79506490",
+            "changed": {
+              "files": 1,
+              "processed": 1,
+              "succeeded": 1,
+              "failed": 0,
+              "cancelled": false,
+              "target_format": "pdf",
+              "items": [
+                {
+                  "InputPath": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx",
+                  "OutputPath": "<workspace>/showcase/word-executive-brief/pdf/dcc-mcp-office-executive-brief.pdf",
+                  "Ok": true,
+                  "ErrorCode": null,
+                  "Error": null,
+                  "Bytes": 187078,
+                  "PageCount": 2,
+                  "Backend": "desktop_com",
+                  "Indeterminate": false,
+                  "Warnings": []
+                }
+              ]
+            },
+            "warnings": [],
+            "artefacts": [
+              {
+                "artifact_id": "9c3e000c52554c0e9877b1e5fbfb927c",
+                "kind": "pdf",
+                "path": "<workspace>/showcase/word-executive-brief/pdf/dcc-mcp-office-executive-brief.pdf",
+                "sha256": "4e911eee0404c164eb9d32b481f0ac84a7ee92dd7cc7d598905dee2ca04181ab"
+              }
+            ],
+            "validation": {
+              "output_openable": true,
+              "non_empty": true,
+              "page_count_reasonable": true
+            },
+            "backend": "desktop_com",
+            "indeterminate": false,
+            "audit": {
+              "policy": {
+                "vba_application_run": "deny",
+                "macros": "deny",
+                "external_links_auto_update": "deny",
+                "ole_activex_activation": "deny",
+                "protected_view_bypass": "deny",
+                "arbitrary_execute_mso": "deny",
+                "print": "confirm",
+                "overwrite_original": "checkpoint_and_confirm",
+                "send_email": "confirm",
+                "meeting_invite": "confirm",
+                "access_macros": "deny_or_confirm",
+                "project_publish": "confirm",
+                "workspace_only": true,
+                "workspace_root": "<workspace>",
+                "execute_mso_allowlist": {},
+                "execute_mso_confirm": [
+                  "PrintPreviewAndPrint"
+                ],
+                "checkpoint": true,
+                "render_after": false
+              },
+              "confirmation": null,
+              "security": {
+                "automation_security": {
+                  "applicable": true,
+                  "observed": 3,
+                  "expected": 3,
+                  "enforced": true
+                },
+                "display_alerts_disabled": true,
+                "execute_mso": "deny_all",
+                "external_links_auto_update_disabled": true,
+                "macros": "deny_observed",
+                "workspace_only": true
+              },
+              "backend": "desktop_com",
+              "host_version": "0.2.3",
+              "application": {
+                "Name": "word",
+                "Version": "16.0",
+                "Bitness": "x64",
+                "Language": ""
+              },
+              "duration_ms": 2817
+            }
+          },
+          "error": null
+        }
+      },
+      "notifications": []
+    },
+    {
+      "request": {
+        "jsonrpc": "2.0",
+        "id": 34,
+        "method": "office.host.shutdown",
+        "params": {}
+      },
+      "response": {
+        "jsonrpc": "2.0",
+        "id": 34,
+        "result": {
+          "ok": true
+        }
+      },
+      "notifications": [
+        {
+          "jsonrpc": "2.0",
+          "method": "office.document.saved",
+          "params": {
+            "event": "office.document.saved",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:word:session-1",
+            "application": "word",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:49:51.5629141+00:00",
+            "correlation_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "selection": null,
+            "context": {
+              "input_path": "<workspace>/showcase/word-executive-brief/dcc-mcp-office-executive-brief.docx",
+              "output_path": "<workspace>/showcase/word-executive-brief/pdf/dcc-mcp-office-executive-brief.pdf"
+            }
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.progress",
+          "params": {
+            "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "stage": "converting",
+            "completed": 1,
+            "total": 1
+          }
+        },
+        {
+          "jsonrpc": "2.0",
+          "method": "office.job.completed",
+          "params": {
+            "event": "office.job.completed",
+            "provider": "dcc-mcp-office",
+            "application_instance": "office-host:word:session-1",
+            "application": "word",
+            "document_id": null,
+            "revision": null,
+            "timestamp": "2026-08-30T14:49:51.6260620+00:00",
+            "correlation_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+            "selection": null,
+            "context": {
+              "job_id": "job:cee831e437ea45dfa64955d6b894d4ab",
+              "capability": "batch.convert",
+              "phase": "succeeded",
+              "completed": 1,
+              "total": 1
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

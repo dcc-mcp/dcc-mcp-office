@@ -1,0 +1,67 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Image-rich semantic layouts",
+  "summary": "Six original editorial visuals are composed into cover, image-left/text-right and asymmetric collage layouts in a fully editable PPTX.",
+  "capabilities": [
+    "deck.compile",
+    "document.inspect",
+    "slide.render"
+  ],
+  "inputs": [
+    "input.json",
+    "asset-manifest.json",
+    "assets/creative-system.jpg",
+    "assets/data-landscape.jpg",
+    "assets/document-evidence-banner.jpg",
+    "assets/editorial-office-hero.jpg",
+    "assets/governed-flow.jpg",
+    "assets/verified-output.jpg"
+  ],
+  "artifacts": [
+    "dcc-mcp-office-visual-story.pptx",
+    "slides/slide-001.png",
+    "slides/slide-002.png",
+    "slides/slide-003.png",
+    "slides/slide-004.png",
+    "slides/slide-005.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "openxml",
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:53:05Z",
+  "verification": [
+    "The Open XML compiler embedded six 1280x720 showcase-optimized JPEG inputs as presentation media.",
+    "PowerPoint rendered all five slides at 1280x720.",
+    "The native overflow report contained 0 shape findings."
+  ],
+  "reproduce": [
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "input.json": "a83c747f32ca3ca6045e61135a259ed2b3f4f04b751353eaa308cc50fcf14a67",
+    "asset-manifest.json": "22a7b6fc87769d21a06b9d659e067f1fb1402ab246900e08381ac983ce4f35c6",
+    "assets/creative-system.jpg": "1bcfe8bb4948abe980250348468d9124cf680f65cc03dc1927100c9791a12abc",
+    "assets/data-landscape.jpg": "e94b9337f78525d206f05c93917ee12f8ff2b78980cd110d62474870a0acfc48",
+    "assets/document-evidence-banner.jpg": "6c77181c302aba3da9f8946fc257892c41bb5db58cc49b817a2206d9d2acc967",
+    "assets/editorial-office-hero.jpg": "5aee1919fc4c469c7f2754ad78ad058e24e52deb12ff724bbc3934be1d48aa9f",
+    "assets/governed-flow.jpg": "8866ec985cd683300304478dc705e138e9a1bf0a87ad7335dfd688346a79ec8f",
+    "assets/verified-output.jpg": "120dd7791ef68e202dc09627e0440b6c3a78008f4140115587218829fed7938f",
+    "dcc-mcp-office-visual-story.pptx": "2b53370ee681b5ab3097ed5e244779633f02cc31f41cff1887c88f80b6ff0001",
+    "slides/slide-001.png": "6bca2806f9f1218e8720bac083aba96ee9c48a56e9096a1616750dff2c76d48e",
+    "slides/slide-002.png": "897b7ecb3ba981bdfa75698b39eac1d692f438ff9287e8921c89c40ea7c7b635",
+    "slides/slide-003.png": "a67fa2e16e824b6e63c63a2a9ac8f6507b4f7322bab41d57d87f81c3469350a1",
+    "slides/slide-004.png": "d5b991b3121616160912998f40f3de61f6078169108f5681b39ad9ee1f667121",
+    "slides/slide-005.png": "c0ab6da7433510292c4e08378d5d6529e4990ba57ae5d534c8482aa7759f8a51",
+    "preview.png": "d33246bdae5901ea00c49cbaef196faf54cba0c576abde7e4ba3a9a2f86c6b07",
+    "transcript.json": "9176a333f9498465987d4943cdca8b86c2c4d02f1408f22936a0e5d03ba16c9e"
+  }
+}

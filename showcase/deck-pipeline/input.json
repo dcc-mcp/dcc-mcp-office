@@ -1,0 +1,144 @@
+{
+  "schema_version": "office-ir/1.0",
+  "kind": "presentation",
+  "document_id": "showcase:dcc-mcp-office-suite",
+  "metadata": {
+    "title": "DCC-MCP Office Suite Capability Review",
+    "author": "DCC-MCP",
+    "language": "en-US"
+  },
+  "template": {
+    "uri": "brand://dcc-mcp/studio-light",
+    "version": "1.0.0"
+  },
+  "resources": [],
+  "document": {
+    "slides": [
+      {
+        "semantic_layout": "title_cover",
+        "title": "Office Automation, End to End",
+        "content_blocks": [
+          {
+            "type": "text",
+            "paragraphs": ["Editable outputs. Native fidelity. Auditable execution."]
+          }
+        ],
+        "speaker_notes": "A template-first overview of the shipped shared Office core."
+      },
+      {
+        "semantic_layout": "kpi_dashboard",
+        "title": "One runtime, three desktop applications",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "3 | desktop apps",
+              "5 | PowerPoint capabilities",
+              "3 | Word capabilities",
+              "3 | Excel capabilities",
+              "1 | versioned protocol",
+              "11 | semantic layouts",
+              "Dry-run | before write",
+              "SHA-256 | every artefact",
+              "1 | writer per sidecar"
+            ]
+          }
+        ],
+        "speaker_notes": "Counts come from the live capability handshake captured with this demo."
+      },
+      {
+        "semantic_layout": "technical_architecture",
+        "title": "Contract-first execution path",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "MCP client | task-level tools",
+              "Rust server | live capability filtering",
+              "C# host | STA plus policy gate",
+              "Desktop app | native COM renderer",
+              "Artifact | inspect plus audit plus hash"
+            ]
+          }
+        ],
+        "speaker_notes": "Raw COM members remain behind the task-level capability boundary."
+      },
+      {
+        "semantic_layout": "comparison",
+        "title": "Use each backend for what it proves",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "Open XML",
+              "Office-free deterministic compile",
+              "Editable OOXML packages",
+              "Fast structural work"
+            ]
+          },
+          {
+            "type": "bullets",
+            "items": [
+              "Desktop COM",
+              "Native PowerPoint rendering",
+              "PDF export and previews",
+              "Overflow and readback checks"
+            ]
+          }
+        ],
+        "speaker_notes": "The compiler never claims to be the final renderer."
+      },
+      {
+        "semantic_layout": "timeline",
+        "title": "A verified document workflow",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "Discover live capabilities",
+              "Compile an editable deck",
+              "Render native previews",
+              "Inspect for overflow",
+              "Return an audit trail"
+            ]
+          }
+        ],
+        "speaker_notes": "Every stage returns structured evidence."
+      },
+      {
+        "semantic_layout": "bullets",
+        "title": "2025年度 release language is still present",
+        "content_blocks": [
+          {
+            "type": "bullets",
+            "items": [
+              "The replacement showcase first discovers this marker with dry-run.",
+              "An unconfirmed write is refused.",
+              "A confirmed write creates a byte-exact checkpoint.",
+              "A second dry-run proves 2026年度 is present."
+            ]
+          }
+        ],
+        "speaker_notes": "This slide supplies a visible marker for the global replace demo."
+      },
+      {
+        "semantic_layout": "closing",
+        "title": "Built for agents. Verified by Office.",
+        "content_blocks": [
+          {
+            "type": "text",
+            "paragraphs": ["PowerPoint, Word and Excel through one governed automation contract."]
+          }
+        ],
+        "speaker_notes": "Close."
+      }
+    ],
+    "export_policy": {
+      "pdf": true,
+      "slide_previews": true,
+      "source_editable": true
+    }
+  },
+  "validation": ["no_text_overflow", "no_out_of_bounds"],
+  "outputs": ["pptx", "pdf", "slide-previews"]
+}

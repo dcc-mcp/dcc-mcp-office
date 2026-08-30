@@ -1,6 +1,7 @@
 using System.IO.Compression;
 using System.Text.Json;
 using Office.Automation.Host;
+using Office.Automation.OpenXml;
 using Xunit;
 
 namespace Office.Automation.Host.Tests;
@@ -134,18 +135,70 @@ public sealed class TemplatePackageTests
         }
     }
 
-    [Fact]
-    public void ShippedStudioLightPackageIsMaterializedFromTheRepository()
+    [Theory]
+    [InlineData("brand://dcc-mcp/studio-light", "F7F9FC")]
+    [InlineData("brand://dcc-mcp/executive-violet", "F8F7FC")]
+    [InlineData("brand://dcc-mcp/momentum-cobalt", "F8FAFF")]
+    public void ShippedTemplatePackagesAreMaterializedFromTheRepository(
+        string uri,
+        string expectedBackground)
     {
         string templates = FindTemplatesDirectory();
 
         var registry = new TemplateRegistry([templates]);
-        TemplateEntry? package = registry.Resolve("brand://dcc-mcp/studio-light");
+        TemplateEntry? package = registry.Resolve(uri);
 
         Assert.NotNull(package);
-        Assert.Equal("1.0.0", package.Package.Version);
-        Assert.Equal("F7F9FC", package.Package.Style.Background);
+        Assert.Equal("1.1.0", package.Package.Version);
+        Assert.Equal(expectedBackground, package.Package.Style.Background);
         Assert.Contains("technical_architecture", package.Package.Layouts);
+    }
+
+    [Fact]
+    public void DeckCompilerEmbedsJpegMediaAndKeepsDisplayAndBodyFontRoles()
+    {
+        string temporary = Path.Combine(
+            Path.GetTempPath(),
+            $"dcc-office-template-jpeg-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(temporary);
+        try
+        {
+            string hero = Path.Combine(temporary, "hero.jpg");
+            File.WriteAllBytes(hero, Convert.FromBase64String(
+                "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAX/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oADAMBAAIQAxAAAAF//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABBQJ//8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAgBAwEBPwF//8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAgBAgEBPwF//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQAGPwJ//8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPyF//9oADAMBAAIAAwAAABD/xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/EH//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/EH//xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/EH//2Q=="));
+            string ir = Path.Combine(temporary, "input.json");
+            File.WriteAllText(
+                ir,
+                """
+                {
+                  "schema_version":"office-ir/1.0",
+                  "kind":"presentation",
+                  "document_id":"fixture:jpeg-cover",
+                  "metadata":{"title":"JPEG cover","language":"en-US"},
+                  "document":{"slides":[{
+                    "semantic_layout":"title_cover",
+                    "title":"Display title",
+                    "images":[{"id":"Hero","uri":"hero.jpg"}],
+                    "content_blocks":[{"type":"text","paragraphs":["Body copy"]}]
+                  }]},
+                  "outputs":["pptx"]
+                }
+                """);
+            string output = Path.Combine(temporary, "cover.pptx");
+
+            PptxWriter.CompileDeck(ir, output);
+
+            using ZipArchive archive = ZipFile.OpenRead(output);
+            Assert.NotNull(archive.GetEntry("ppt/media/image1.jpg"));
+            Assert.Contains("image/jpeg", ReadEntry(archive, "[Content_Types].xml"), StringComparison.Ordinal);
+            string slide = ReadEntry(archive, "ppt/slides/slide1.xml");
+            Assert.Contains("Aptos Display", slide, StringComparison.Ordinal);
+            Assert.Contains("Aptos", slide, StringComparison.Ordinal);
+        }
+        finally
+        {
+            Directory.Delete(temporary, recursive: true);
+        }
     }
 
     private static void WritePackage(string packageRoot)

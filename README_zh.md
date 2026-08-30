@@ -12,11 +12,30 @@ Office 通用 Skill Pack。应用专属适配层放在薄的兄弟仓库中（�
 
 | 仓库 | 范围 | 状态 |
 |---|---|---|
-| **dcc-mcp-office**（本仓库） | 协议 / IR / C# 运行时 / Open XML / Graph / 通用技能 | M0 骨架 |
-| dcc-mcp-PowerPoint | Deck 生成、Slide 编排、评审 Deck | M0 骨架 |
-| dcc-mcp-word | 重排、域、目录 | Phase 2 占位 |
-| dcc-mcp-excel | 计算、表格、图表、Graph Workbook | Phase 2 占位 |
-| dcc-mcp-outlook | 草稿、日历 | Phase 3 占位 |
+| **dcc-mcp-office**（本仓库） | 协议 / IR / C# 运行时 / Open XML / Graph / 通用技能 | 仓库 M1 完成；M2 共享核心已具备 |
+| dcc-mcp-PowerPoint | Deck 生成、Slide 编排、评审 Deck | 方案 Phase 1；外部适配器 |
+| dcc-mcp-word | 重排、域、目录 | 方案 Phase 2；外部适配器 |
+| dcc-mcp-excel | 计算、表格、图表、Graph Workbook | 方案 Phase 2；外部适配器 |
+| dcc-mcp-outlook | 草稿、日历 | 规划中的方案 Phase 3；外部适配器 |
+
+## 可执行 Showcase 展廊
+
+![dcc-mcp-office 将受治理的结构化输入转换为可编辑的 PowerPoint、Word、Excel 与经过验证的 PDF 证据](./docs/images/office-suite-showcase.webp)
+
+仓库内置七个真实案例，覆盖当前 PowerPoint、Word、Excel 全链路。每个
+案例都提供可编辑源文件、Office 原生渲染、脱敏后的 `office-rpc/1` 记录与
+SHA-256 清单；展示结果来自本仓库的 Open XML 与桌面 COM 路径，不使用替代
+渲染器冒充 Office 结果。
+
+| 演示系统 | 文档与数据 |
+|---|---|
+| [![同一个故事通过三套项目自有品牌模板生成](./showcase/template-gallery/preview.png)](./showcase/template-gallery/) | [![精美 Word 简报经原生 Word 导出](./showcase/word-executive-brief/preview.png)](./showcase/word-executive-brief/) |
+| [![原创现代图片素材进入语义化幻灯片布局](./showcase/image-rich-deck/preview.png)](./showcase/image-rich-deck/) | [![可编辑 Excel 能力仪表盘经原生 Excel 渲染](./showcase/production-dashboard/preview.png)](./showcase/production-dashboard/) |
+
+进入[完整 Showcase 展廊](./showcase/README_zh.md)，还可以查看模板优先的
+Deck 流水线、跨 Office 批量转 PDF、带确认门禁与检查点的全局替换，以及
+对应的可复现验证证据。Graph、Office.js 和后续应用适配器仍不在当前展廊的
+实证范围内。
 
 ## 核心原则
 

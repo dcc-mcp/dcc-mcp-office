@@ -1,0 +1,27 @@
+{
+  "schema_version": "dcc-mcp-showcase-quality/1.0",
+  "method": "deterministic preflight before any learned or human preference score",
+  "templates": [
+    {
+      "uri": "brand://dcc-mcp/studio-light",
+      "slide_count": 4,
+      "rendered_slides": 4,
+      "overflow_findings": 0,
+      "gates_passed": true
+    },
+    {
+      "uri": "brand://dcc-mcp/executive-violet",
+      "slide_count": 4,
+      "rendered_slides": 4,
+      "overflow_findings": 0,
+      "gates_passed": true
+    },
+    {
+      "uri": "brand://dcc-mcp/momentum-cobalt",
+      "slide_count": 4,
+      "rendered_slides": 4,
+      "overflow_findings": 0,
+      "gates_passed": true
+    }
+  ]
+}

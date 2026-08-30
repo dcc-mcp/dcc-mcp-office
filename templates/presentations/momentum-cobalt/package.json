@@ -1,0 +1,39 @@
+{
+  "$schema": "../../package.schema.json",
+  "schema_version": "office-template-package/1.0",
+  "uri": "brand://dcc-mcp/momentum-cobalt",
+  "version": "1.1.0",
+  "kind": "presentation",
+  "extends": "brand://dcc-mcp/default",
+  "brand_name": "DCC-MCP Momentum Cobalt",
+  "layouts": {
+    "title_cover": "title_cover",
+    "section_cover": "section_cover",
+    "two_columns": "two_columns",
+    "comparison": "comparison",
+    "timeline": "timeline",
+    "kpi_dashboard": "kpi_dashboard",
+    "technical_architecture": "technical_architecture",
+    "image_left_text_right": "image_left_text_right",
+    "image_grid": "image_grid",
+    "closing": "closing",
+    "bullets": "bullets"
+  },
+  "style": {
+    "colors": {
+      "background": "F8FAFF",
+      "background_soft": "E8EEFF",
+      "panel": "FFFFFF",
+      "accent": "1D4ED8",
+      "accent_secondary": "0891B2",
+      "text": "101828",
+      "muted": "475467",
+      "ghost": "CBD8FF"
+    },
+    "fonts": {
+      "latin": "Aptos",
+      "display_latin": "Aptos Display",
+      "east_asian": "Microsoft YaHei"
+    }
+  }
+}

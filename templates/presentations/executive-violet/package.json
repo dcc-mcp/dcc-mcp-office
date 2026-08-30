@@ -1,0 +1,39 @@
+{
+  "$schema": "../../package.schema.json",
+  "schema_version": "office-template-package/1.0",
+  "uri": "brand://dcc-mcp/executive-violet",
+  "version": "1.1.0",
+  "kind": "presentation",
+  "extends": "brand://dcc-mcp/default",
+  "brand_name": "DCC-MCP Executive Violet",
+  "layouts": {
+    "title_cover": "title_cover",
+    "section_cover": "section_cover",
+    "two_columns": "two_columns",
+    "comparison": "comparison",
+    "timeline": "timeline",
+    "kpi_dashboard": "kpi_dashboard",
+    "technical_architecture": "technical_architecture",
+    "image_left_text_right": "image_left_text_right",
+    "image_grid": "image_grid",
+    "closing": "closing",
+    "bullets": "bullets"
+  },
+  "style": {
+    "colors": {
+      "background": "F8F7FC",
+      "background_soft": "EEEAF8",
+      "panel": "FFFFFF",
+      "accent": "7C3AED",
+      "accent_secondary": "4F46E5",
+      "text": "211A35",
+      "muted": "675E7D",
+      "ghost": "DED7EE"
+    },
+    "fonts": {
+      "latin": "Aptos",
+      "display_latin": "Aptos Display",
+      "east_asian": "Microsoft YaHei"
+    }
+  }
+}

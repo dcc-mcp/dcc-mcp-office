@@ -23,10 +23,50 @@
     },
     {
       "uri": "brand://dcc-mcp/studio-light",
-      "version": "1.0.0",
+      "version": "1.1.0",
       "kind": "presentation",
       "description": "External light presentation package inheriting the default Open XML skeleton.",
       "source": "file://presentations/studio-light",
+      "layouts": [
+        "title_cover",
+        "section_cover",
+        "two_columns",
+        "comparison",
+        "timeline",
+        "kpi_dashboard",
+        "technical_architecture",
+        "image_left_text_right",
+        "image_grid",
+        "closing",
+        "bullets"
+      ]
+    },
+    {
+      "uri": "brand://dcc-mcp/executive-violet",
+      "version": "1.1.0",
+      "kind": "presentation",
+      "description": "Project-owned executive palette with violet and indigo accents for decision-ready reviews.",
+      "source": "file://presentations/executive-violet",
+      "layouts": [
+        "title_cover",
+        "section_cover",
+        "two_columns",
+        "comparison",
+        "timeline",
+        "kpi_dashboard",
+        "technical_architecture",
+        "image_left_text_right",
+        "image_grid",
+        "closing",
+        "bullets"
+      ]
+    },
+    {
+      "uri": "brand://dcc-mcp/momentum-cobalt",
+      "version": "1.1.0",
+      "kind": "presentation",
+      "description": "Project-owned cobalt and cyan palette for technical product narratives and data-led reviews.",
+      "source": "file://presentations/momentum-cobalt",
       "layouts": [
         "title_cover",
         "section_cover",

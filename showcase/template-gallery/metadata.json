@@ -1,0 +1,77 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Brand template comparison",
+  "summary": "The same Presentation IR compiles through three project-owned brand packages, then PowerPoint renders and overflow-checks every result.",
+  "capabilities": [
+    "deck.compile",
+    "document.inspect",
+    "slide.render"
+  ],
+  "inputs": [
+    "input.json",
+    "asset-manifest.json",
+    "assets/editorial-office-hero.jpg"
+  ],
+  "artifacts": [
+    "artifacts/studio-light.pptx",
+    "artifacts/executive-violet.pptx",
+    "artifacts/momentum-cobalt.pptx",
+    "quality-report.json",
+    "renders/studio-light/slide-001.png",
+    "renders/studio-light/slide-002.png",
+    "renders/studio-light/slide-003.png",
+    "renders/studio-light/slide-004.png",
+    "renders/executive-violet/slide-001.png",
+    "renders/executive-violet/slide-002.png",
+    "renders/executive-violet/slide-003.png",
+    "renders/executive-violet/slide-004.png",
+    "renders/momentum-cobalt/slide-001.png",
+    "renders/momentum-cobalt/slide-002.png",
+    "renders/momentum-cobalt/slide-003.png",
+    "renders/momentum-cobalt/slide-004.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "openxml",
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:52:25Z",
+  "verification": [
+    "Three versioned brand packages compiled the same four-slide Presentation IR.",
+    "PowerPoint rendered all twelve slides at 1280x720.",
+    "The deterministic quality report records slide count and overflow gates before aesthetic selection."
+  ],
+  "reproduce": [
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "input.json": "b9c6c0a56e443933b18bb2bd6e250090c93b94bfc7ab6915191093cb08bab1fa",
+    "asset-manifest.json": "7949ec2fa6e8a0843ebc8b9696ee8dc3a2cc7dd29d2b4fc668375454a01a57eb",
+    "assets/editorial-office-hero.jpg": "5aee1919fc4c469c7f2754ad78ad058e24e52deb12ff724bbc3934be1d48aa9f",
+    "artifacts/studio-light.pptx": "54a14a294af3127c75cb813f9af48cf44d8741d38bea71690b2cb1a55e412b12",
+    "artifacts/executive-violet.pptx": "b73d1d485694a3b94fb38d98e6363c15e05a069d93be1bfcba629044f6d940a6",
+    "artifacts/momentum-cobalt.pptx": "125db421cd1a2aedb930066d5c23e34ab404083bb47f795e4709d2ad65910949",
+    "quality-report.json": "46b0d6433ad031ff5b3e6c84e1a574973091f230ed0f3d027d5ce850e9d8c0ee",
+    "renders/studio-light/slide-001.png": "c6e5e3e95bc146bf5f7b330bb5e965e11898b352e03fb8eb7283d98dc8f438e9",
+    "renders/studio-light/slide-002.png": "d19664d9f3459f4ac70729e936c390c9a658f67b2704b10d4f4b0735d2058e20",
+    "renders/studio-light/slide-003.png": "42bee2fd05c295840eca02100efcc7762af2cffeea8318b9724b3b5e813d2f71",
+    "renders/studio-light/slide-004.png": "70b241d14953b900accc6fcc95a31126b46ad41ebaca3b3bf8c77588627f7ba3",
+    "renders/executive-violet/slide-001.png": "4906b629decaff6939d876c19685865cb52d2270f6396d2d00ac3edccf3f8b41",
+    "renders/executive-violet/slide-002.png": "db9de8274939033b3ceeb25c68d35f992e0f198a6d984d0a251406b073167367",
+    "renders/executive-violet/slide-003.png": "66a36e080a9acfc9efcac1bd3d975bd9d1bdf5239d4b6b7f310cb86bda5dbbed",
+    "renders/executive-violet/slide-004.png": "b7a55a65f8b29d570dead789f7871ad2b10040486a9ecb27d6cdf171fa9aeab6",
+    "renders/momentum-cobalt/slide-001.png": "7e5d207768e5cb9828a68461143fb32eba423c69133612d5dec26fdc36712e9b",
+    "renders/momentum-cobalt/slide-002.png": "69ad03e3c081aeb5607e2f2cf758881c9042eefe817b43c2eb70e8c2a34b129a",
+    "renders/momentum-cobalt/slide-003.png": "8722552a8c59bdb2c0fc22901b3c4c119d7c48eb6da62c060fd8d3e3d3525d66",
+    "renders/momentum-cobalt/slide-004.png": "9f65d16841c3c0431dc0f90243481fda96e952e280e5e9171ff10fce4bac314b",
+    "preview.png": "d6e6fa883f3f3125c8897fcce54bb5d5a56b9eae30addad89b8709abf036506c",
+    "transcript.json": "68f7caf120957e5a48b72885286ed8dba2f93516efc3f6c917ea1fcfd9e87cf1"
+  }
+}

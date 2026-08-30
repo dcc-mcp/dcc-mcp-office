@@ -1,0 +1,58 @@
+{
+  "schema_version": "dcc-mcp-showcase/1.0",
+  "title": "Template-first deck pipeline",
+  "summary": "Presentation IR compiles to an editable branded PPTX, then PowerPoint renders every slide and reports overflow.",
+  "capabilities": [
+    "deck.compile",
+    "document.inspect",
+    "slide.render"
+  ],
+  "inputs": [
+    "input.json"
+  ],
+  "artifacts": [
+    "dcc-mcp-office-suite.pptx",
+    "slides/slide-001.png",
+    "slides/slide-002.png",
+    "slides/slide-003.png",
+    "slides/slide-004.png",
+    "slides/slide-005.png",
+    "slides/slide-006.png",
+    "slides/slide-007.png"
+  ],
+  "previews": [
+    "preview.png"
+  ],
+  "generated_with": {
+    "provider": "dcc-mcp-office",
+    "protocol": "office-rpc/1",
+    "backends": [
+      "openxml",
+      "desktop_com"
+    ]
+  },
+  "verified_at": "2026-08-30T14:06:43Z",
+  "verification": [
+    "Open XML inspection reported 7 slides.",
+    "PowerPoint rendered 7 slide previews at 1280x720.",
+    "Overflow report contained 3 shape findings."
+  ],
+  "reproduce": [
+    "vx run build",
+    "python scripts/capture_showcases.py --with-office --force",
+    "python scripts/validate_showcases.py"
+  ],
+  "sha256": {
+    "input.json": "33b12cfab46399b274b292f7f925e3d3d8170b78aae9bba0b7bb9abf9e22849d",
+    "dcc-mcp-office-suite.pptx": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679",
+    "slides/slide-001.png": "feaa9dde8f61b6a1d48a794c5ce712e723de83e333c6f1178b827ec6e7ce2d7b",
+    "slides/slide-002.png": "933d4b71087b84b62c96061872014f76777146d4054fb063ada51f246baa1e75",
+    "slides/slide-003.png": "ac5287622529cad599e9bf06475352ce9dd369c4cf428ab7b84ddc5e4bcc74d7",
+    "slides/slide-004.png": "61c7e3410fdd53ff3e170de933a1ded2bd1637b423bf38553c8e877c2cf2b88d",
+    "slides/slide-005.png": "1a2a1e4ae3bac5f34a90690bc6432741b685a76109ffabb87fcc9f671465d879",
+    "slides/slide-006.png": "7a4aac5a3f7a10e59d9d956e2f6d19d18645a3c4da7992a4dd8ee20987401aaf",
+    "slides/slide-007.png": "08b1e52cdaffee5a9183019ec55f9fe6e7bf269d184f23882f03d6df2ab91a0a",
+    "preview.png": "7693832b79640e290fd643b40948157f70ecf3c0f2886d4cca5e93ebf24de068",
+    "transcript.json": "6869e9636e00ad0adf9b0c4c5c78e3bbc432e1b3c7c9b98d4717ff2eac009225"
+  }
+}
