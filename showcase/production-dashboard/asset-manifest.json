@@ -7,8 +7,14 @@
     {
       "path": "assets/data-landscape.jpg",
       "prompt_summary": "Abstract measured-capability landscape with three glass bars, a total ring and verification pulse.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     }
   ]
 }

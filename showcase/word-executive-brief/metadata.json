@@ -40,13 +40,13 @@
   ],
   "sha256": {
     "content.json": "8c49e407baf75a9e5907c09f1bb89e8583fa429b24cb51a1ad3546eed17b3464",
-    "asset-manifest.json": "5545ca3bd87dcea23c6a82884ebaddf6d684833e3d125f67bae4bab532e5ac6f",
+    "asset-manifest.json": "eba4e1a3e5c2c15c17dcc067b5080d94d9c9ce385dac8d6a82b1482983b5f5d4",
     "assets/document-evidence-banner.jpg": "6c77181c302aba3da9f8946fc257892c41bb5db58cc49b817a2206d9d2acc967",
     "dcc-mcp-office-executive-brief.docx": "a3504a6f007b15b5e2b92bbb6fd5ce121a1873911fc4008ab5182ae766b5be35",
     "pdf/dcc-mcp-office-executive-brief.pdf": "4e911eee0404c164eb9d32b481f0ac84a7ee92dd7cc7d598905dee2ca04181ab",
     "pages/page-1.png": "cd9a65dafd1794cda7dc1e365e2c53e595d9f748abca1056b6a108ac928100b3",
     "pages/page-2.png": "20750f9f7815ad98dac91bdd39c72d12c25f0307c2b9f5d691f910a57bb0b53a",
     "preview.png": "b204306626ec494543b06fe4583443fa0df82ca3e9e08b77e76c5707dc8044ab",
-    "transcript.json": "f489af4acecf27190ab8d751c8b276b4034e43d3a2efb3e413ebc770167b5cb5"
+    "transcript.json": "bd0b65e2e4785f982647c62166d3cc6ed732538f9a986eb34a1183b1ccd34e2e"
   }
 }

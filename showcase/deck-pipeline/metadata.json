@@ -43,7 +43,7 @@
     "python scripts/validate_showcases.py"
   ],
   "sha256": {
-    "input.json": "33b12cfab46399b274b292f7f925e3d3d8170b78aae9bba0b7bb9abf9e22849d",
+    "input.json": "85f9fe478768b6134941547475627927cab6b30c4ad9668e74c39d4c871b40d2",
     "dcc-mcp-office-suite.pptx": "881fd974905c68d7ef5ff35c0c1f22fc63f9b89950dc58a384123d5948488679",
     "slides/slide-001.png": "feaa9dde8f61b6a1d48a794c5ce712e723de83e333c6f1178b827ec6e7ce2d7b",
     "slides/slide-002.png": "933d4b71087b84b62c96061872014f76777146d4054fb063ada51f246baa1e75",
@@ -53,6 +53,6 @@
     "slides/slide-006.png": "7a4aac5a3f7a10e59d9d956e2f6d19d18645a3c4da7992a4dd8ee20987401aaf",
     "slides/slide-007.png": "08b1e52cdaffee5a9183019ec55f9fe6e7bf269d184f23882f03d6df2ab91a0a",
     "preview.png": "7693832b79640e290fd643b40948157f70ecf3c0f2886d4cca5e93ebf24de068",
-    "transcript.json": "6869e9636e00ad0adf9b0c4c5c78e3bbc432e1b3c7c9b98d4717ff2eac009225"
+    "transcript.json": "1f0ce70324e35bd0b91c023dc4f4132d057f52c7fd45e915c9b225ec71b9d5f2"
   }
 }

@@ -7,8 +7,14 @@
     {
       "path": "assets/editorial-office-hero.jpg",
       "prompt_summary": "Editorial collage of governed Office automation outputs, warm paper and cobalt glass, negative space at left.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     }
   ]
 }

@@ -7,8 +7,14 @@
     {
       "path": "assets/document-evidence-banner.jpg",
       "prompt_summary": "Calm executive evidence scene with bound report, proof sheet, chart page and verification object.",
-      "source_dimensions": [1672, 941],
-      "showcase_dimensions": [1280, 720]
+      "source_dimensions": [
+        1672,
+        941
+      ],
+      "showcase_dimensions": [
+        1280,
+        720
+      ]
     }
   ]
 }

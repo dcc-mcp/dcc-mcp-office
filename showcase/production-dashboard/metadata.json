@@ -40,14 +40,14 @@
     "python scripts/validate_showcases.py"
   ],
   "sha256": {
-    "input.json": "996bcb604768875129d7428c06da9570343c42fb394cec150c24bbe1e6ada13d",
-    "asset-manifest.json": "76e555399090146e63e85c8a5a4f4f8f616b95ff305f098e41a2bf8668c4ec80",
+    "input.json": "2355f817884e9e9aca5bea5fb6e6a51bfc249b1c3b2193e3a3b9d77a1c0f298a",
+    "asset-manifest.json": "58166a7439350f21dd409fb71526a337874a17a13b6c74fa0eeb94a16f0a310b",
     "assets/data-landscape.jpg": "e94b9337f78525d206f05c93917ee12f8ff2b78980cd110d62474870a0acfc48",
     "showcase-dcc-mcp-office-runtime-dashboard.xlsx": "4a256c81e71b1f785b1903a5b07b387d31b000bb30fe60ace8084fc4669e983c",
     "pdf/showcase-dcc-mcp-office-runtime-dashboard.pdf": "80152824247964af36cb1704515207a25ba5883109aa7e2341d0ec7ce90643f6",
     "pages/page-1.png": "b170998876572e46871c1a032ace9dd0d52b7c01e6e42947e968ad74e0d6e910",
     "pages/page-2.png": "c84363ae13cea3c0a5c5cd3475ab04ba36ed3edcbf28a8848ae69060d8085c4f",
     "preview.png": "205dc3620ab02c496ab450408daedfa27b8242f20e487f8868b59d4d0b74850b",
-    "transcript.json": "3c555dc93206f3161162db72234aa5b08b6ec5483e21b8e33bf6a6839dfd809f"
+    "transcript.json": "f1bf1aa5ad21b13c135998383b334e40a5bd94229a38f2ba17a66c64d8dc8876"
   }
 }
