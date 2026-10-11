@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.4](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.3...v0.2.4) (2026-08-30)
+
+
+### Features
+
+* add executable Office showcase gallery ([991af53](https://github.com/dcc-mcp/dcc-mcp-office/commit/991af53f0c87482308cd9f16952fe19e714d1525))
+
+
+### Bug Fixes
+
+* stabilize showcase checksums across platforms ([0ba527f](https://github.com/dcc-mcp/dcc-mcp-office/commit/0ba527fd8f0fa18cca6ec44ea5f0c8b9a4eee098))
+
 ## [0.2.3](https://github.com/dcc-mcp/dcc-mcp-office/compare/v0.2.2...v0.2.3) (2026-08-23)
 
 
